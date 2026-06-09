@@ -1,0 +1,46 @@
+#pragma once
+#include "namespace.h"
+#include <type_traits>
+#include "utils.h"
+#include <immintrin.h>
+
+namespace AVXXY_NAMESPACE
+{
+	namespace concepts
+	{
+		using namespace utils;
+
+		template <typename T, typename... Ts> inline constexpr bool is_any_of_v = (std::is_same_v<T, Ts> || ...);
+		template<typename T> concept IsScalarType = is_any_of_v<T, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double>;
+		template<typename T> concept IsIntrinsicVector = is_any_of_v<T, __m128i, __m128, __m128d, __m256i, __m256, __m256d, __m512i, __m512, __m512d>;
+
+		//indicates wheter the type is SIMD vector that fits only into zmm registers (33-64 bytes)
+		template <typename T> inline constexpr bool zmm_sized = T::IsSimdVector && inRange(sizeof(T), 33, 64);
+		//indicates wheter the type is SIMD vector that fits only into ymm registers (17-32 bytes)
+		template <typename T> inline constexpr bool ymm_sized = T::IsSimdVector && inRange(sizeof(T), 17, 32);
+		//indicates wheter the type is SIMD vector that fits only into xmm registers (less than or equal to 16 bytes)
+		template <typename T> inline constexpr bool xmm_sized = T::IsSimdVector && inRange(sizeof(T), 0, 16);
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_f32 = std::is_same_v<T, float>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_f64 = std::is_same_v<T, double>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_i64 = std::is_same_v<T, int64_t>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_i32 = std::is_same_v<T, int32_t>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_i16 = std::is_same_v<T, int16_t>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_i8 = std::is_same_v<T, int8_t>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_u64 = std::is_same_v<T, uint64_t>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_u32 = std::is_same_v<T, uint32_t>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_u16 = std::is_same_v<T, uint16_t>;
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_u8 = std::is_same_v<T, uint8_t>;
+		//indicates wheter this type is 8 bit integer, signed or unsigned
+		template <typename T> inline constexpr bool any_i8 = (is_u8<T> || is_i8<T>);
+		//indicates wheter this type is 16 bit integer, signed or unsigned
+		template <typename T> inline constexpr bool any_i16 = (is_u16<T> || is_i16<T>);
+		//indicates wheter this type is 32 bit integer, signed or unsigned
+		template <typename T> inline constexpr bool any_i32 = (is_u32<T> || is_i32<T>);
+		//indicates wheter this type is 64 bit integer, signed or unsigned
+		template <typename T> inline constexpr bool any_i64 = (is_u64<T> || is_i64<T>);
+		//indicates wheter this type is integral
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool any_int = std::is_integral_v<T>;
+		//indicates wheter this type is not integral (TODO: limit it only to doubles and floats, and maybe FP16/BF16?)
+		template <typename T> requires (IsScalarType<T>) inline constexpr bool not_int = !std::is_integral_v<T>;
+	}
+}
