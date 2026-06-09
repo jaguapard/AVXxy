@@ -42,5 +42,17 @@ namespace AVXXY_NAMESPACE
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool any_int = std::is_integral_v<T>;
 		//indicates wheter this type is not integral (TODO: limit it only to doubles and floats, and maybe FP16/BF16?)
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool not_int = !std::is_integral_v<T>;
+
+
+		//Maps bit count to smallest unsigned integer type that has greater or equal number of bits
+		template <size_t Size>
+		struct bits_to_uint_t
+		{
+			static_assert(Size <= 64, "Unsupported size for bits_to_uint_t");
+			using type =
+				std::conditional_t<Size >= 33, uint64_t,
+				std::conditional_t<Size >= 17, uint32_t,
+				std::conditional_t<Size >= 9, uint16_t, uint8_t>>>;
+		};
 	}
 }

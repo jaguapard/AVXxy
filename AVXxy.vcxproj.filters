@@ -13,28 +13,34 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\avxxy">
+      <UniqueIdentifier>{98137fee-044f-4b70-acfd-ccc3dad25844}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="avxxy\namespace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="avxxy\avxxy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="avxxy\mask.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="avxxy\vector.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\avxxy</Filter>
     </ClInclude>
     <ClInclude Include="avxxy\backends.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="avxxy\utils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\avxxy</Filter>
     </ClInclude>
     <ClInclude Include="avxxy\concepts.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\mask.h">
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\mask_impl.h">
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\namespace.h">
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\utils.h">
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\vector.h">
+      <Filter>Header Files\avxxy</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

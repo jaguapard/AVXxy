@@ -249,6 +249,7 @@
     <ClInclude Include="avxxy\backends.h" />
     <ClInclude Include="avxxy\concepts.h" />
     <ClInclude Include="avxxy\mask.h" />
+    <ClInclude Include="avxxy\mask_impl.h" />
     <ClInclude Include="avxxy\namespace.h" />
     <ClInclude Include="avxxy\utils.h" />
     <ClInclude Include="avxxy\vector.h" />
