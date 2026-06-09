@@ -7,16 +7,28 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AVXxy", "AVXxy.vcxproj", "{
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		DebClang|x64 = DebClang|x64
+		DebClang|x86 = DebClang|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		RelClang|x64 = RelClang|x64
+		RelClang|x86 = RelClang|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.DebClang|x64.ActiveCfg = DebClang|x64
+		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.DebClang|x64.Build.0 = DebClang|x64
+		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.DebClang|x86.ActiveCfg = DebClang|Win32
+		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.DebClang|x86.Build.0 = DebClang|Win32
 		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.Debug|x64.ActiveCfg = Debug|x64
 		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.Debug|x64.Build.0 = Debug|x64
 		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.Debug|x86.ActiveCfg = Debug|Win32
 		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.Debug|x86.Build.0 = Debug|Win32
+		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.RelClang|x64.ActiveCfg = RelClang|x64
+		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.RelClang|x64.Build.0 = RelClang|x64
+		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.RelClang|x86.ActiveCfg = RelClang|Win32
+		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.RelClang|x86.Build.0 = RelClang|Win32
 		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.Release|x64.ActiveCfg = Release|x64
 		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.Release|x64.Build.0 = Release|x64
 		{EF55F4D6-704E-4F95-BF7E-B1902845CA77}.Release|x86.ActiveCfg = Release|Win32
