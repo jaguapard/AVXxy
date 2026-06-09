@@ -30,5 +30,8 @@
     <ClInclude Include="avxxy\backends.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="avxxy\utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
