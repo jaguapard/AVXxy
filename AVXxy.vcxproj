@@ -246,7 +246,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="avxxy\avxxy.h" />
+    <ClInclude Include="avxxy\backends.h" />
+    <ClInclude Include="avxxy\mask.h" />
     <ClInclude Include="avxxy\namespace.h" />
+    <ClInclude Include="avxxy\vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

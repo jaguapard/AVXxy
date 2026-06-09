@@ -21,5 +21,14 @@
     <ClInclude Include="avxxy\avxxy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="avxxy\mask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\backends.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
