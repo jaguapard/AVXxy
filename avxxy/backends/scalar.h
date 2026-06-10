@@ -14,6 +14,14 @@ namespace AVXXY_NAMESPACE
 				for (size_t i = 0; i < N; ++i) ret[i] = a[i] + b[i];
 				return ret;
 			}
+
+			template<typename To, size_t N, typename From>
+			static SIMD_Vector<To, N> cvt(const SIMD_Vector<From, N>& a)
+			{
+				SIMD_Vector<To, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = a[i];
+				return ret;
+			}
 		};
 	}
 }
