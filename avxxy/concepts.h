@@ -12,6 +12,7 @@ namespace AVXXY_NAMESPACE
 
 		template <typename T, typename... Ts> inline constexpr bool is_any_of_v = (std::is_same_v<T, Ts> || ...);
 		template<typename T> concept IsScalarType = is_any_of_v<T, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double>;
+		template<typename... Ts> concept AllAreScalarTypes = (IsScalarType<Ts> && ...);
 		template<typename T> concept IsIntrinsicVector = is_any_of_v<T, __m128i, __m128, __m128d, __m256i, __m256, __m256d, __m512i, __m512, __m512d>;
 
 		//indicates wheter the type is SIMD vector that fits only into zmm registers (33-64 bytes)
