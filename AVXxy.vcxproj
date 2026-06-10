@@ -253,6 +253,7 @@
     <ClInclude Include="avxxy\namespace.h" />
     <ClInclude Include="avxxy\utils.h" />
     <ClInclude Include="avxxy\vector.h" />
+    <ClInclude Include="avxxy\vector_impl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

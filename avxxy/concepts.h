@@ -54,5 +54,30 @@ namespace AVXXY_NAMESPACE
 				std::conditional_t<Size >= 17, uint32_t,
 				std::conditional_t<Size >= 9, uint16_t, uint8_t>>>;
 		};
+
+		template<typename T>
+		struct reg128
+		{
+			using type = std::conditional_t<std::is_integral_v<T>, __m128i,
+				std::conditional_t<std::is_same_v<T, float>, __m128,
+				std::conditional_t<std::is_same_v<T, double>, __m128d, void>>>;
+		};
+		template<typename T>
+		struct reg256
+		{
+			using type = std::conditional_t<std::is_integral_v<T>, __m256i,
+				std::conditional_t<std::is_same_v<T, float>, __m256,
+				std::conditional_t<std::is_same_v<T, double>, __m256d, void>>>;
+		};
+		template<typename T>
+		struct reg512
+		{
+			using type = std::conditional_t<std::is_integral_v<T>, __m512i,
+				std::conditional_t<std::is_same_v<T, float>, __m512,
+				std::conditional_t<std::is_same_v<T, double>, __m512d, void>>>;
+		};
+
+		template<class...>
+		inline constexpr bool always_false_v = false;
 	}
 }

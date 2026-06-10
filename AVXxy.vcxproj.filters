@@ -42,5 +42,8 @@
     <ClInclude Include="avxxy\vector.h">
       <Filter>Header Files\avxxy</Filter>
     </ClInclude>
+    <ClInclude Include="avxxy\vector_impl.h">
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
