@@ -26,7 +26,7 @@ int main()
 	std::cout << "SSE2: " << sse2_add << "\n";
 	std::cout << "Scalar: " << scalar_add << "\n";
 
-	auto avx512_cvtps_pd = backends::AVX512::cvt<double>(read);
+	auto avx512_cvtps_pd = backends::AVX512::cvt<double>(vcast<i8x64>(read));
 	std::cout << "AVX512 ps to pd: " << avx512_cvtps_pd << "\n";
 
 	system("pause");

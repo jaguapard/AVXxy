@@ -6,7 +6,9 @@
 #include "vector.h"
 #include "vector_impl.h"
 
+#include "meta_ops.h"
 #include "backends.h"
+#include "meta_ops_impl.h"
 
 namespace AVXXY_NAMESPACE
 {
