@@ -13,7 +13,7 @@ namespace AVXXY_NAMESPACE
 		static_assert(utils::isPowerOf2(N));
 
 		static inline constexpr size_t BitCount = N;
-		using UintT = concepts::bits_to_uint_t<N>;
+		using UintT = typename concepts::bits_to_uint_t<N>::type;
 		static inline constexpr UintT AllOnes = (N == sizeof(UintT) * 8) ? ~UintT(0) : ((UintT(1) << N) - 1);
 
 		SIMD_Mask(UintT value);

@@ -6,7 +6,7 @@ namespace AVXXY_NAMESPACE
 {
 	namespace backends
 	{
-		struct AVX512
+		struct AVX512 : AVX2
 		{
 			template<typename S, size_t N>
 			static SIMD_Vector<S, N> add(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
@@ -24,6 +24,187 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (any_i8<S>) return _mm512_add_epi8(a, b);
 				}
 				else return AVX2::add(a, b);
+			}
+
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> sub(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				using namespace concepts;
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
+				else if constexpr (zmm_sized<T>)
+				{
+					if constexpr (is_f64<S>) return _mm512_sub_pd(a, b);
+					else if constexpr (is_f32<S>) return _mm512_sub_ps(a, b);
+					else if constexpr (any_i64<S>) return _mm512_sub_epi64(a, b);
+					else if constexpr (any_i32<S>) return _mm512_sub_epi32(a, b);
+					else if constexpr (any_i16<S>) return _mm512_sub_epi16(a, b);
+					else if constexpr (any_i8<S>) return _mm512_sub_epi8(a, b);
+				}
+				else return AVX2::sub(a, b);
+			}
+
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> mul(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				using namespace concepts;
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+				else if constexpr (zmm_sized<T>)
+				{
+					if constexpr (is_f64<S>) return _mm512_mul_pd(a, b);
+					else if constexpr (is_f32<S>) return _mm512_mul_ps(a, b);
+					else if constexpr (any_i32<S>) return _mm512_mullo_epi32(a, b);
+					else if constexpr (any_i16<S>) return _mm512_mullo_epi16(a, b);
+					else return Scalar::mul(a, b);
+				}
+				else return AVX2::mul(a, b);
+			}
+
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> div(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				using namespace concepts;
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { div(a.lo(), b.lo()), div(a.hi(), b.hi()) };
+				else if constexpr (zmm_sized<T>)
+				{
+					if constexpr (is_f64<S>) return _mm512_div_pd(a, b);
+					else if constexpr (is_f32<S>) return _mm512_div_ps(a, b);
+					else return Scalar::div(a, b);
+				}
+				else return AVX2::div(a, b);
+			}
+
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> logic_or(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { logic_or(a.lo(), b.lo()), logic_or(a.hi(), b.hi()) };
+				else if constexpr (concepts::zmm_sized<T>) return T(_mm512_or_si512(__m512i(a), __m512i(b)));
+				else return AVX2::logic_or(a, b);
+			}
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> logic_and(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { logic_and(a.lo(), b.lo()), logic_and(a.hi(), b.hi()) };
+				else if constexpr (concepts::zmm_sized<T>) return T(_mm512_and_si512(__m512i(a), __m512i(b)));
+				else return AVX2::logic_and(a, b);
+			}
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> logic_xor(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { logic_xor(a.lo(), b.lo()), logic_xor(a.hi(), b.hi()) };
+				else if constexpr (concepts::zmm_sized<T>) return T(_mm512_xor_si512(__m512i(a), __m512i(b)));
+				else return AVX2::logic_xor(a, b);
+			}
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> logic_not(const SIMD_Vector<S, N>& a)
+			{
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { logic_not(a.lo()), logic_not(a.hi()) };
+				else if constexpr (concepts::zmm_sized<T>) return T(_mm512_xor_si512(__m512i(a), _mm512_set1_epi32(-1)));
+				else return AVX2::logic_not(a);
+			}
+
+			template<typename S, size_t N>
+			static SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a)
+			{
+				using T = SIMD_Vector<S, N>;
+				if constexpr (std::is_same_v<S, float> && sizeof(T) > 64) return { sqrtf(a.lo()), sqrtf(a.hi()) };
+				else if constexpr (std::is_same_v<S, float> && concepts::zmm_sized<T>) return _mm512_sqrt_ps(a);
+				else return AVX2::sqrtf(a);
+			}
+			template<typename S, size_t N>
+			static SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a)
+			{
+				using T = SIMD_Vector<S, N>;
+				if constexpr (std::is_same_v<S, double> && sizeof(T) > 64) return { sqrtd(a.lo()), sqrtd(a.hi()) };
+				else if constexpr (std::is_same_v<S, double> && concepts::zmm_sized<T>) return _mm512_sqrt_pd(a);
+				else return AVX2::sqrtd(a);
+			}
+
+			template<typename S, size_t N>
+				requires (std::is_floating_point_v<S>)
+			static SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a)
+			{
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { floor(a.lo()), floor(a.hi()) };
+				else if constexpr (concepts::zmm_sized<T> && std::is_same_v<S, float>) return _mm512_floor_ps(a);
+				else if constexpr (concepts::zmm_sized<T>) return _mm512_floor_pd(a);
+				else return AVX2::floor(a);
+			}
+			template<typename S, size_t N>
+				requires (std::is_floating_point_v<S>)
+			static SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a)
+			{
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { ceil(a.lo()), ceil(a.hi()) };
+				else if constexpr (concepts::zmm_sized<T> && std::is_same_v<S, float>) return _mm512_ceil_ps(a);
+				else if constexpr (concepts::zmm_sized<T>) return _mm512_ceil_pd(a);
+				else return AVX2::ceil(a);
+			}
+
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> compress(const SIMD_Mask<N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
+			{
+				using namespace concepts;
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { compress(mask.lo(), a.lo(), src.lo()), compress(mask.hi(), a.hi(), src.hi()) };
+				else if constexpr (zmm_sized<T>)
+				{
+					if constexpr (is_f64<S>) return _mm512_mask_compress_pd(src, mask, a);
+					else if constexpr (is_f32<S>) return _mm512_mask_compress_ps(src, mask, a);
+					else if constexpr (any_i64<S>) return _mm512_mask_compress_epi64(src, mask, a);
+					else if constexpr (any_i32<S>) return _mm512_mask_compress_epi32(src, mask, a);
+					else return Scalar::compress(mask, a, src);
+				}
+				else return AVX2::compress(mask, a, src);
+			}
+
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> min(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				using namespace concepts;
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { min(a.lo(), b.lo()), min(a.hi(), b.hi()) };
+				else if constexpr (zmm_sized<T>)
+				{
+					if constexpr (is_f64<S>) return _mm512_min_pd(a, b);
+					else if constexpr (is_f32<S>) return _mm512_min_ps(a, b);
+					else if constexpr (is_i64<S>) return _mm512_min_epi64(a, b);
+					else if constexpr (is_u64<S>) return _mm512_min_epu64(a, b);
+					else if constexpr (is_i32<S>) return _mm512_min_epi32(a, b);
+					else if constexpr (is_u32<S>) return _mm512_min_epu32(a, b);
+					else if constexpr (is_i16<S>) return _mm512_min_epi16(a, b);
+					else if constexpr (is_u16<S>) return _mm512_min_epu16(a, b);
+					else if constexpr (is_i8<S>) return _mm512_min_epi8(a, b);
+					else if constexpr (is_u8<S>) return _mm512_min_epu8(a, b);
+				}
+				else return AVX2::min(a, b);
+			}
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> max(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				using namespace concepts;
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { max(a.lo(), b.lo()), max(a.hi(), b.hi()) };
+				else if constexpr (zmm_sized<T>)
+				{
+					if constexpr (is_f64<S>) return _mm512_max_pd(a, b);
+					else if constexpr (is_f32<S>) return _mm512_max_ps(a, b);
+					else if constexpr (is_i64<S>) return _mm512_max_epi64(a, b);
+					else if constexpr (is_u64<S>) return _mm512_max_epu64(a, b);
+					else if constexpr (is_i32<S>) return _mm512_max_epi32(a, b);
+					else if constexpr (is_u32<S>) return _mm512_max_epu32(a, b);
+					else if constexpr (is_i16<S>) return _mm512_max_epi16(a, b);
+					else if constexpr (is_u16<S>) return _mm512_max_epu16(a, b);
+					else if constexpr (is_i8<S>) return _mm512_max_epi8(a, b);
+					else if constexpr (is_u8<S>) return _mm512_max_epu8(a, b);
+				}
+				else return AVX2::max(a, b);
 			}
 
 			template<typename To, size_t N, typename From>

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
+#include <cstring>
 
 namespace AVXXY_NAMESPACE
 {
@@ -19,7 +20,7 @@ namespace AVXXY_NAMESPACE
 		requires IsValid_SIMD_Vector<_S, _N>
 	struct alignas(std::min<uint32_t>(64, sizeof(_S)* _N)) SIMD_Vector
 	{
-		template<typename _S, size_t _N> requires IsValid_SIMD_Vector<_S, _N>
+		template<typename FriendS, size_t FriendN> requires IsValid_SIMD_Vector<FriendS, FriendN>
 		friend struct SIMD_Vector;
 
 		using ScalarType = _S;

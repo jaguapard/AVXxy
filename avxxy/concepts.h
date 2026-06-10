@@ -3,6 +3,8 @@
 #include <type_traits>
 #include "utils.h"
 #include <immintrin.h>
+#include <cstdint>
+#include <cstddef>
 
 namespace AVXXY_NAMESPACE
 {
@@ -44,6 +46,13 @@ namespace AVXXY_NAMESPACE
 		//indicates wheter this type is not integral (TODO: limit it only to doubles and floats, and maybe FP16/BF16?)
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool not_int = !std::is_integral_v<T>;
 
+		template<typename T>
+		struct same_size_uint_t
+		{
+			using type = std::conditional_t<sizeof(T) == 8, uint64_t,
+				std::conditional_t<sizeof(T) == 4, uint32_t,
+				std::conditional_t<sizeof(T) == 2, uint16_t, uint8_t>>>;
+		};
 
 		//Maps bit count to smallest unsigned integer type that has greater or equal number of bits
 		template <size_t Size>

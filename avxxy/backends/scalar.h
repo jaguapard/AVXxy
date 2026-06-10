@@ -1,5 +1,7 @@
 #pragma once
 #include "../vector.h"
+#include <cmath>
+#include <bit>
 
 namespace AVXXY_NAMESPACE
 {
@@ -49,8 +51,8 @@ namespace AVXXY_NAMESPACE
 			{
 				SIMD_Vector<S, N> ret;
 				for (size_t i = 0; i < N; ++i)
-					if constexpr (any_int<S>) ret[i] = a[i] % b[i];
-					else ret[i] = std::fmod(a, b);
+					if constexpr (concepts::any_int<S>) ret[i] = a[i] % b[i];
+					else ret[i] = std::fmod(a[i], b[i]);
 				return ret;
 			}
 
@@ -60,7 +62,7 @@ namespace AVXXY_NAMESPACE
 			static SIMD_Vector<S, N> logic_or(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				SIMD_Vector<S, N> ret;
-				using T = same_size_uint_t<S>::type;
+				using T = typename concepts::same_size_uint_t<S>::type;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(std::bit_cast<T>(a[i]) | std::bit_cast<T>(b[i]));
 				return ret;
 			}
@@ -68,7 +70,7 @@ namespace AVXXY_NAMESPACE
 			static SIMD_Vector<S, N> logic_and(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				SIMD_Vector<S, N> ret;
-				using T = same_size_uint_t<S>::type;
+				using T = typename concepts::same_size_uint_t<S>::type;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(std::bit_cast<T>(a[i]) & std::bit_cast<T>(b[i]));
 				return ret;
 			}
@@ -76,7 +78,7 @@ namespace AVXXY_NAMESPACE
 			static SIMD_Vector<S, N> logic_xor(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				SIMD_Vector<S, N> ret;
-				using T = same_size_uint_t<S>::type;
+				using T = typename concepts::same_size_uint_t<S>::type;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(std::bit_cast<T>(a[i]) ^ std::bit_cast<T>(b[i]));
 				return ret;
 			}
@@ -84,7 +86,7 @@ namespace AVXXY_NAMESPACE
 			static SIMD_Vector<S, N> logic_not(const SIMD_Vector<S, N>& a)
 			{
 				SIMD_Vector<S, N> ret;
-				using T = same_size_uint_t<S>::type;
+				using T = typename concepts::same_size_uint_t<S>::type;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(~std::bit_cast<T>(a[i]));
 				return ret;
 			}
@@ -95,7 +97,7 @@ namespace AVXXY_NAMESPACE
 			static SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				SIMD_Vector<S, N> ret;
-				using T = same_size_uint_t<S>::type;
+				using T = typename concepts::same_size_uint_t<S>::type;
 				for (size_t i = 0; i < N; ++i) ret[i] = a[i] << b[i];
 				return ret;
 			}
@@ -104,7 +106,7 @@ namespace AVXXY_NAMESPACE
 			static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				SIMD_Vector<S, N> ret;
-				using T = same_size_uint_t<S>::type;
+				using T = typename concepts::same_size_uint_t<S>::type;
 				for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> b[i];
 				return ret;
 			}
@@ -113,7 +115,7 @@ namespace AVXXY_NAMESPACE
 			static SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a)
 			{
 				SIMD_Vector<float, N> ret;
-				for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt<float>(a[i]);
+				for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(float(a[i]));
 				return ret;
 			}
 			template<typename S, size_t N>
