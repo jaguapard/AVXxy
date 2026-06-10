@@ -251,6 +251,11 @@
   <ItemGroup>
     <ClInclude Include="avxxy\avxxy.h" />
     <ClInclude Include="avxxy\backends.h" />
+    <ClInclude Include="avxxy\backends\avx2.h" />
+    <ClInclude Include="avxxy\backends\avx512.h" />
+    <ClInclude Include="avxxy\backends\scalar.h" />
+    <ClInclude Include="avxxy\backends\sse2.h" />
+    <ClInclude Include="avxxy\backends\sse41.h" />
     <ClInclude Include="avxxy\concepts.h" />
     <ClInclude Include="avxxy\mask.h" />
     <ClInclude Include="avxxy\mask_impl.h" />

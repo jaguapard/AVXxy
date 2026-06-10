@@ -16,6 +16,9 @@
     <Filter Include="Header Files\avxxy">
       <UniqueIdentifier>{98137fee-044f-4b70-acfd-ccc3dad25844}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\avxxy\backends">
+      <UniqueIdentifier>{da4a6e98-fdbe-4fcc-9f31-2c36bbdb55db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="avxxy\avxxy.h">
@@ -44,6 +47,21 @@
     </ClInclude>
     <ClInclude Include="avxxy\vector_impl.h">
       <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\backends\scalar.h">
+      <Filter>Header Files\avxxy\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\backends\sse2.h">
+      <Filter>Header Files\avxxy\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\backends\sse41.h">
+      <Filter>Header Files\avxxy\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\backends\avx2.h">
+      <Filter>Header Files\avxxy\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\backends\avx512.h">
+      <Filter>Header Files\avxxy\backends</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

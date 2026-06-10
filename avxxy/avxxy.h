@@ -6,6 +6,8 @@
 #include "vector.h"
 #include "vector_impl.h"
 
+#include "backends.h"
+
 namespace AVXXY_NAMESPACE
 {
 	typedef SIMD_Mask<8> mask8;
