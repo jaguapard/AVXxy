@@ -3,6 +3,7 @@
 #include "concepts.h"
 #include <algorithm>
 #include <array>
+#include <iostream>
 
 namespace AVXXY_NAMESPACE
 {
@@ -18,6 +19,9 @@ namespace AVXXY_NAMESPACE
 		requires IsValid_SIMD_Vector<_S, _N>
 	struct alignas(std::min<uint32_t>(64, sizeof(_S)* _N)) SIMD_Vector
 	{
+		template<typename _S, size_t _N> requires IsValid_SIMD_Vector<_S, _N>
+		friend struct SIMD_Vector;
+
 		using ScalarType = _S;
 		using Self = SIMD_Vector<_S, _N>;
 
@@ -25,6 +29,7 @@ namespace AVXXY_NAMESPACE
 		static inline constexpr size_t ByteSize = sizeof(ScalarType) * LaneCount;
 		static inline constexpr bool IsSimdVector = true;
 
+		SIMD_Vector() {};
 		const ScalarType& operator[](size_t i) const { return arr[i]; }
 		ScalarType& operator[](size_t i) { return arr[i]; }
 		
@@ -155,4 +160,16 @@ namespace AVXXY_NAMESPACE
 		std::array<ScalarType, LaneCount> arr;
 		//ScalarType arr[LaneCount];
 	};
+
+	template<typename S, size_t N>
+	std::ostream& operator<<(std::ostream& os, const SIMD_Vector<S, N>& a)
+	{
+		for (size_t i = 0; i < N; ++i)
+		{
+			if constexpr (concepts::any_i8<S>) os << int(a[i]);
+			else os << a[i];
+			if (i < N - 1) os << " ";
+		}
+		return os;
+	}
 }
