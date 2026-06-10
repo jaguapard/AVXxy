@@ -52,36 +52,174 @@ namespace AVXXY_NAMESPACE
 				}
 				//split large vectors into halves
 				else if constexpr (MaxSize > 64) return { cvt<To>(a.lo()), cvt<To>(a.hi()) };
+
+				//AVX2 has a ton of holes (absent conversions) that will be plugged separately. Thus, all of the conversions are just sitting here
 				else if constexpr (zmm_sized<TV> || zmm_sized<FV>)
 				{
-					//Truncation is REQUIRED for FP -> int, since we emulate C-style casts, which truncate
-					if constexpr (is_f64<From>)
-					{
-						if constexpr (is_f32<To>) return TV(_mm512_cvtpd_ps(a));
-						else if constexpr (is_i64<To>) return TV(_mm512_cvttpd_epi64(a));
-						else if constexpr (is_u64<To>) return TV(_mm512_cvttpd_epu64(a));
-						else if constexpr (is_i64<To>) return TV(_mm512_cvttpd_epi32(a));
-						else if constexpr (is_u32<To>) return TV(_mm512_cvttpd_epu32(a));
-					}
-					else if constexpr (is_f32<From>)
-					{
-						if constexpr (is_f64<To>) return TV(_mm512_cvtps_pd(a));
-						else if constexpr (is_i64<To>) return TV(_mm512_cvttps_epi64(a));
-						else if constexpr (is_u64<To>) return TV(_mm512_cvttps_epu64(a));
-						else if constexpr (is_i32<To>) return TV(_mm512_cvttps_epi32(a));
-						else if constexpr (is_u32<To>) return TV(_mm512_cvttps_epu32(a));
-					}
-					else if constexpr (any_i64<From>)
-					{
-						if constexpr (is_i64<From> && is_f64<To>) return TV(_mm512_cvtepi64_pd(a));
-						else if constexpr (is_u64<From> && is_f64<To>) return TV(_mm512_cvtepu64_pd(a));
-						else if constexpr (is_i64<From> && is_f32<To>) return TV(_mm512_cvtepi64_ps(a));
-						else if constexpr (is_u64<From> && is_f32<To>) return TV(_mm512_cvtepu64_ps(a));
+					//Truncation is REQUIRED for FP -> int
+					if constexpr (std::is_same_v<From, double> && std::is_same_v<To, uint64_t>)  return TV(_mm512_cvttpd_epu64(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, int64_t>)  return TV(_mm512_cvttpd_epi64(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, float>)  return TV(_mm512_cvtpd_ps(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, uint32_t>)  return TV(_mm512_cvttpd_epu32(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, int32_t>)  return TV(_mm512_cvttpd_epi32(a));
 
-						else if constexpr (any_i32<To>) return TV(_mm512_cvtepi64_epi32(a));
-						else if constexpr (any_i16<To>) return TV(_mm512_cvtepi64_epi16(a));
-						else if constexpr (any_i8<To>) return TV(_mm512_cvtepi64_epi8(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, double>) return TV(_mm512_cvtps_pd(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, uint64_t>) return TV(_mm512_cvttps_epu64(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, int64_t>) return TV(_mm512_cvttps_epi64(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, uint32_t>) return TV(_mm512_cvttps_epu32(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, int32_t>) return TV(_mm512_cvttps_epi32(a));
+					//TODO: FP16 conversion
+					//else if constexpr (std::is_same_v<From, float16_t> && std::is_same_v<To, float>) return TV(_mm512_cvtph_ps(a));
+
+					//only float conversions care about the signedness
+					else if constexpr (std::is_same_v<From, uint64_t> && std::is_same_v<To, double>) return TV(_mm512_cvtepu64_pd(a));
+					else if constexpr (std::is_same_v<From, uint64_t> && std::is_same_v<To, float>) return TV(_mm512_cvtepu64_ps(a));
+					else if constexpr (std::is_same_v<From, int64_t> && std::is_same_v<To, double>) return TV(_mm512_cvtepi64_pd(a));
+					else if constexpr (std::is_same_v<From, int64_t> && std::is_same_v<To, float>) return TV(_mm512_cvtepi64_ps(a));
+					else if constexpr (std::is_same_v<From, uint32_t> && std::is_same_v<To, double>) return TV(_mm512_cvtepu32_pd(a));
+					else if constexpr (std::is_same_v<From, uint32_t> && std::is_same_v<To, float>) return TV(_mm512_cvtepu32_ps(a));
+					else if constexpr (std::is_same_v<From, int32_t> && std::is_same_v<To, double>) return TV(_mm512_cvtepi32_pd(a));
+					else if constexpr (std::is_same_v<From, int32_t> && std::is_same_v<To, float>) return TV(_mm512_cvtepi32_ps(a));
+
+					//integer conversion zone
+					else if constexpr (std::is_integral_v<From> && std::is_integral_v<To>)
+					{
+						//conversion to smaller ints doesn't care about sign
+						if constexpr (sizeof(From) == 8 && sizeof(To) == 4) return TV(_mm512_cvtepi64_epi32(a));
+						else if constexpr (sizeof(From) == 8 && sizeof(To) == 2) return TV(_mm512_cvtepi64_epi16(a));
+						else if constexpr (sizeof(From) == 8 && sizeof(To) == 1) return TV(_mm512_cvtepi64_epi8(a));
+						else if constexpr (sizeof(From) == 4 && sizeof(To) == 2) return TV(_mm512_cvtepi32_epi16(a));
+						else if constexpr (sizeof(From) == 4 && sizeof(To) == 1) return TV(_mm512_cvtepi32_epi8(a));
+						else if constexpr (sizeof(From) == 2 && sizeof(To) == 1) return TV(_mm512_cvtepi16_epi8(a));
+
+						//conversion to bigger DOES care about sign
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 8) return TV(_mm512_cvtepu8_epi64(a));
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 4) return TV(_mm512_cvtepu8_epi32(a));
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 2) return TV(_mm512_cvtepu8_epi16(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 8) return TV(_mm512_cvtepi8_epi64(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 4) return TV(_mm512_cvtepi8_epi32(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 2) return TV(_mm512_cvtepi8_epi16(a));
+
+						else if constexpr (std::is_same_v<From, uint16_t> && sizeof(To) == 8) return TV(_mm512_cvtepu16_epi64(a));
+						else if constexpr (std::is_same_v<From, uint16_t> && sizeof(To) == 4) return TV(_mm512_cvtepu16_epi32(a));
+						else if constexpr (std::is_same_v<From, int16_t> && sizeof(To) == 8) return TV(_mm512_cvtepi16_epi64(a));
+						else if constexpr (std::is_same_v<From, int16_t> && sizeof(To) == 4) return TV(_mm512_cvtepi16_epi32(a));
+
+						else if constexpr (std::is_same_v<From, uint32_t> && sizeof(To) == 8) return TV(_mm512_cvtepu32_epi64(a));
+						else if constexpr (std::is_same_v<From, int32_t> && sizeof(To) == 8) return TV(_mm512_cvtepi32_epi64(a));
 					}
+					else static_assert(always_false_v<To, From>, "Unsupported arguments for SIMD_Vector zmm_cvt");
+				}
+				else if constexpr (ymm_sized<TV> || ymm_sized<FV>)
+				{
+					//Truncation is REQUIRED for FP -> int
+					if constexpr (std::is_same_v<From, double> && std::is_same_v<To, uint64_t>)  return TV(_mm256_cvttpd_epu64(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, int64_t>)  return TV(_mm256_cvttpd_epi64(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, float>)  return TV(_mm256_cvtpd_ps(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, uint32_t>)  return TV(_mm256_cvttpd_epu32(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, int32_t>)  return TV(_mm256_cvttpd_epi32(a));
+
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, double>) return TV(_mm256_cvtps_pd(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, uint64_t>) return TV(_mm256_cvttps_epu64(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, int64_t>) return TV(_mm256_cvttps_epi64(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, uint32_t>) return TV(_mm256_cvttps_epu32(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, int32_t>) return TV(_mm256_cvttps_epi32(a));
+					//else if constexpr (std::is_same_v<From, float16_t> && std::is_same_v<To, float>) return TV(_mm256_cvtph_ps(a));
+
+					//only float conversions care about the signedness
+					else if constexpr (std::is_same_v<From, uint64_t> && std::is_same_v<To, double>) return TV(_mm256_cvtepu64_pd(a));
+					else if constexpr (std::is_same_v<From, uint64_t> && std::is_same_v<To, float>) return TV(_mm256_cvtepu64_ps(a));
+					else if constexpr (std::is_same_v<From, int64_t> && std::is_same_v<To, double>) return TV(_mm256_cvtepi64_pd(a));
+					else if constexpr (std::is_same_v<From, int64_t> && std::is_same_v<To, float>) return TV(_mm256_cvtepi64_ps(a));
+					else if constexpr (std::is_same_v<From, uint32_t> && std::is_same_v<To, double>) return TV(_mm256_cvtepu32_pd(a));
+					else if constexpr (std::is_same_v<From, uint32_t> && std::is_same_v<To, float>) return TV(_mm256_cvtepu32_ps(a));
+					else if constexpr (std::is_same_v<From, int32_t> && std::is_same_v<To, double>) return TV(_mm256_cvtepi32_pd(a));
+					else if constexpr (std::is_same_v<From, int32_t> && std::is_same_v<To, float>) return TV(_mm256_cvtepi32_ps(a));
+
+					//integer conversion zone
+					else if constexpr (std::is_integral_v<From> && std::is_integral_v<To>)
+					{
+						//conversion to smaller ints doesn't care about sign
+						if constexpr (sizeof(From) == 8 && sizeof(To) == 4) return TV(_mm256_cvtepi64_epi32(a));
+						else if constexpr (sizeof(From) == 8 && sizeof(To) == 2) return TV(_mm256_cvtepi64_epi16(a));
+						else if constexpr (sizeof(From) == 8 && sizeof(To) == 1) return TV(_mm256_cvtepi64_epi8(a));
+						else if constexpr (sizeof(From) == 4 && sizeof(To) == 2) return TV(_mm256_cvtepi32_epi16(a));
+						else if constexpr (sizeof(From) == 4 && sizeof(To) == 1) return TV(_mm256_cvtepi32_epi8(a));
+						else if constexpr (sizeof(From) == 2 && sizeof(To) == 1) return TV(_mm256_cvtepi16_epi8(a));
+
+						//conversion to bigger DOES care about sign
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 8) return TV(_mm256_cvtepu8_epi64(a));
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 4) return TV(_mm256_cvtepu8_epi32(a));
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 2) return TV(_mm256_cvtepu8_epi16(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 8) return TV(_mm256_cvtepi8_epi64(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 4) return TV(_mm256_cvtepi8_epi32(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 2) return TV(_mm256_cvtepi8_epi16(a));
+
+						else if constexpr (std::is_same_v<From, uint16_t> && sizeof(To) == 8) return TV(_mm256_cvtepu16_epi64(a));
+						else if constexpr (std::is_same_v<From, uint16_t> && sizeof(To) == 4) return TV(_mm256_cvtepu16_epi32(a));
+						else if constexpr (std::is_same_v<From, int16_t> && sizeof(To) == 8) return TV(_mm256_cvtepi16_epi64(a));
+						else if constexpr (std::is_same_v<From, int16_t> && sizeof(To) == 4) return TV(_mm256_cvtepi16_epi32(a));
+
+						else if constexpr (std::is_same_v<From, uint32_t> && sizeof(To) == 8) return TV(_mm256_cvtepu32_epi64(a));
+						else if constexpr (std::is_same_v<From, int32_t> && sizeof(To) == 8) return TV(_mm256_cvtepi32_epi64(a));
+					}
+					else static_assert(always_false_v<To, From>, "Unsupported arguments for SIMD_Vector ymm_cvt");
+				}
+				else if constexpr (xmm_sized<TV> || xmm_sized<FV>)
+				{
+					//Truncation is REQUIRED for FP -> int
+					if constexpr (std::is_same_v<From, double> && std::is_same_v<To, uint64_t>)  return TV(_mm_cvttpd_epu64(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, int64_t>)  return TV(_mm_cvttpd_epi64(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, float>)  return TV(_mm_cvtpd_ps(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, uint32_t>)  return TV(_mm_cvttpd_epu32(a));
+					else if constexpr (std::is_same_v<From, double> && std::is_same_v<To, int32_t>)  return TV(_mm_cvttpd_epi32(a));
+
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, double>) return TV(_mm_cvtps_pd(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, uint64_t>) return TV(_mm_cvttps_epu64(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, int64_t>) return TV(_mm_cvttps_epi64(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, uint32_t>) return TV(_mm_cvttps_epu32(a));
+					else if constexpr (std::is_same_v<From, float> && std::is_same_v<To, int32_t>) return TV(_mm_cvttps_epi32(a));
+					//TODO: FP16 conversion
+					//else if constexpr (std::is_same_v<From, float16_t> && std::is_same_v<To, float>) return TV(_mm_cvtph_ps(a));
+
+					//only float conversions care about the signedness
+					else if constexpr (std::is_same_v<From, uint64_t> && std::is_same_v<To, double>) return TV(_mm_cvtepu64_pd(a));
+					else if constexpr (std::is_same_v<From, uint64_t> && std::is_same_v<To, float>) return TV(_mm_cvtepu64_ps(a));
+					else if constexpr (std::is_same_v<From, int64_t> && std::is_same_v<To, double>) return TV(_mm_cvtepi64_pd(a));
+					else if constexpr (std::is_same_v<From, int64_t> && std::is_same_v<To, float>) return TV(_mm_cvtepi64_ps(a));
+					else if constexpr (std::is_same_v<From, uint32_t> && std::is_same_v<To, double>) return TV(_mm_cvtepu32_pd(a));
+					else if constexpr (std::is_same_v<From, uint32_t> && std::is_same_v<To, float>) return TV(_mm_cvtepu32_ps(a));
+					else if constexpr (std::is_same_v<From, int32_t> && std::is_same_v<To, double>) return TV(_mm_cvtepi32_pd(a));
+					else if constexpr (std::is_same_v<From, int32_t> && std::is_same_v<To, float>) return TV(_mm_cvtepi32_ps(a));
+
+					//integer conversion zone
+					else if constexpr (std::is_integral_v<From> && std::is_integral_v<To>)
+					{
+						//conversion to smaller ints doesn't care about sign
+						if constexpr (sizeof(From) == 8 && sizeof(To) == 4) return TV(_mm_cvtepi64_epi32(a));
+						else if constexpr (sizeof(From) == 8 && sizeof(To) == 2) return TV(_mm_cvtepi64_epi16(a));
+						else if constexpr (sizeof(From) == 8 && sizeof(To) == 1) return TV(_mm_cvtepi64_epi8(a));
+						else if constexpr (sizeof(From) == 4 && sizeof(To) == 2) return TV(_mm_cvtepi32_epi16(a));
+						else if constexpr (sizeof(From) == 4 && sizeof(To) == 1) return TV(_mm_cvtepi32_epi8(a));
+						else if constexpr (sizeof(From) == 2 && sizeof(To) == 1) return TV(_mm_cvtepi16_epi8(a));
+
+						//conversion to bigger DOES care about sign
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 8) return TV(_mm_cvtepu8_epi64(a));
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 4) return TV(_mm_cvtepu8_epi32(a));
+						else if constexpr (std::is_same_v<From, uint8_t> && sizeof(To) == 2) return TV(_mm_cvtepu8_epi16(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 8) return TV(_mm_cvtepi8_epi64(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 4) return TV(_mm_cvtepi8_epi32(a));
+						else if constexpr (std::is_same_v<From, int8_t> && sizeof(To) == 2) return TV(_mm_cvtepi8_epi16(a));
+
+						else if constexpr (std::is_same_v<From, uint16_t> && sizeof(To) == 8) return TV(_mm_cvtepu16_epi64(a));
+						else if constexpr (std::is_same_v<From, uint16_t> && sizeof(To) == 4) return TV(_mm_cvtepu16_epi32(a));
+						else if constexpr (std::is_same_v<From, int16_t> && sizeof(To) == 8) return TV(_mm_cvtepi16_epi64(a));
+						else if constexpr (std::is_same_v<From, int16_t> && sizeof(To) == 4) return TV(_mm_cvtepi16_epi32(a));
+
+						else if constexpr (std::is_same_v<From, uint32_t> && sizeof(To) == 8) return TV(_mm_cvtepu32_epi64(a));
+						else if constexpr (std::is_same_v<From, int32_t> && sizeof(To) == 8) return TV(_mm_cvtepi32_epi64(a));
+					}
+					else static_assert(always_false_v<To, From>, "Unsupported arguments for SIMD_Vector xmm_cvt");
 				}
 			}
 
