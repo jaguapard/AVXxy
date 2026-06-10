@@ -14,7 +14,7 @@ namespace AVXXY_NAMESPACE
 		(concepts::ymm_sized<Vec> && std::is_same_v<IntrinVec, typename concepts::reg256<typename Vec::ScalarType>::type>) ||
 		(concepts::zmm_sized<Vec> && std::is_same_v<IntrinVec, typename concepts::reg512<typename Vec::ScalarType>::type>);
 
-	template<typename _S, size_t _N, typename Backend = backends::current>
+	template<typename _S, size_t _N>
 		requires IsValid_SIMD_Vector<_S, _N>
 	struct alignas(std::min<uint32_t>(64, sizeof(_S)* _N)) SIMD_Vector
 	{
@@ -28,17 +28,30 @@ namespace AVXXY_NAMESPACE
 		const ScalarType& operator[](size_t i) const { return arr[i]; }
 		ScalarType& operator[](size_t i) { return arr[i]; }
 		
-		SIMD_Vector<ScalarType, LaneCount / 2> lo() const 
+		SIMD_Vector<ScalarType, LaneCount / 2> lo() const
+			requires (LaneCount >= 4)
 		{
 			SIMD_Vector<ScalarType, LaneCount / 2> ret;
 			memcpy(ret.arr.data(), arr.data(), sizeof(ret));
 			return ret;
 		}
 		SIMD_Vector<ScalarType, LaneCount / 2> hi() const
+			requires (LaneCount >= 4)
 		{
 			SIMD_Vector<ScalarType, LaneCount / 2> ret;
 			memcpy(ret.arr.data(), arr.data() + LaneCount / 2, sizeof(ret));
 			return ret;
+		}
+
+		ScalarType lo() const
+			requires (LaneCount == 2)
+		{
+			return arr[0];
+		}
+		ScalarType hi() const
+			requires (LaneCount == 2)
+		{
+			return arr[1];
 		}
 
 		//Broadcasts a scalar value to all lanes of vector. The input value is converted to vector's intrinsic type before broadcasting
@@ -56,6 +69,15 @@ namespace AVXXY_NAMESPACE
 		__forceinline SIMD_Vector(const T& intrinsicVec) requires(concepts::IsIntrinsicVector<T>&& ConversionToNativeVectorLegal<Self, T>)
 		{
 			memcpy(arr.data(), &intrinsicVec, std::min(sizeof(Self), sizeof(T)));
+		}
+
+		//Constructs vector from halves
+		template<typename S, size_t N>
+		requires (N*2 == LaneCount)
+		__forceinline SIMD_Vector(const SIMD_Vector<S, N>& lo, const SIMD_Vector<S, N>& hi)
+		{
+			memcpy(arr.data(), lo.arr.data(), sizeof(arr) / 2);
+			memcpy(arr.data() + N, hi.arr.data(), sizeof(arr) / 2);
 		}
 
 		//Represents vector as it's intrinsic type.  The intrinsic vector type is in the same size class as this vector:
