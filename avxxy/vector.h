@@ -100,6 +100,19 @@ namespace AVXXY_NAMESPACE
 			return ret;
 		}
 
+		//Reinterprets this vector as another SIMD_Vector.
+		// If returned vector's size is smaller than this vector, only the lower bits are used. 
+		// If returned vector is larger than this vector, then upper bits of the returned vector are undefined.
+		/*
+		template<typename T>
+		requires (T::IsSimdVector)
+		T vcast() const
+		{
+			T ret;
+			memcpy(ret.arr.data(), arr.data(), std::min(sizeof(ret), sizeof(*this)));
+			return ret;
+		}*/
+
 		//do NOT change these to variadic templates. We want users to see that the type has ctor from N scalars, not guess while typing. So something similar to _mm*_setr_* instead of printf
 		template <typename T0, typename T1>
 			requires (LaneCount == 2 && concepts::AllAreScalarTypes<T0,T1>)

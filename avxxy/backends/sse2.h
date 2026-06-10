@@ -1,6 +1,7 @@
 #pragma once
 #include "../vector.h"
 #include "scalar.h"
+#include "../meta_ops.h"
 
 namespace AVXXY_NAMESPACE
 {

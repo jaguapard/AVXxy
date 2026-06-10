@@ -63,6 +63,12 @@
     <ClInclude Include="avxxy\backends\avx512.h">
       <Filter>Header Files\avxxy\backends</Filter>
     </ClInclude>
+    <ClInclude Include="avxxy\meta_ops.h">
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
+    <ClInclude Include="avxxy\meta_ops_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
