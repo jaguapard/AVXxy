@@ -61,7 +61,7 @@ namespace AVXXY_NAMESPACE
 
 				//TODO: limit bitwise operations to int types?
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> eval(op_or,const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_or, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -69,7 +69,7 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> eval(op_and,const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_and, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -77,7 +77,7 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> eval(op_xor,const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_xor, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -85,7 +85,7 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> eval(op_not,const SIMD_Vector<S, N>& a)
+				static SIMD_Vector<S, N> eval(op_not, const SIMD_Vector<S, N>& a)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -96,7 +96,7 @@ namespace AVXXY_NAMESPACE
 
 				template<typename S, size_t N, typename I>
 					requires (concepts::any_int<S>&& concepts::any_int<I>)
-				static SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+				static SIMD_Vector<S, N> eval(op_shl, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -105,7 +105,7 @@ namespace AVXXY_NAMESPACE
 				}
 				template<typename S, size_t N, typename I>
 					requires (concepts::any_int<S>&& concepts::any_int<I>)
-				static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+				static SIMD_Vector<S, N> eval(op_shr, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -114,14 +114,14 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-				static SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a)
+				static SIMD_Vector<float, N> eval(op_sqrtf, const SIMD_Vector<S, N>& a)
 				{
 					SIMD_Vector<float, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(float(a[i]));
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a)
+				static SIMD_Vector<double, N> eval(op_sqrtd, const SIMD_Vector<S, N>& a)
 				{
 					SIMD_Vector<double, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(double(a[i]));
@@ -130,7 +130,7 @@ namespace AVXXY_NAMESPACE
 
 				template<typename S, size_t N, typename I>
 					requires (concepts::any_int<I>)
-				static SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
+				static SIMD_Vector<S, N> eval(op_permx, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = a[ind[i] & (N - 1)];
@@ -138,7 +138,7 @@ namespace AVXXY_NAMESPACE
 				}
 				template<typename S, size_t N, typename I>
 					requires (concepts::any_int<I>)
-				static SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_permx2, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i)
@@ -151,7 +151,7 @@ namespace AVXXY_NAMESPACE
 
 				template<typename S, size_t N>
 					requires (std::is_floating_point_v<S>)
-				static SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a)
+				static SIMD_Vector<S, N> eval(op_floor, const SIMD_Vector<S, N>& a)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = std::floor(a[i]);
@@ -159,7 +159,7 @@ namespace AVXXY_NAMESPACE
 				}
 				template<typename S, size_t N>
 					requires (std::is_floating_point_v<S>)
-				static SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a)
+				static SIMD_Vector<S, N> eval(op_ceil, const SIMD_Vector<S, N>& a)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = std::ceil(a[i]);
@@ -168,7 +168,7 @@ namespace AVXXY_NAMESPACE
 
 
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> load(const void* p, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes, const SIMD_Vector<S, N>& src = 0)
+				static SIMD_Vector<S, N> eval(op_load<S, N>, const void* p, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes, const SIMD_Vector<S, N>& src = 0)
 				{
 					SIMD_Vector<S, N> ret;
 					const S* sp = static_cast<const S*>(p);
@@ -176,14 +176,14 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static void store(SIMD_Vector<S, N> vec, void* p, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes)
+				static void eval(op_store, SIMD_Vector<S, N> vec, void* p, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes)
 				{
 					S* sp = static_cast<S*>(p);
 					for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = vec[i];
 				}
 				template<typename S, size_t N, size_t Scale, typename I>
 					requires (concepts::any_int<I>)
-				static SIMD_Vector<S, N> gather(const void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes, const SIMD_Vector<S, N>& src = 0)
+				static SIMD_Vector<S, N> eval(op_gather<S, N, Scale>, const void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes, const SIMD_Vector<S, N>& src = 0)
 				{
 					SIMD_Vector<S, N> ret;
 					size_t addr = size_t(base);
@@ -192,7 +192,7 @@ namespace AVXXY_NAMESPACE
 				}
 				template<typename S, size_t N, size_t Scale, typename I>
 					requires (concepts::any_int<I>)
-				static void scatter(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes)
+				static void eval(op_scatter<Scale>, const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes)
 				{
 					size_t addr = size_t(base);
 					for (size_t i = 0; i < N; ++i) if (mask[i]) *(S*)(addr + Scale * ind[i]) = v[i];
@@ -200,7 +200,7 @@ namespace AVXXY_NAMESPACE
 
 
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> compress(const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
+				static SIMD_Vector<S, N> eval(op_compress, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
 				{
 					SIMD_Vector<S, N> ret;
 					size_t j = 0;
@@ -210,7 +210,7 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+				static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? ifBitSet[i] : ifBitClear[i];
@@ -218,53 +218,53 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> unpacklo(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_unpacklo, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					return unpack_base<S, N, true>(a, b);
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_unpackhi, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					return unpack_base<S, N, false>(a, b);
 				}
 
 				template<typename S, size_t N>
-				static SIMD_BitMask<N> cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_BitMask<N> eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_BitMask<N> ret = 0;
 					for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] == b[i]);
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_BitMask<N> cmp_not_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_BitMask<N> eval(op_cmpneq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_BitMask<N> ret = 0;
 					for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] != b[i]);
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_BitMask<N> cmp_less(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_BitMask<N> eval(op_cmplt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_BitMask<N> ret = 0;
 					for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] < b[i]);
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_BitMask<N> cmp_less_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_BitMask<N> eval(op_cmple, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_BitMask<N> ret = 0;
 					for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] <= b[i]);
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_BitMask<N> cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_BitMask<N> eval(op_cmpgt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_BitMask<N> ret = 0;
 					for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] > b[i]);
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_BitMask<N> cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_BitMask<N> eval(op_cmpge, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_BitMask<N> ret = 0;
 					for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] >= b[i]);
@@ -273,7 +273,7 @@ namespace AVXXY_NAMESPACE
 
 
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a)
+				static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
 				{
 					if constexpr (std::is_unsigned_v<S>) return a;
 					SIMD_Vector<S, N> ret;
@@ -281,14 +281,14 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> min(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_min, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = std::min(a[i], b[i]);
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> max(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_max, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = std::max(a[i], b[i]);
@@ -451,14 +451,14 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template <size_t N>
-				static SIMD_Vector<uint16_t, N> vec_ps2ph(const SIMD_Vector<float, N>& a)
+				static SIMD_Vector<uint16_t, N> eval(op_fp32_to_fp16, const SIMD_Vector<float, N>& a)
 				{
 					SIMD_Vector<uint16_t, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = fp32_to_fp16(a[i]);
 					return ret;
 				}
 				template <size_t N>
-				static SIMD_Vector<float, N> vec_ph2ps(const SIMD_Vector<uint16_t, N>& a)
+				static SIMD_Vector<float, N> eval(op_fp16_to_fp32, const SIMD_Vector<uint16_t, N>& a)
 				{
 					SIMD_Vector<float, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = fp16_to_fp32(a[i]);
