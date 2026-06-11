@@ -49,7 +49,7 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> mod(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_mod, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i)
@@ -61,7 +61,7 @@ namespace AVXXY_NAMESPACE
 
 				//TODO: limit bitwise operations to int types?
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> logic_or(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_or,const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -69,7 +69,7 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> logic_and(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_and,const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -77,7 +77,7 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> logic_xor(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_xor,const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
@@ -85,7 +85,7 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> logic_not(const SIMD_Vector<S, N>& a)
+				static SIMD_Vector<S, N> eval(op_not,const SIMD_Vector<S, N>& a)
 				{
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
