@@ -2,7 +2,7 @@
 #include "include/avxxy.h"
 
 using namespace AVXXY_NAMESPACE;
-
+using namespace internals;
 int main()
 {
 	char buf[64] = { 0 };
@@ -17,6 +17,9 @@ int main()
 
 	std::cout << "Read as f32x16: " << read << "\n";
 
+	//This is not how users will use it, but they can if they want to be really specific. This will be dressed in much nicer calls, Dispatcher and tags should be basically invisible to users
+	f32x16 read_x2 = Dispatcher<FS_current>::run(op_add{}, read, read);
+	std::cout << "Read + read as f32x16: " << read_x2 << "\n";
 
 	system("pause");
 	return 0;
