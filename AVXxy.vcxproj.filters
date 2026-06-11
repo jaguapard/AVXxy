@@ -35,5 +35,8 @@
     <ClInclude Include="include\utils.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\concepts.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
