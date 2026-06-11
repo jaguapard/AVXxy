@@ -32,5 +32,8 @@
     <ClInclude Include="avxxy\SIMD_Vector.h">
       <Filter>Header Files\avxxy</Filter>
     </ClInclude>
+    <ClInclude Include="avxxy\utils.h">
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
