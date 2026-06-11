@@ -259,6 +259,8 @@
     <ClInclude Include="include\avxxy.h" />
     <ClInclude Include="include\concepts.h" />
     <ClInclude Include="include\namespace.h" />
+    <ClInclude Include="include\SIMD_BitMask.h" />
+    <ClInclude Include="include\SIMD_BitMask_impl.h" />
     <ClInclude Include="include\SIMD_Vector.h" />
     <ClInclude Include="include\utils.h" />
   </ItemGroup>

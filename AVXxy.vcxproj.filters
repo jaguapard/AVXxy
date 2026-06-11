@@ -38,5 +38,11 @@
     <ClInclude Include="include\concepts.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\SIMD_BitMask.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SIMD_BitMask_impl.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
