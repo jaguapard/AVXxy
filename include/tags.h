@@ -5,7 +5,9 @@ namespace AVXXY_NAMESPACE
 {
 	namespace internals
 	{
+		template <typename To> struct op_cvt {};
 		struct op_add {};
 		struct op_sub {};
+
 	}
 }

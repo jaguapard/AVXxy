@@ -20,7 +20,7 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename To, size_t N, typename From>
-				static SIMD_Vector<To, N> cvt(const SIMD_Vector<From, N>& a)
+				static SIMD_Vector<To, N> eval(op_cvt<To>, const SIMD_Vector<From, N>& a)
 				{
 					SIMD_Vector<To, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = a[i];
