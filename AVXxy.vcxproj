@@ -256,10 +256,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="avxxy\avxxy.h" />
-    <ClInclude Include="avxxy\namespace.h" />
-    <ClInclude Include="avxxy\SIMD_Vector.h" />
-    <ClInclude Include="avxxy\utils.h" />
+    <ClInclude Include="include\avxxy.h" />
+    <ClInclude Include="include\namespace.h" />
+    <ClInclude Include="include\SIMD_Vector.h" />
+    <ClInclude Include="include\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
