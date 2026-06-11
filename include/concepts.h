@@ -23,6 +23,7 @@ namespace AVXXY_NAMESPACE
 		template <typename T> inline constexpr bool ymm_sized = T::IsSimdVector && inRange(sizeof(T), 17, 32);
 		//indicates wheter the type is SIMD vector that fits only into xmm registers (less than or equal to 16 bytes)
 		template <typename T> inline constexpr bool xmm_sized = T::IsSimdVector && inRange(sizeof(T), 0, 16);
+
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_f32 = std::is_same_v<T, float>;
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_f64 = std::is_same_v<T, double>;
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_i64 = std::is_same_v<T, int64_t>;
