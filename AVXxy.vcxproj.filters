@@ -26,5 +26,8 @@
     <ClInclude Include="avxxy\namespace.h">
       <Filter>Header Files\avxxy</Filter>
     </ClInclude>
+    <ClInclude Include="avxxy\avxxy.h">
+      <Filter>Header Files\avxxy</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
