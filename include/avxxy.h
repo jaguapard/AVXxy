@@ -1,9 +1,9 @@
 #pragma once
 #include "namespace.h"
+#include "SIMD_Vector.h"
 
 namespace AVXXY_NAMESPACE
 {
-	/*
 	typedef SIMD_Vector<int8_t, 2> i8x2;
 	typedef SIMD_Vector<int8_t, 4> i8x4;
 	typedef SIMD_Vector<int8_t, 8> i8x8;
@@ -107,5 +107,4 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Vector<uint64_t, 8> zmm_u64;
 	typedef SIMD_Vector<float, 16> zmm_f32;
 	typedef SIMD_Vector<double, 8> zmm_f64;
-	*/
 }
