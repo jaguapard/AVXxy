@@ -15,7 +15,7 @@ namespace AVXXY_NAMESPACE
 			{
 				template<typename S, size_t N>
 				static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
-					requires (sizeof(S) < 4 && FS.AVX512.BW && (concepts::xmm_sized<SIMD_Vector<S,N>> || concepts::ymm_sized<SIMD_Vector<S,N>>))
+					requires (sizeof(S) < 4 && FS.has(AVX512_BW) && (concepts::xmm_sized<SIMD_Vector<S,N>> || concepts::ymm_sized<SIMD_Vector<S,N>>))
 				{
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
@@ -28,7 +28,7 @@ namespace AVXXY_NAMESPACE
 
 				template<typename S, size_t N>
 				static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
-					requires (sizeof(S) >= 4 && FS.AVX512.F && (concepts::xmm_sized<SIMD_Vector<S, N>> || concepts::ymm_sized<SIMD_Vector<S, N>>))
+					requires (sizeof(S) >= 4 && FS.has(AVX512_F) && (concepts::xmm_sized<SIMD_Vector<S, N>> || concepts::ymm_sized<SIMD_Vector<S, N>>))
 				{
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
@@ -45,7 +45,7 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N, size_t Scale, typename I>
-					requires (FS.AVX512.F && concepts::any_int<I> && sizeof(S) >= 4 && std::max(sizeof(SIMD_Vector<S, N>), sizeof(SIMD_Vector<I, N>)) <= 32)
+					requires (FS.has(AVX512_F) && concepts::any_int<I> && sizeof(S) >= 4 && std::max(sizeof(SIMD_Vector<S, N>), sizeof(SIMD_Vector<I, N>)) <= 32)
 				static SIMD_Vector<S, N> eval(op_gather<S, N, Scale>, const void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes, const SIMD_Vector<S, N>& src = 0)
 				{
 					using namespace concepts;
