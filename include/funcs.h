@@ -23,9 +23,6 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N, typename I> SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind);
 	template<typename S, size_t N, typename I> SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind);
 
-	template<typename S, size_t N> SIMD_Vector<S, N / 2> upper_half(const SIMD_Vector<S, N>& a);
-	template<typename S, size_t N> SIMD_Vector<S, N / 2> lower_half(const SIMD_Vector<S, N>& a);
-
 	template<typename S, size_t N> SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a);
 	template<typename S, size_t N> SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a);
 
