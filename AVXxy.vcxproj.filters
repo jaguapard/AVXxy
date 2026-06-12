@@ -59,5 +59,8 @@
     <ClInclude Include="include\funcs.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\funcs_impl.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
