@@ -100,4 +100,5 @@ namespace AVXXY_NAMESPACE
 		memcpy(&ret, &value, std::min(sizeof(ret), sizeof(value)));
 		return ret;
 	}
+
 }
