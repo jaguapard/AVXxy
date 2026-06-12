@@ -58,6 +58,48 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
+				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S,N>) > 32)
+				static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
+				{
+					using namespace concepts;
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { abs(a.lo()), abs(b.lo()) };
+					else if constexpr (is_f64<S>) return _mm512_abs_pd(a);
+					else if constexpr (is_f32<S>) return _mm512_abs_ps(a);
+					else if constexpr (is_i64<S>) return _mm512_abs_epi64(a);
+					else if constexpr (is_i32<S>) return _mm512_abs_epi32(a);					
+					else static_assert(always_false_v<S>);
+				}
+
+				template<typename S, size_t N>
+					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) > 32)
+				static SIMD_Vector<S, N> eval(op_min, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { min(a.lo(), b.lo()), min(a.hi(),b.hi()) };
+					else if constexpr (is_f64<S>) return _mm512_min_pd(a, b);
+					else if constexpr (is_f32<S>) return _mm512_min_ps(a, b);
+					else if constexpr (is_i64<S>) return _mm512_min_epi64(a, b);
+					else if constexpr (is_u64<S>) return _mm512_min_epu64(a, b);
+					else if constexpr (is_i32<S>) return _mm512_min_epi32(a, b);
+					else if constexpr (is_u32<S>) return _mm512_min_epu32(a, b);					
+					else static_assert(always_false_v<S>);
+				}
+				template<typename S, size_t N>
+					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) > 32)
+				static SIMD_Vector<S, N> eval(op_max, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { max(a.lo(), b.lo()), max(a.hi(),b.hi()) };
+					else if constexpr (is_f64<S>) return _mm512_max_pd(a, b);
+					else if constexpr (is_f32<S>) return _mm512_max_ps(a, b);
+					else if constexpr (is_i32<S>) return _mm512_max_epi32(a, b);
+					else if constexpr (is_u32<S>) return _mm512_max_epu32(a, b);
+					else if constexpr (is_i64<S>) return _mm512_max_epi64(a, b);
+					else if constexpr (is_u64<S>) return _mm512_max_epu64(a, b);
+					else static_assert(always_false_v<S>);
+				}
+
+				template<typename S, size_t N>
 				static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
 					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) > 32)
 				{
