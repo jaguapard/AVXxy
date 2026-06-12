@@ -20,6 +20,7 @@ namespace AVXXY_NAMESPACE
 					using namespace concepts;
 					if constexpr (any_i16<S>) return _mm512_mask_mov_epi16(ifBitClear, mask, ifBitSet);
 					else if constexpr (any_i8<S>) return _mm512_mask_mov_epi8(ifBitClear, mask, ifBitSet);
+					else static_assert(always_false_v<S>);
 				}
 			};
 		}
