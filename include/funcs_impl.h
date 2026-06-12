@@ -92,4 +92,12 @@ namespace AVXXY_NAMESPACE
 		return internals::DefaultDispatcher::run(internals::op_abs{}, a);
 	}
 	
+	template<typename T, typename S, size_t N>
+	//	requires (T::IsSimdVector)
+	inline T vcast(const SIMD_Vector<S, N>& value)
+	{
+		T ret;
+		memcpy(&ret, &value, std::min(sizeof(ret), sizeof(value)));
+		return ret;
+	}
 }
