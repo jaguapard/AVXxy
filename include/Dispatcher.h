@@ -19,9 +19,9 @@ namespace AVXXY_NAMESPACE
 		public:
 			static inline constexpr FeatureSet FeatureSet = FS;
 			using order = std::tuple<
-				std::conditional_t<FS.AVX512.BW, ISA::AVX512BW, Dummy>,
-				std::conditional_t<FS.AVX512.F, ISA::AVX512F, Dummy>, 
-				ISA::Scalar>;
+				std::conditional_t<FS.AVX512.BW, ISA::AVX512BW<FS>, Dummy>,
+				std::conditional_t<FS.AVX512.F, ISA::AVX512F<FS>, Dummy>, 
+				ISA::Scalar<FS>>;
 
 			//Dispatches operation through this dispatcher. Attempts to pick best available implementation for target operation respecting template argument feature set limitations
 			template<typename Op, typename... Args>
