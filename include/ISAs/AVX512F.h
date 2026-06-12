@@ -43,6 +43,20 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) > 32)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 64) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+					else if constexpr (is_f64<S>) return _mm512_mul_pd(a, b);
+					else if constexpr (is_f32<S>) return _mm512_mul_ps(a, b);
+					else if constexpr (any_i64<S>) return _mm512_mullox_epi64(a, b);
+					else if constexpr (any_i32<S>) return _mm512_mullo_epi32(a, b);
+					else static_assert(always_false_v<S>);
+				}
+
+				template<typename S, size_t N>
 				static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
 					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) > 32)
 				{
