@@ -44,5 +44,16 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::DefaultDispatcher::run(internals::op_not{}, a);
 	}
+
+	template<typename S, size_t N, typename I>
+	inline SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
+	{
+		return internals::DefaultDispatcher::run(internals::op_shl{}, a, amount);
+	}
+	template<typename S, size_t N, typename I>
+	inline SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
+	{
+		return internals::DefaultDispatcher::run(internals::op_shr{}, a, amount);
+	}
 	
 }
