@@ -33,14 +33,14 @@ namespace AVXXY_NAMESPACE
 	//For floating point to integer conversions, the input vector is truncated
 	//For integer to bigger integer conversions, the input vector is sign or zero extended, depending on input signedness
 	//For integer to smaller integer conversions, the input vector is wrapped around small integer's max value (TODO: is it true?)
-	template<typename To, size_t N, typename From> SIMD_Vector<To, N> vec_cvt(const SIMD_Vector<From, N>& value);
+	template<typename To, size_t N, typename From> SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value);
 	template<typename S, size_t N> SIMD_Vector<S, N * 2> concat(const SIMD_Vector<S, N>& to, const SIMD_Vector<S, N>& what);
 	template<size_t N> SIMD_BitMask<N * 2> concat_masks(const SIMD_BitMask<N>& to, const SIMD_BitMask<N>& what);
 
 	//Reinterprets value as vector of other type and returns the result.
 	//If returned vector's size is smaller than input, input's upper bits are discarded
 	//If returned vector's size is bigger than input, upper bits of returned value are undefined.
-	template<typename T, typename S, size_t N> T reinterpret(const SIMD_Vector<S, N>& value);
+	template<typename T, typename S, size_t N> requires (T::IsSimdVector) T vcast(const SIMD_Vector<S, N>& value);
 
 	//Extracts Part'th part of size (vector size)/PartCount from input vector and returns the result.
 	//For example, to extract third quarter of a vector, call extract<2,4> (2, because indices are starting from 0)
@@ -96,9 +96,9 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N> SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 
 	//Converts vector of half-precision (FP16) floating point numbers to single precision (FP32)
-	template <typename S, size_t N> SIMD_Vector<float, N> vec_cvt_ph2ps(const SIMD_Vector<S, N>& a);
+	template <typename S, size_t N> SIMD_Vector<float, N> vcvt_fp16_fp32(const SIMD_Vector<S, N>& a);
 	//Converts vector of single precision floating point numbers (FP32) to half-precision (FP16)
-	template <size_t N> SIMD_Vector<uint16_t, N> vec_cvt_ps2ph(const SIMD_Vector<float, N>& a);
+	template <size_t N> SIMD_Vector<uint16_t, N> vcvt_fp32_fp16(const SIMD_Vector<float, N>& a);
 
 	template <typename S, size_t N> SIMD_Vector<S, N> compress(const typename SIMD_Vector<S, N>::MaskType& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0);
 }
