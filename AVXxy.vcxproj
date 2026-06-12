@@ -278,6 +278,11 @@
     <ClInclude Include="include\tags.h" />
     <ClInclude Include="include\utils.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="docs\Technicals.md" />
+    <None Include="README.md" />
+    <None Include="TECHICALS.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
