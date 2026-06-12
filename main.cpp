@@ -40,6 +40,7 @@ int main()
 	i32x16 cvt = Dispatcher<FS_current>::run(op_cvt<int>{}, read_x2);
 	std::cout << "Read * 2 as ints: " << cvt << "\n";
 
+	auto div = read / read;
 	
 	auto mask_m = mask_mov(f32x64(56), 0x5555555555555555, ff);
 	std::cout << "Mask mov: " << mask_m << "\n";
