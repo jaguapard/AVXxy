@@ -68,6 +68,22 @@ namespace AVXXY_NAMESPACE
 		return internals::DefaultDispatcher::run(internals::op_permx2{}, a, b, ind);
 	}
 
-	
+	template<typename S, size_t N>
+	inline SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a)
+	{
+		return internals::DefaultDispatcher::run(internals::op_sqrtf{}, a);
+	}
+
+	template<typename S, size_t N>
+	inline SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a)
+	{
+		return internals::DefaultDispatcher::run(internals::op_sqrtd{}, a);
+	}
+
+	template<typename S, size_t N>
+	inline SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a)
+	{
+		return internals::DefaultDispatcher::run(internals::op_abs{}, a);
+	}
 	
 }
