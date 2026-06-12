@@ -41,5 +41,8 @@ namespace AVXXY_NAMESPACE
 				else static_assert(dependent_false_v<Op, Args...>, "AVXxy dispatcher: no implementation exists for operation");
 			}
 		};
+
+		//Dispatcher that uses current feature set.
+		using DefaultDispatcher = Dispatcher<FS_current>;
 	}
 }
