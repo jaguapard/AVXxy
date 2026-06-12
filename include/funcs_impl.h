@@ -99,12 +99,14 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N>
+	requires (std::is_floating_point_v<S>)
 	__forceinline SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a)
 	{
 		return internals::DefaultDispatcher::run(internals::op_floor{}, a);
 	}
 
 	template<typename S, size_t N>
+		requires (std::is_floating_point_v<S>)
 	__forceinline SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a)
 	{
 		return internals::DefaultDispatcher::run(internals::op_ceil{}, a);
@@ -129,7 +131,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename T, typename S, size_t N>
-	//	requires (T::IsSimdVector)
+		requires (T::IsSimdVector)
 	__forceinline T vcast(const SIMD_Vector<S, N>& value)
 	{
 		T ret;
@@ -167,7 +169,7 @@ namespace AVXXY_NAMESPACE
 		return internals::DefaultDispatcher::run(internals::op_store{}, v, p, mask);
 	}
 
-	template<typename S, size_t N, size_t Scale, typename I>
+	template<typename S, size_t N, size_t Scale, typename I, bool garbageParameterToPreventCircularTemplateDontTouchThis>
 	__forceinline SIMD_Vector<S, N> gather(const void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& src)
 	{
 		return internals::DefaultDispatcher::run(internals::op_gather<S, N, Scale>{}, base, ind, mask, src);
