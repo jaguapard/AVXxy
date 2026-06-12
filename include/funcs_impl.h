@@ -101,4 +101,21 @@ namespace AVXXY_NAMESPACE
 		return ret;
 	}
 
+	template<typename S, size_t N>
+	inline SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+	{
+		return internals::DefaultDispatcher::run(internals::op_mask_mov{}, ifBitClear, mask, ifBitSet);
+	}
+
+	template<typename S, size_t N>
+	inline SIMD_Vector<S, N> maskz_mov(const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+	{
+		return mask_mov(SIMD_Vector<S, N>(0), mask, ifBitSet);
+	}
+
+	template<typename S, size_t N>
+	inline SIMD_Vector<S, N> blend(const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitClear, const SIMD_Vector<S, N>& ifBitSet)
+	{
+		return mask_mov(ifBitClear, mask, ifBitSet);
+	}
 }
