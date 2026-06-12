@@ -20,7 +20,7 @@ namespace AVXXY_NAMESPACE
 				{
 					using namespace concepts;
 					if constexpr (is_f64<S>) return _mm512_mask_mov_pd(ifBitClear, mask, ifBitSet);
-					else if constexpr (is_f64<S>) return _mm512_mask_mov_ps(ifBitClear, mask, ifBitSet);
+					else if constexpr (is_f32<S>) return _mm512_mask_mov_ps(ifBitClear, mask, ifBitSet);
 					else if constexpr (any_i64<S>) return _mm512_mask_mov_epi64(ifBitClear, mask, ifBitSet);
 					else if constexpr (any_i32<S>) return _mm512_mask_mov_epi32(ifBitClear, mask, ifBitSet);
 				}
