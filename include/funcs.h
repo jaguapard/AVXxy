@@ -5,11 +5,7 @@ namespace AVXXY_NAMESPACE
 {
 	template<typename S, size_t N> SIMD_Vector<S, N> add(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 	template<typename S, size_t N> SIMD_Vector<S, N> sub(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
-	//template<typename S, size_t N> SIMD_Vector<S, N> sub(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const typename SIMD_Vector<S,N>::MaskType& mask);
-	//template<typename S, size_t N> SIMD_Vector<S, N> sub(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const typename SIMD_Vector<S,N>::MaskType& mask, const SIMD_Vector<S,N>& src);
 	template<typename S, size_t N> SIMD_Vector<S, N> mul(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
-	//template<typename S, size_t N> SIMD_Vector<S, N> mul(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const typename SIMD_Vector<S,N>::MaskType& mask);
-	//template<typename S, size_t N> SIMD_Vector<S, N> mul(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const typename SIMD_Vector<S,N>::MaskType& mask, const SIMD_Vector<S,N>& src);
 
 	//Performs divison of two vectors and returns the result
 	//For integer types, the division is emulated by floating point divison of size large enough to guarantee the same result
@@ -88,9 +84,6 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N> typename SIMD_Vector<S, N>::MaskType cmp_less_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 	template<typename S, size_t N> typename SIMD_Vector<S, N>::MaskType cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 	template<typename S, size_t N> typename SIMD_Vector<S, N>::MaskType cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
-
-	//Converts mask to mask register and returns the result. Each vector's element is set to bitwise all ones for elements correcsponding to set mask bits, or bitwize zero otherwise.
-	template<typename S, size_t N> SIMD_Vector<S, N> mask2vec(const SIMD_BitMask<N>& mask);
 
 	template<typename S, size_t N> SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a);
 	template<typename S, size_t N> requires (std::is_floating_point_v<S>) SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a);
