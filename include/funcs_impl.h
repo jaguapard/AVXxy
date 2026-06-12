@@ -143,5 +143,34 @@ namespace AVXXY_NAMESPACE
 		return internals::DefaultDispatcher::run(internals::op_scatter<Scale>{}, vec, base, ind, mask);
 	}
 
-
+	template<typename S, size_t N>
+	inline SIMD_BitMask<N> AVXXY_NAMESPACE::cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::DefaultDispatcher::run(internals::op_cmpeq{}, a, b);
+	}
+	template<typename S, size_t N>
+	inline SIMD_BitMask<N> AVXXY_NAMESPACE::cmp_not_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::DefaultDispatcher::run(internals::op_cmpneq{}, a, b);
+	}
+	template<typename S, size_t N>
+	inline SIMD_BitMask<N> AVXXY_NAMESPACE::cmp_less(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::DefaultDispatcher::run(internals::op_cmplt{}, a, b);
+	}
+	template<typename S, size_t N>
+	inline SIMD_BitMask<N> AVXXY_NAMESPACE::cmp_less_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::DefaultDispatcher::run(internals::op_cmple{}, a, b);
+	}
+	template<typename S, size_t N>
+	inline SIMD_BitMask<N> AVXXY_NAMESPACE::cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::DefaultDispatcher::run(internals::op_cmpgt{}, a, b);
+	}
+	template<typename S, size_t N>
+	inline SIMD_BitMask<N> AVXXY_NAMESPACE::cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::DefaultDispatcher::run(internals::op_cmpge{}, a, b);
+	}
 }
