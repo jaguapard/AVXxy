@@ -1,10 +1,10 @@
 #pragma once
 #include "FeatureSet.h"
 #include <tuple>
-#include "ISAs/scalar.h"
-#include "ISAs/AVX512F.h"
-#include "ISAs/AVX512BW.h"
-#include "ISAs/AVX512VL.h"
+#include "ISAs/Scalar.h"
+#include "ISAs/AVX512_F.h"
+#include "ISAs/AVX512_BW.h"
+#include "ISAs/AVX512_VL.h"
 
 namespace AVXXY_NAMESPACE
 {

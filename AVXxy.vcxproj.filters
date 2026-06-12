@@ -16,6 +16,9 @@
     <Filter Include="Header Files\include">
       <UniqueIdentifier>{56716084-fb2e-4344-bc44-4e7d59d8d3f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\include\ISAs">
+      <UniqueIdentifier>{9871ab6d-2de4-4e34-9c6b-4d4c1f92a77c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -50,9 +53,6 @@
     <ClInclude Include="include\Dispatcher.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\ISAs\scalar.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="include\tags.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -65,14 +65,17 @@
     <ClInclude Include="include\operators.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512BW.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\ISAs\AVX512_BW.h">
+      <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512F.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\ISAs\AVX512_F.h">
+      <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512VL.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\ISAs\AVX512_VL.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\Scalar.h">
+      <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
