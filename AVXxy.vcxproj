@@ -260,6 +260,7 @@
     <ClInclude Include="include\Dispatcher.h" />
     <ClInclude Include="include\FeatureSet.h" />
     <ClInclude Include="include\concepts.h" />
+    <ClInclude Include="include\funcs.h" />
     <ClInclude Include="include\ISAs\scalar.h" />
     <ClInclude Include="include\namespace.h" />
     <ClInclude Include="include\SIMD_BitMask.h" />
