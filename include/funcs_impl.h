@@ -80,6 +80,12 @@ namespace AVXXY_NAMESPACE
 		return internals::DefaultDispatcher::run(internals::op_sqrtd{}, a);
 	}
 
+	template<typename To, size_t N, typename From>
+	inline SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value)
+	{
+		return internals::DefaultDispatcher::run(internals::op_cvt<To>{}, value);
+	}
+
 	template<typename S, size_t N>
 	inline SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a)
 	{
