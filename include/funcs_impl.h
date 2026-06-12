@@ -225,4 +225,9 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::DefaultDispatcher::run(internals::op_fp32_to_fp16{}, a);
 	}
+	template<typename S, size_t N>
+	inline SIMD_Vector<S, N> compress(const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src)
+	{
+		return internals::DefaultDispatcher::run(internals::op_compress{}, mask, a, b);
+	}
 }
