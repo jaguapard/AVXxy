@@ -21,6 +21,9 @@ int main()
 	f32x16 read_x2 = Dispatcher<FS_current>::run(op_add{}, read, read);
 	std::cout << "Read + read as f32x16: " << read_x2 << "\n";
 
+	f32x16 read_x3_add_func = add(read, read_x2);
+	std::cout << "Read * 3 through add func: " << read_x3_add_func << "\n";
+
 	i32x16 cvt = Dispatcher<FS_current>::run(op_cvt<int>{}, read_x2);
 	std::cout << "Read * 2 as ints: " << cvt << "\n";
 

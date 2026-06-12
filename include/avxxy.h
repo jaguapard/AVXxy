@@ -2,6 +2,8 @@
 #include "namespace.h"
 #include "SIMD_Vector.h"
 #include "Dispatcher.h" //TODO: remove this from releases?
+#include "funcs.h"
+#include "funcs_impl.h"
 
 namespace AVXXY_NAMESPACE
 {
