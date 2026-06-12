@@ -264,6 +264,7 @@
     <ClInclude Include="include\funcs_impl.h" />
     <ClInclude Include="include\ISAs\AVX512BW.h" />
     <ClInclude Include="include\ISAs\AVX512F.h" />
+    <ClInclude Include="include\ISAs\AVX512VL.h" />
     <ClInclude Include="include\ISAs\scalar.h" />
     <ClInclude Include="include\namespace.h" />
     <ClInclude Include="include\operators.h" />

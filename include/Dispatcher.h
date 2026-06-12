@@ -4,6 +4,7 @@
 #include "ISAs/scalar.h"
 #include "ISAs/AVX512F.h"
 #include "ISAs/AVX512BW.h"
+#include "ISAs/AVX512VL.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -19,6 +20,7 @@ namespace AVXXY_NAMESPACE
 		public:
 			static inline constexpr FeatureSet FeatureSet = FS;
 			using order = std::tuple<
+				std::conditional_t<FS.AVX512.VL, ISA::AVX512VL<FS>, Dummy>,
 				std::conditional_t<FS.AVX512.BW, ISA::AVX512BW<FS>, Dummy>,
 				std::conditional_t<FS.AVX512.F, ISA::AVX512F<FS>, Dummy>, 
 				ISA::Scalar<FS>>;

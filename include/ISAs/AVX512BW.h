@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include "../namespace.h"
 #include "../tags.h"
 #include "../SIMD_BitMask.h"
