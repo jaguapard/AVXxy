@@ -65,5 +65,14 @@
     <ClInclude Include="include\operators.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512BW.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512F.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512VL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

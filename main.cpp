@@ -9,11 +9,24 @@ int main()
 	std::cout << "Input anything:\n";
 	fgets(buf, sizeof(buf), stdin);
 
+	f32x64 ff;
 	f32x16 read;
 	size_t zcnt = 0;
 	for (auto c : buf) if (!c) ++zcnt;
-	if (zcnt < sizeof(buf) - 1) memcpy(&read, buf, std::min(sizeof(read), sizeof(buf)));
-	else read = f32x16(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+	if (zcnt < sizeof(buf) - 1)
+	{
+		memcpy(&read, buf, std::min(sizeof(read), sizeof(buf)));
+		for (size_t i = 0; i < 4; ++i)
+		{
+			float* pp = &ff[0];
+			memcpy(pp + i * 16, buf, 64);
+		}
+	}
+	else
+	{
+		for (size_t i = 0; i < 64; ++i) ff[i] = i;
+		read = f32x16(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+	}
 
 	std::cout << "Read as f32x16: " << read << "\n";
 
@@ -27,9 +40,9 @@ int main()
 	i32x16 cvt = Dispatcher<FS_current>::run(op_cvt<int>{}, read_x2);
 	std::cout << "Read * 2 as ints: " << cvt << "\n";
 
-	f32x64 ff;
-	for (size_t i = 0; i < 64; ++i) ff[i] = i;
-	std::cout << "Mask mov: " << mask_mov(f32x64(56), 0x5555555555555555, ff) << "\n";
+	
+	auto mask_m = mask_mov(f32x64(56), 0x5555555555555555, ff);
+	std::cout << "Mask mov: " << mask_m << "\n";
 
 	f32x8 readLo = vcast<f32x8>(read);
 	f32x8 readLo_x2 = readLo + readLo;
