@@ -86,6 +86,16 @@ namespace AVXXY_NAMESPACE
 					else static_assert(always_false_v<S>);
 				}
 
+				template<typename To, size_t N, typename From>
+				requires ()
+				static SIMD_Vector<To, N> eval(op_cvt<To>, const SIMD_Vector<From, N>& a)
+				{
+					using namespace concepts;
+					using TV = SIMD_Vector<To, N>;
+					using FV = SIMD_Vector<From, N>;
+					constexpr size_t MaxSize = std::max(sizeof(TV), sizeof(FV));
+
+				}
 				template<typename S, size_t N>
 					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) > 32)
 				static void eval(op_store, SIMD_Vector<S, N> vec, void* p, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes)
@@ -104,6 +114,9 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (any_i32<S>) return _mm512_mask_storeu_epi32(p, mask, vec);
 					else static_assert(always_false_v<S>);
 				}
+
+				private:
+
 			};
 		}
 	}
