@@ -264,6 +264,7 @@
     <ClInclude Include="include\funcs_impl.h" />
     <ClInclude Include="include\ISAs\scalar.h" />
     <ClInclude Include="include\namespace.h" />
+    <ClInclude Include="include\operators.h" />
     <ClInclude Include="include\SIMD_BitMask.h" />
     <ClInclude Include="include\SIMD_BitMask_impl.h" />
     <ClInclude Include="include\SIMD_Vector.h" />
