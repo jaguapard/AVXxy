@@ -31,6 +31,9 @@ int main()
 	for (size_t i = 0; i < 64; ++i) ff[i] = i;
 	std::cout << "Mask mov: " << mask_mov(f32x64(56), 0x5555555555555555, ff) << "\n";
 
+	f32x8 readLo = vcast<f32x8>(read);
+	f32x8 readLo_x2 = readLo + readLo;
+	std::cout << "Read low half x2:" << readLo_x2 << "\n";
 	system("pause");
 	return 0;
 }
