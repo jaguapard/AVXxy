@@ -255,6 +255,22 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\avxxy.h" />
+    <ClInclude Include="include\Dispatcher.h" />
+    <ClInclude Include="include\FeatureSet.h" />
+    <ClInclude Include="include\concepts.h" />
+    <ClInclude Include="include\funcs.h" />
+    <ClInclude Include="include\funcs_impl.h" />
+    <ClInclude Include="include\ISAs\scalar.h" />
+    <ClInclude Include="include\namespace.h" />
+    <ClInclude Include="include\operators.h" />
+    <ClInclude Include="include\SIMD_BitMask.h" />
+    <ClInclude Include="include\SIMD_BitMask_impl.h" />
+    <ClInclude Include="include\SIMD_Vector.h" />
+    <ClInclude Include="include\tags.h" />
+    <ClInclude Include="include\utils.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
