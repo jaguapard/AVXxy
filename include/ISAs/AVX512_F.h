@@ -62,7 +62,7 @@ namespace AVXXY_NAMESPACE
 				static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
 				{
 					using namespace concepts;
-					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { abs(a.lo()), abs(b.lo()) };
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { abs(a.lo()), abs(a.hi()) };
 					else if constexpr (is_f64<S>) return _mm512_abs_pd(a);
 					else if constexpr (is_f32<S>) return _mm512_abs_ps(a);
 					else if constexpr (is_i64<S>) return _mm512_abs_epi64(a);
