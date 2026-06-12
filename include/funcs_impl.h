@@ -136,4 +136,10 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::DefaultDispatcher::run(internals::op_gather<S, N, Scale>{}, base, ind, mask, src);
 	}
+
+	template<typename S, size_t N, size_t Scale, typename I>
+	inline void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<N>& mask)
+	{
+		return internals::DefaultDispatcher::run(internals::op_scatter<Scale>{}, vec, base, ind, mask);
+	}
 }
