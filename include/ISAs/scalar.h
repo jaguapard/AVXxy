@@ -138,7 +138,7 @@ namespace AVXXY_NAMESPACE
 				}
 				template<typename S, size_t N, typename I>
 					requires (concepts::any_int<I>)
-				static SIMD_Vector<S, N> eval(op_permx2, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind, const SIMD_Vector<S, N>& b)
+				static SIMD_Vector<S, N> eval(op_permx2, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
 				{
 					SIMD_Vector<S, N> ret;
 					for (size_t i = 0; i < N; ++i)
