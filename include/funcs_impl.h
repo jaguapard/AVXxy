@@ -91,6 +91,18 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::DefaultDispatcher::run(internals::op_abs{}, a);
 	}
+
+	template<typename S, size_t N>
+	inline SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a)
+	{
+		return internals::DefaultDispatcher::run(internals::op_floor{}, a);
+	}
+
+	template<typename S, size_t N>
+	inline SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a)
+	{
+		return internals::DefaultDispatcher::run(internals::op_ceil{}, a);
+	}
 	
 	template<typename T, typename S, size_t N>
 	//	requires (T::IsSimdVector)
