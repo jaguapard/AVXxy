@@ -32,7 +32,7 @@ namespace AVXXY_NAMESPACE
 	//For integer to smaller integer conversions, the input vector is wrapped around small integer's max value (TODO: is it true?)
 	template<typename To, size_t N, typename From> SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value);
 	template<typename S, size_t N> SIMD_Vector<S, N * 2> concat(const SIMD_Vector<S, N>& to, const SIMD_Vector<S, N>& what);
-	template<size_t N> SIMD_BitMask<N * 2> concat_masks(const SIMD_BitMask<N>& to, const SIMD_BitMask<N>& what);
+	//template<size_t N> SIMD_BitMask<N * 2> concat_masks(const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& to, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& what);
 
 	//Reinterprets value as vector of other type and returns the result.
 	//If returned vector's size is smaller than input, input's upper bits are discarded
