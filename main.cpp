@@ -27,6 +27,10 @@ int main()
 	i32x16 cvt = Dispatcher<FS_current>::run(op_cvt<int>{}, read_x2);
 	std::cout << "Read * 2 as ints: " << cvt << "\n";
 
+	f32x64 ff;
+	for (size_t i = 0; i < 64; ++i) ff[i] = i;
+	std::cout << "Mask mov: " << mask_mov(f32x64(56), 0x5555555555555555, ff) << "\n";
+
 	system("pause");
 	return 0;
 }
