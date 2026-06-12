@@ -118,4 +118,16 @@ namespace AVXXY_NAMESPACE
 	{
 		return mask_mov(ifBitClear, mask, ifBitSet);
 	}
+
+	template<typename S, size_t N>
+	inline SIMD_Vector<S, N> load(const void* p, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& src)
+	{
+		return internals::DefaultDispatcher::run(internals::op_load<S,N>{}, p, mask, src);
+	}
+
+	template<typename S, size_t N>
+	inline void store(const SIMD_Vector<S, N>& v, void* p, const SIMD_BitMask<N>& mask)
+	{
+		return internals::DefaultDispatcher::run(internals::op_store{}, v, p, mask);
+	}
 }
