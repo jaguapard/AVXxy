@@ -1,0 +1,26 @@
+#pragma once
+#pragma once
+#include "../namespace.h"
+#include "../tags.h"
+#include "../SIMD_BitMask.h"
+#include "../SIMD_Vector.h"
+namespace AVXXY_NAMESPACE
+{
+	namespace internals
+	{
+		namespace ISA
+		{
+			struct AVX512BW
+			{
+				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+					requires (sizeof(S) < 4)
+				{
+					using namespace concepts;
+					if constexpr (any_i16<S>) return _mm512_mask_mov_epi16(ifBitClear, mask, ifBitSet);
+					else if constexpr (any_i8<S>) return _mm512_mask_mov_epi8(ifBitClear, mask, ifBitSet);
+				}
+			};
+		}
+	}
+};
