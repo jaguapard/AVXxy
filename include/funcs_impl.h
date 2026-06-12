@@ -95,6 +95,7 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a)
 	{
+		if constexpr (std::is_unsigned_v<S>) return a;
 		return internals::DefaultDispatcher::run(internals::op_abs{}, a);
 	}
 
