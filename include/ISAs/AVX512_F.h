@@ -248,6 +248,24 @@ namespace AVXXY_NAMESPACE
 					else static_assert(always_false_v<S>);
 				}
 
+				template<typename S, size_t N>
+					requires (std::is_floating_point_v<S> && sizeof(SIMD_Vector<S,N>) > 32)
+				static SIMD_Vector<S, N> eval(op_floor, const SIMD_Vector<S, N>& a)
+				{
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { floor(a.lo()), floor(a.hi()) };
+					else if constexpr (is_f64<S>) return _mm512_floor_pd(a);
+					else if constexpr (is_f32<S>) return _mm512_floor_ps(a);
+					else static_assert(always_false_v<S>);
+				}
+				template<typename S, size_t N>
+					requires (std::is_floating_point_v<S> && sizeof(SIMD_Vector<S,N>) > 32)
+				static SIMD_Vector<S, N> eval(op_ceil, const SIMD_Vector<S, N>& a)
+				{
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { ceil(a.lo()), ceil(a.hi()) };
+					else if constexpr (is_f64<S>) return _mm512_ceil_pd(a);
+					else if constexpr (is_f32<S>) return _mm512_ceil_ps(a);
+					else static_assert(always_false_v<S>);
+				}
 				template<typename To, size_t N, typename From>
 					requires (std::max(sizeof(SIMD_Vector<To, N>), sizeof(SIMD_Vector<From, N>)) > 32 && (
 				// from double
