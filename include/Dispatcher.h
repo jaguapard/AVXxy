@@ -1,13 +1,17 @@
 #pragma once
 #include "FeatureSet.h"
 #include <tuple>
-#include "ISAs/scalar.h"
+#include "ISAs/Scalar.h"
+#include "ISAs/AVX512_F.h"
+#include "ISAs/AVX512_BW.h"
+#include "ISAs/AVX512_VL.h"
+#include "ISAs/AVX512_VBMI.h"
 
 namespace AVXXY_NAMESPACE
 {
 	namespace internals
 	{
-		template<typename Op, typename... Args> inline constexpr bool dependent_false_v = false;
+		template<typename... Args> inline constexpr bool always_false_v = false;
 
 		template<FeatureSet FS>
 		class Dispatcher
@@ -16,7 +20,12 @@ namespace AVXXY_NAMESPACE
 			struct Dummy {};
 		public:
 			static inline constexpr FeatureSet FeatureSet = FS;
-			using order = std::tuple<ISA::Scalar>;
+			using order = std::tuple<
+				std::conditional_t<FS.has(AVX512_VBMI), ISA::AVX512VBMI<FS>, Dummy>,
+				std::conditional_t<FS.has(AVX512_VL), ISA::AVX512VL<FS>, Dummy>,
+				std::conditional_t<FS.has(AVX512_BW), ISA::AVX512BW<FS>, Dummy>,
+				std::conditional_t<FS.has(AVX512_F), ISA::AVX512F<FS>, Dummy>,
+				ISA::Scalar<FS>>;
 
 			//Dispatches operation through this dispatcher. Attempts to pick best available implementation for target operation respecting template argument feature set limitations
 			template<typename Op, typename... Args>
@@ -38,7 +47,7 @@ namespace AVXXY_NAMESPACE
 						return Impl::eval(op, std::forward<Args>(args)...);
 					else return run_private<I + 1>(op, std::forward<Args>(args)...);
 				}
-				else static_assert(dependent_false_v<Op, Args...>, "AVXxy dispatcher: no implementation exists for operation");
+				else static_assert(always_false_v<Op, Args...>, "AVXxy dispatcher: no implementation exists for operation");
 			}
 		};
 
