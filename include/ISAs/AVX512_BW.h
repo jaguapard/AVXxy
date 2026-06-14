@@ -50,6 +50,18 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+					requires (sizeof(SIMD_Vector<S, N>) > 32 && any_small_int<S>)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					using canon_t = std::conditional_t<(std::is_signed_v<S>), int16_t, uint16_t>;
+					if constexpr (sizeof(T) > 64) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+					else if constexpr (any_i16<S>) return _mm512_mullo_epi16(a, b);
+					else return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
+				}
+
+				template<typename S, size_t N>
 					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) < 4)
 				static SIMD_BitMask<N> eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
