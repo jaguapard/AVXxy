@@ -4,15 +4,41 @@
 #include "../SIMD_BitMask.h"
 #include "../SIMD_Vector.h"
 #include "../FeatureSet.h"
+#include "../funcs.h"
+
 namespace AVXXY_NAMESPACE
 {
 	namespace internals
 	{
 		namespace ISA
 		{
+			using namespace concepts;
 			template<internals::FeatureSet FS>
 			struct AVX512BW
 			{
+				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_add, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) < 4)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 64) return { add(a.lo(), b.lo()), add(a.hi(), b.hi()) };
+					else if constexpr (any_i16<S>) return _mm512_add_epi16(a, b);
+					else if constexpr (any_i8<S>) return _mm512_add_epi8(a, b);
+					else static_assert(always_false_v<S>);
+				}
+				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_sub, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) < 4)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 64) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
+					else if constexpr (any_i16<S>) return _mm512_sub_epi16(a, b);
+					else if constexpr (any_i8<S>) return _mm512_sub_epi8(a, b);
+					else static_assert(always_false_v<S>);
+				}
+
 				template<typename S, size_t N>
 				static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
 					requires (sizeof(S) < 4 && concepts::zmm_sized<SIMD_Vector<S, N>>)
