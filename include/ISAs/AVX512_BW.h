@@ -17,6 +17,16 @@ namespace AVXXY_NAMESPACE
 			struct AVX512BW
 			{
 				template<typename S, size_t N>
+					requires (sizeof(S) < 4 && sizeof(SIMD_Vector<S, N>) > 32)
+				static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
+				{
+					using namespace concepts;
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { abs(a.lo()), abs(a.hi()) };
+					else if constexpr (is_i16<S>) return _mm512_abs_epi16(a);
+					else if constexpr (is_i8<S>) return _mm512_abs_epi8(a);
+					else static_assert(always_false_v<S>);
+				}
+				template<typename S, size_t N>
 				static SIMD_Vector<S, N> eval(op_add, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) < 4)
 				{
