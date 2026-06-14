@@ -267,6 +267,25 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (any_i8<S>) return _mm512_mask_storeu_epi8(p, mask, vec);
 					else static_assert(always_false_v<S>);
 				}
+
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) < 4)
+				static SIMD_Vector<S, N> eval(op_unpacklo, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { unpacklo(a.lo(),b.lo()), unpacklo(a.hi(),b.hi()) };
+					else if constexpr (any_i16<S>) return _mm512_unpacklo_epi16(a, b);
+					else if constexpr (any_i8<S>) return _mm512_unpacklo_epi8(a, b);
+					else static_assert(always_false_v<S>);
+				}
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) < 4)
+				static SIMD_Vector<S, N> eval(op_unpackhi, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { unpackhi(a.lo(),b.lo()), unpackhi(a.hi(),b.hi()) };
+					else if constexpr (any_i16<S>) return _mm512_unpackhi_epi16(a, b);
+					else if constexpr (any_i8<S>) return _mm512_unpackhi_epi8(a, b);
+					else static_assert(always_false_v<S>);
+				}
 			};
 		}
 	}
