@@ -142,6 +142,22 @@ namespace AVXXY_NAMESPACE
 					else static_assert(always_false_v<S>);
 				}
 
+				template<typename To, size_t N, typename From>
+					requires (std::max(sizeof(SIMD_Vector<To, N>), sizeof(SIMD_Vector<From, N>)) > 32 && any_small_int<From> && any_small_int<To>)
+				static SIMD_Vector<To, N> eval(op_cvt<To>, const SIMD_Vector<From, N>& a)
+				{
+					using namespace concepts;
+					using TV = SIMD_Vector<To, N>;
+					using FV = SIMD_Vector<From, N>;
+					constexpr size_t MaxSize = std::max(sizeof(TV), sizeof(FV));
+
+					if constexpr (MaxSize > 64) return { vcvt<To>(a.lo()), vcvt<To>(a.hi()) };
+					else if constexpr (any_i16<From> && any_i8<To>) return _mm512_cvtepi16_epi8(a);
+					else if constexpr (is_i8<From> && any_i16<To>) return _mm512_cvtepi8_epi16(a);
+					else if constexpr (is_u8<From> && any_i16<To>) return _mm512_cvtepu8_epi16(a);
+					else static_assert(always_false_v<To>);
+				}
+
 				template<typename S, size_t N, typename I>
 					requires (concepts::any_i16<S> && concepts::any_int<I> && concepts::zmm_sized<SIMD_Vector<S, N>>)//sizeof(SIMD_Vector<S,N>& > 32))
 				static SIMD_Vector<S, N> eval(op_permx, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
