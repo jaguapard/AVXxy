@@ -61,6 +61,26 @@ namespace AVXXY_NAMESPACE
 					else return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
 				}
 
+				template<typename S, size_t N, typename I>
+					requires (concepts::any_small_int<S>&& concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) > 32)
+				static SIMD_Vector<S, N> eval(op_shl, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+				{
+					using T = SIMD_Vector<S, N>;
+					if constexpr (!std::is_same_v<I, uint16_t>) return shift_left(a, vcvt<uint16_t>(b));
+					else if constexpr (sizeof(T) > 64) return { shift_left(a.lo(),b.lo()), shift_left(a.hi(),b.hi()) };
+					else if constexpr (any_i16<S>) return _mm512_sllv_epi16(a, b);
+					else return vcvt<S>(shift_left(vcvt<uint16_t>(a), vcvt<uint16_t>(b)));
+				}
+				template<typename S, size_t N, typename I>
+					requires (concepts::any_small_int<S>&& concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) > 32)
+				static SIMD_Vector<S, N> eval(op_shr, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+				{
+					using T = SIMD_Vector<S, N>;
+					if constexpr (!std::is_same_v<I, uint16_t>) return shift_right(a, vcvt<uint16_t>(b));
+					else if constexpr (sizeof(T) > 64) return { shift_right(a.lo(),b.lo()), shift_right(a.hi(),b.hi()) };
+					else if constexpr (any_i16<S>) return _mm512_srlv_epi16(a, b);
+					else return vcvt<S>(shift_left(vcvt<uint16_t>(a), vcvt<uint16_t>(b)));
+				}
 				template<typename S, size_t N>
 					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) < 4)
 				static SIMD_BitMask<N> eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
