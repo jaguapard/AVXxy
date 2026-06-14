@@ -158,6 +158,30 @@ namespace AVXXY_NAMESPACE
 					else static_assert(always_false_v<To>);
 				}
 
+				template<typename S, size_t N>
+					requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) > 32)
+				static SIMD_Vector<S, N> eval(op_min, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { min(a.lo(), b.lo()), min(a.hi(),b.hi()) };
+					else if constexpr (is_i16<S>) return _mm512_min_epi16(a, b);
+					else if constexpr (is_u16<S>) return _mm512_min_epu16(a, b);
+					else if constexpr (is_i8<S>) return _mm512_min_epi8(a, b);
+					else if constexpr (is_u8<S>) return _mm512_min_epu8(a, b);
+					else static_assert(always_false_v<S>);
+				}
+				template<typename S, size_t N>
+					requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) > 32)
+				static SIMD_Vector<S, N> eval(op_max, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { max(a.lo(), b.lo()), max(a.hi(),b.hi()) };
+					else if constexpr (is_i16<S>) return _mm512_max_epi16(a, b);
+					else if constexpr (is_u16<S>) return _mm512_max_epu16(a, b);
+					else if constexpr (is_i8<S>) return _mm512_max_epi8(a, b);
+					else if constexpr (is_u8<S>) return _mm512_max_epu8(a, b);
+					else static_assert(always_false_v<S>);
+				}
 				template<typename S, size_t N, typename I>
 					requires (concepts::any_i16<S> && concepts::any_int<I> && concepts::zmm_sized<SIMD_Vector<S, N>>)//sizeof(SIMD_Vector<S,N>& > 32))
 				static SIMD_Vector<S, N> eval(op_permx, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
