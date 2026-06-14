@@ -81,7 +81,7 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) > 32)
+					requires ((sizeof(S) >= 4 || (sizeof(S) < 4 && !FS.has(AVX2))) && sizeof(SIMD_Vector<S, N>) > 32)
 				static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
 				{
 					using namespace concepts;
@@ -90,6 +90,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_f32<S>) return _mm512_abs_ps(a);
 					else if constexpr (is_i64<S>) return _mm512_abs_epi64(a);
 					else if constexpr (is_i32<S>) return _mm512_abs_epi32(a);
+					else if constexpr (any_small_int<S>) return vcvt<S>(vcvt<int32_t>(a));
 					else static_assert(always_false_v<S>);
 				}
 
