@@ -885,16 +885,25 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S,N>) > 32 && sizeof(S) >= 4)
+				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S,N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_Vector<S, N> eval(op_compress, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
 				{
 					//TODO: more than 64 bytes!
 					//if constexpr (sizeof(SIMD_Vector<S, N>) > 64) {};
 					//else
-					if constexpr (is_f64<S>) return _mm512_mask_compress_pd(src, mask, a);
-					else if constexpr (is_f32<S>) return _mm512_mask_compress_ps(src, mask, a);
-					else if constexpr (any_i64<S>) return _mm512_mask_compress_epi64(src, mask, a);
-					else if constexpr (any_i32<S>) return _mm512_mask_compress_epi32(src, mask, a);
+					using T = SIMD_Vector<S, N>;
+					if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_mask_compress_pd(src, mask, a);
+					else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_mask_compress_ps(src, mask, a);
+					else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_mask_compress_epi64(src, mask, a);
+					else if constexpr (zmm_sized<T> && any_i32<S>) return _mm512_mask_compress_epi32(src, mask, a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_f64<S>) return _mm256_mask_compress_pd(src, mask, a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_f32<S>) return _mm256_mask_compress_ps(src, mask, a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_mask_compress_epi64(src, mask, a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_mask_compress_epi32(src, mask, a);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_f64<S>) return _mm_mask_compress_pd(src, mask, a);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_compress_ps(src, mask, a);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_compress_epi64(src, mask, a);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_compress_epi32(src, mask, a);
 					else static_assert(always_false_v<S>);
 				}
 
