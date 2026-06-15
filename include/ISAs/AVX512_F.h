@@ -484,17 +484,22 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N, typename I>
-					requires (sizeof(S) >= 4 && concepts::any_int<I> && concepts::zmm_sized<SIMD_Vector<S, N>>)//sizeof(SIMD_Vector<S,N>& > 32))
+					requires (sizeof(S) >= 4 && concepts::any_int<I> && sizeof(SIMD_Vector<S,N>) >= (FS.has(AVX512_VL) ? 17 : 33))//sizeof(SIMD_Vector<S,N>& > 32))
 				static SIMD_Vector<S, N> eval(op_permx, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
 				{
 					using namespace concepts;
 					using canon_t = typename same_size_uint_t<S>::type;
+					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(I) != sizeof(S)) return permx(a, vcvt<canon_t>(ind));
 					//TODO: add > 64 byte permutex!
-					else if constexpr (is_f64<S>) return _mm512_permutexvar_pd(ind, a);
-					else if constexpr (is_f32<S>) return _mm512_permutexvar_ps(ind, a);
-					else if constexpr (any_i64<S>) return _mm512_permutexvar_epi64(ind, a);
-					else if constexpr (any_i32<S>) return _mm512_permutexvar_epi32(ind, a);
+					else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_permutexvar_pd(ind, a);
+					else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_permutexvar_ps(ind, a);
+					else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_permutexvar_epi64(ind, a);
+					else if constexpr (zmm_sized<T> && any_i32<S>) return _mm512_permutexvar_epi32(ind, a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_f64<S>) return _mm256_permutexvar_pd(ind, a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_f32<S>) return _mm256_permutexvar_ps(ind, a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_permutexvar_epi64(ind, a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_permutexvar_epi32(ind, a);
 					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N, typename I>
