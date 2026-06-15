@@ -216,93 +216,255 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S,N>) > 32 && sizeof(S)>=4)
+				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_BitMask<N> eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 64) return { cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_EQ_OQ);
-					else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ);
-					else if constexpr (is_i64<S>) return _mm512_cmpeq_epi64_mask(a, b);
-					else if constexpr (is_u64<S>) return _mm512_cmpeq_epu64_mask(a, b);
-					else if constexpr (is_i32<S>) return _mm512_cmpeq_epi32_mask(a, b);
-					else if constexpr (is_u32<S>) return _mm512_cmpeq_epu32_mask(a, b);
+					else if constexpr (zmm_sized<T>)
+					{
+						if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_EQ_OQ);
+						else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ);
+						else if constexpr (is_i64<S>) return _mm512_cmpeq_epi64_mask(a, b);
+						else if constexpr (is_u64<S>) return _mm512_cmpeq_epu64_mask(a, b);
+						else if constexpr (is_i32<S>) return _mm512_cmpeq_epi32_mask(a, b);
+						else if constexpr (is_u32<S>) return _mm512_cmpeq_epu32_mask(a, b);
+						else static_assert(always_false_v<S>);
+					}
+					else if constexpr (FS.has(AVX512_VL))
+					{
+						if constexpr (ymm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm256_cmp_pd_mask(a, b, _CMP_EQ_OQ);
+							else if constexpr (is_f32<S>) return _mm256_cmp_ps_mask(a, b, _CMP_EQ_OQ);
+							else if constexpr (is_i64<S>) return _mm256_cmpeq_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm256_cmpeq_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm256_cmpeq_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm256_cmpeq_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+						else if constexpr (xmm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm_cmp_pd_mask(a, b, _CMP_EQ_OQ);
+							else if constexpr (is_f32<S>) return _mm_cmp_ps_mask(a, b, _CMP_EQ_OQ);
+							else if constexpr (is_i64<S>) return _mm_cmpeq_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm_cmpeq_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm_cmpeq_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm_cmpeq_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+					}
 					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S,N>) > 32 && sizeof(S)>=4)
+					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_BitMask<N> eval(op_cmpneq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 64) return { cmp_not_equal(a.lo(),b.lo()), cmp_not_equal(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_NEQ_OQ);
-					else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_NEQ_OQ);
-					else if constexpr (is_i64<S>) return _mm512_cmpneq_epi64_mask(a, b);
-					else if constexpr (is_u64<S>) return _mm512_cmpneq_epu64_mask(a, b);
-					else if constexpr (is_i32<S>) return _mm512_cmpneq_epi32_mask(a, b);
-					else if constexpr (is_u32<S>) return _mm512_cmpneq_epu32_mask(a, b);
+					else if constexpr (zmm_sized<T>)
+					{
+						if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_NEQ_OQ);
+						else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_NEQ_OQ);
+						else if constexpr (is_i64<S>) return _mm512_cmpneq_epi64_mask(a, b);
+						else if constexpr (is_u64<S>) return _mm512_cmpneq_epu64_mask(a, b);
+						else if constexpr (is_i32<S>) return _mm512_cmpneq_epi32_mask(a, b);
+						else if constexpr (is_u32<S>) return _mm512_cmpneq_epu32_mask(a, b);
+						else static_assert(always_false_v<S>);
+					}
+					else if constexpr (FS.has(AVX512_VL))
+					{
+						if constexpr (ymm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm256_cmp_pd_mask(a, b, _CMP_NEQ_OQ);
+							else if constexpr (is_f32<S>) return _mm256_cmp_ps_mask(a, b, _CMP_NEQ_OQ);
+							else if constexpr (is_i64<S>) return _mm256_cmpneq_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm256_cmpneq_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm256_cmpneq_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm256_cmpneq_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+						else if constexpr (xmm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm_cmp_pd_mask(a, b, _CMP_NEQ_OQ);
+							else if constexpr (is_f32<S>) return _mm_cmp_ps_mask(a, b, _CMP_NEQ_OQ);
+							else if constexpr (is_i64<S>) return _mm_cmpneq_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm_cmpneq_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm_cmpneq_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm_cmpneq_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+					}
 					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S,N>) > 32 && sizeof(S)>=4)
+					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_BitMask<N> eval(op_cmpgt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 64) return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_GT_OQ);
-					else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_GT_OQ);
-					else if constexpr (is_i64<S>) return _mm512_cmpgt_epi64_mask(a, b);
-					else if constexpr (is_u64<S>) return _mm512_cmpgt_epu64_mask(a, b);
-					else if constexpr (is_i32<S>) return _mm512_cmpgt_epi32_mask(a, b);
-					else if constexpr (is_u32<S>) return _mm512_cmpgt_epu32_mask(a, b);
+					else if constexpr (zmm_sized<T>)
+					{
+						if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_GT_OQ);
+						else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_GT_OQ);
+						else if constexpr (is_i64<S>) return _mm512_cmpgt_epi64_mask(a, b);
+						else if constexpr (is_u64<S>) return _mm512_cmpgt_epu64_mask(a, b);
+						else if constexpr (is_i32<S>) return _mm512_cmpgt_epi32_mask(a, b);
+						else if constexpr (is_u32<S>) return _mm512_cmpgt_epu32_mask(a, b);
+						else static_assert(always_false_v<S>);
+					}
+					else if constexpr (FS.has(AVX512_VL))
+					{
+						if constexpr (ymm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm256_cmp_pd_mask(a, b, _CMP_GT_OQ);
+							else if constexpr (is_f32<S>) return _mm256_cmp_ps_mask(a, b, _CMP_GT_OQ);
+							else if constexpr (is_i64<S>) return _mm256_cmpgt_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm256_cmpgt_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm256_cmpgt_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm256_cmpgt_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+						else if constexpr (xmm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm_cmp_pd_mask(a, b, _CMP_GT_OQ);
+							else if constexpr (is_f32<S>) return _mm_cmp_ps_mask(a, b, _CMP_GT_OQ);
+							else if constexpr (is_i64<S>) return _mm_cmpgt_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm_cmpgt_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm_cmpgt_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm_cmpgt_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+					}
 					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S,N>) > 32 && sizeof(S)>=4)
+					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_BitMask<N> eval(op_cmpge, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 64) return { cmp_greater_or_equal(a.lo(),b.lo()), cmp_greater_or_equal(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_GE_OQ);
-					else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_GE_OQ);
-					else if constexpr (is_i64<S>) return _mm512_cmpge_epi64_mask(a, b);
-					else if constexpr (is_u64<S>) return _mm512_cmpge_epu64_mask(a, b);
-					else if constexpr (is_i32<S>) return _mm512_cmpge_epi32_mask(a, b);
-					else if constexpr (is_u32<S>) return _mm512_cmpge_epu32_mask(a, b);
+					else if constexpr (zmm_sized<T>)
+					{
+						if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_GE_OQ);
+						else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_GE_OQ);
+						else if constexpr (is_i64<S>) return _mm512_cmpge_epi64_mask(a, b);
+						else if constexpr (is_u64<S>) return _mm512_cmpge_epu64_mask(a, b);
+						else if constexpr (is_i32<S>) return _mm512_cmpge_epi32_mask(a, b);
+						else if constexpr (is_u32<S>) return _mm512_cmpge_epu32_mask(a, b);
+						else static_assert(always_false_v<S>);
+					}
+					else if constexpr (FS.has(AVX512_VL))
+					{
+						if constexpr (ymm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm256_cmp_pd_mask(a, b, _CMP_GE_OQ);
+							else if constexpr (is_f32<S>) return _mm256_cmp_ps_mask(a, b, _CMP_GE_OQ);
+							else if constexpr (is_i64<S>) return _mm256_cmpge_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm256_cmpge_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm256_cmpge_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm256_cmpge_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+						else if constexpr (xmm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm_cmp_pd_mask(a, b, _CMP_GE_OQ);
+							else if constexpr (is_f32<S>) return _mm_cmp_ps_mask(a, b, _CMP_GE_OQ);
+							else if constexpr (is_i64<S>) return _mm_cmpge_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm_cmpge_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm_cmpge_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm_cmpge_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+					}
 					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N>
-					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) >= 4)
+					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_BitMask<N> eval(op_cmplt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 64) return { cmp_less(a.lo(),b.lo()), cmp_less(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_LT_OQ);
-					else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_LT_OQ);
-					else if constexpr (is_i64<S>) return _mm512_cmplt_epi64_mask(a, b);
-					else if constexpr (is_u64<S>) return _mm512_cmplt_epu64_mask(a, b);
-					else if constexpr (is_i32<S>) return _mm512_cmplt_epi32_mask(a, b);
-					else if constexpr (is_u32<S>) return _mm512_cmplt_epu32_mask(a, b);
+					else if constexpr (zmm_sized<T>)
+					{
+						if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_LT_OQ);
+						else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_LT_OQ);
+						else if constexpr (is_i64<S>) return _mm512_cmplt_epi64_mask(a, b);
+						else if constexpr (is_u64<S>) return _mm512_cmplt_epu64_mask(a, b);
+						else if constexpr (is_i32<S>) return _mm512_cmplt_epi32_mask(a, b);
+						else if constexpr (is_u32<S>) return _mm512_cmplt_epu32_mask(a, b);
+						else static_assert(always_false_v<S>);
+					}
+					else if constexpr (FS.has(AVX512_VL))
+					{
+						if constexpr (ymm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm256_cmp_pd_mask(a, b, _CMP_LT_OQ);
+							else if constexpr (is_f32<S>) return _mm256_cmp_ps_mask(a, b, _CMP_LT_OQ);
+							else if constexpr (is_i64<S>) return _mm256_cmplt_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm256_cmplt_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm256_cmplt_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm256_cmplt_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+						else if constexpr (xmm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm_cmp_pd_mask(a, b, _CMP_LT_OQ);
+							else if constexpr (is_f32<S>) return _mm_cmp_ps_mask(a, b, _CMP_LT_OQ);
+							else if constexpr (is_i64<S>) return _mm_cmplt_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm_cmplt_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm_cmplt_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm_cmplt_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+					}
 					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N>
-					requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) >= 4)
+					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_BitMask<N> eval(op_cmple, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
-					if constexpr (sizeof(T) > 64) return { cmp_less_or_equal(a.lo(),b.lo()), cmp_less_or_equal(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_LE_OQ);
-					else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_LE_OQ);
-					else if constexpr (is_i64<S>) return _mm512_cmple_epi64_mask(a, b);
-					else if constexpr (is_u64<S>) return _mm512_cmple_epu64_mask(a, b);
-					else if constexpr (is_i32<S>) return _mm512_cmple_epi32_mask(a, b);
-					else if constexpr (is_u32<S>) return _mm512_cmple_epu32_mask(a, b);
+					if constexpr (sizeof(T) > 64) return { cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
+					else if constexpr (zmm_sized<T>)
+					{
+						if constexpr (is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_LE_OQ);
+						else if constexpr (is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_LE_OQ);
+						else if constexpr (is_i64<S>) return _mm512_cmple_epi64_mask(a, b);
+						else if constexpr (is_u64<S>) return _mm512_cmple_epu64_mask(a, b);
+						else if constexpr (is_i32<S>) return _mm512_cmple_epi32_mask(a, b);
+						else if constexpr (is_u32<S>) return _mm512_cmple_epu32_mask(a, b);
+						else static_assert(always_false_v<S>);
+					}
+					else if constexpr (FS.has(AVX512_VL))
+					{
+						if constexpr (ymm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm256_cmp_pd_mask(a, b, _CMP_LE_OQ);
+							else if constexpr (is_f32<S>) return _mm256_cmp_ps_mask(a, b, _CMP_LE_OQ);
+							else if constexpr (is_i64<S>) return _mm256_cmple_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm256_cmple_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm256_cmple_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm256_cmple_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+						else if constexpr (xmm_sized<T>)
+						{
+							if constexpr (is_f64<S>) return _mm_cmp_pd_mask(a, b, _CMP_LE_OQ);
+							else if constexpr (is_f32<S>) return _mm_cmp_ps_mask(a, b, _CMP_LE_OQ);
+							else if constexpr (is_i64<S>) return _mm_cmple_epi64_mask(a, b);
+							else if constexpr (is_u64<S>) return _mm_cmple_epu64_mask(a, b);
+							else if constexpr (is_i32<S>) return _mm_cmple_epi32_mask(a, b);
+							else if constexpr (is_u32<S>) return _mm_cmple_epu32_mask(a, b);
+							else static_assert(always_false_v<S>);
+						}
+					}
 					else static_assert(always_false_v<S>);
 				}
 
