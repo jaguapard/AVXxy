@@ -88,7 +88,6 @@
     <None Include="README.md">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="TECHICALS.md" />
     <None Include="docs\Technicals.md">
       <Filter>Resource Files\docs</Filter>
     </None>
