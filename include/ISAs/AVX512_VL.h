@@ -14,16 +14,7 @@ namespace AVXXY_NAMESPACE
 			template<internals::FeatureSet FS>
 			struct AVX512VL
 			{
-				template<typename S, size_t N>
-					requires (FS.has(AVX512_F) && any_i64<S>)
-				static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
-				{
-					using namespace concepts;
-					using T = SIMD_Vector<S, N>;
-					if constexpr (ymm_sized<T>) return _mm256_abs_epi64(a);
-					else if constexpr (xmm_sized<T>) return _mm_abs_epi64(a);
-					else static_assert(always_false_v<S>);
-				}
+				
 			};
 		}
 	}

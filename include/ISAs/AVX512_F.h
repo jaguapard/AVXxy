@@ -81,16 +81,18 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-					requires ((sizeof(S) >= 4 || (sizeof(S) < 4 && !FS.has(AVX2))) && sizeof(SIMD_Vector<S, N>) > 32)
+					requires ((is_i64<S> && FS.has(AVX512_VL)) || (sizeof(SIMD_Vector<S, N>) > 32 && !any_small_int<S>))
 				static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
 				{
 					using namespace concepts;
-					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { abs(a.lo()), abs(a.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_abs_pd(a);
-					else if constexpr (is_f32<S>) return _mm512_abs_ps(a);
-					else if constexpr (is_i64<S>) return _mm512_abs_epi64(a);
-					else if constexpr (is_i32<S>) return _mm512_abs_epi32(a);
-					else if constexpr (any_small_int<S>) return vcvt<S>(vcvt<int32_t>(a));
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 64) return { abs(a.lo()), abs(a.hi()) };
+					else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_abs_pd(a);
+					else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_abs_ps(a);
+					else if constexpr (zmm_sized<T> && is_i64<S>) return _mm512_abs_epi64(a);
+					else if constexpr (zmm_sized<T> && is_i32<S>) return _mm512_abs_epi32(a);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_i64<S>) return _mm256_abs_epi64(a);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_i64<S>) return _mm_abs_epi64(a);
 					else static_assert(always_false_v<S>);
 				}
 
