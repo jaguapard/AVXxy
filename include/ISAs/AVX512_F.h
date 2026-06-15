@@ -503,17 +503,26 @@ namespace AVXXY_NAMESPACE
 					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N, typename I>
-					requires (sizeof(S) >= 4 && concepts::any_int<I> && concepts::zmm_sized<SIMD_Vector<S, N>>)//sizeof(SIMD_Vector<S,N>& > 32))
+					requires (sizeof(S) >= 4 && concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_Vector<S, N> eval(op_permx2, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
 				{
 					using namespace concepts;
 					using canon_t = typename same_size_uint_t<S>::type;
+					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(I) != sizeof(S)) return permx2(a, vcvt<canon_t>(ind));
 					//TODO: add > 64 byte permutex2!
-					else if constexpr (is_f64<S>) return _mm512_permutex2var_pd(a, ind, b);
-					else if constexpr (is_f32<S>) return _mm512_permutex2var_ps(a, ind, b);
-					else if constexpr (any_i64<S>) return _mm512_permutex2var_epi64(a, ind, b);
-					else if constexpr (any_i32<S>) return _mm512_permutex2var_epi32(a, ind, b);
+					else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_permutex2var_pd(a, ind, b);
+					else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_permutex2var_ps(a, ind, b);
+					else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_permutex2var_epi64(a, ind, b);
+					else if constexpr (zmm_sized<T> && any_i32<S>) return _mm512_permutex2var_epi32(a, ind, b);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_f64<S>) return _mm256_permutex2var_pd(a, ind, b);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_f32<S>) return _mm256_permutex2var_ps(a, ind, b);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_permutex2var_epi64(a, ind, b);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_permutex2var_epi32(a, ind, b);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_f64<S>) return _mm_permutex2var_pd(a, ind, b);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_permutex2var_ps(a, ind, b);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_permutex2var_epi64(a, ind, b);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_permutex2var_epi32(a, ind, b);
 					else static_assert(always_false_v<S>);
 				}
 
