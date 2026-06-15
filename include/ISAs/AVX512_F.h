@@ -497,7 +497,7 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N, size_t Scale, typename I>
-					requires (concepts::any_int<I> && sizeof(S) >= 4 && std::max(sizeof(SIMD_Vector<S, N>), sizeof(SIMD_Vector<I, N>)) > 32)
+					requires (concepts::any_int<I> && sizeof(S) >= 4 && (std::max(sizeof(SIMD_Vector<S, N>), sizeof(SIMD_Vector<I, N>)) >= (FS.has(AVX512_VL) ? 0 : 33)))
 				static void eval(op_scatter<Scale>, const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes)
 				{
 					//put everything up here to prevent else if chain breaks (since compilation gives useless errors by thinking unsanitized inputs surviving to native gathers
@@ -520,9 +520,9 @@ namespace AVXXY_NAMESPACE
 						scatter<S, N / 2, Scale, I>(v.lo(), base, ind.lo(), mask.lo());
 						scatter<S, N / 2, Scale, I>(v.hi(), base, ind.hi(), mask.hi());
 					}
+					//clang is a cry-baby with inds for some reason, so force convert it. Pay attention to size!
 					else if constexpr (utils::is_zmm_size(MaxSize))
 					{
-						//clang is a cry-baby with ind here for some reason, so force convert it. Pay attention to size!
 						std::conditional_t<(concepts::zmm_sized<IndVec_t>), __m512i, __m256i> ni = ind;
 						if constexpr (is_i64<I> && is_f64<S>) return _mm512_mask_i64scatter_pd(base, mask, ni, v, Scale);
 						else if constexpr (is_i64<I> && is_f32<S>) return _mm512_mask_i64scatter_ps(base, mask, ni, v, Scale);
@@ -533,6 +533,38 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_i32<I> && is_f32<S>) return _mm512_mask_i32scatter_ps(base, mask, ni, v, Scale);
 						else if constexpr (is_i32<I> && any_i64<S>) return _mm512_mask_i32scatter_epi64(base, mask, ni, v, Scale);
 						else if constexpr (is_i32<I> && any_i32<S>) return _mm512_mask_i32scatter_epi32(base, mask, ni, v, Scale);
+						else static_assert(always_false_v<I, S>);
+					}
+					else if constexpr (FS.has(AVX512_VL))
+					{
+						if constexpr (utils::is_ymm_size(MaxSize))
+						{
+							std::conditional_t<(concepts::ymm_sized<IndVec_t>), __m256i, __m128i> ni = ind;
+							if constexpr (is_i64<I> && is_f64<S>) return _mm256_mask_i64scatter_pd(base, mask, ni, v, Scale);
+							else if constexpr (is_i64<I> && is_f32<S>) return _mm256_mask_i64scatter_ps(base, mask, ni, v, Scale);
+							else if constexpr (is_i64<I> && any_i64<S>) return _mm256_mask_i64scatter_epi64(base, mask, ni, v, Scale);
+							else if constexpr (is_i64<I> && any_i32<S>) return _mm256_mask_i64scatter_epi32(base, mask, ni, v, Scale);
+
+							else if constexpr (is_i32<I> && is_f64<S>) return _mm256_mask_i32scatter_pd(base, mask, ni, v, Scale);
+							else if constexpr (is_i32<I> && is_f32<S>) return _mm256_mask_i32scatter_ps(base, mask, ni, v, Scale);
+							else if constexpr (is_i32<I> && any_i64<S>) return _mm256_mask_i32scatter_epi64(base, mask, ni, v, Scale);
+							else if constexpr (is_i32<I> && any_i32<S>) return _mm256_mask_i32scatter_epi32(base, mask, ni, v, Scale);
+							else static_assert(always_false_v<I, S>);
+						}
+						else if constexpr (utils::is_xmm_size(MaxSize))
+						{
+							__m128i ni = ind;
+							if constexpr (is_i64<I> && is_f64<S>) return _mm_mask_i64scatter_pd(base, mask, ni, v, Scale);
+							else if constexpr (is_i64<I> && is_f32<S>) return _mm_mask_i64scatter_ps(base, mask, ni, v, Scale);
+							else if constexpr (is_i64<I> && any_i64<S>) return _mm_mask_i64scatter_epi64(base, mask, ni, v, Scale);
+							else if constexpr (is_i64<I> && any_i32<S>) return _mm_mask_i64scatter_epi32(base, mask, ni, v, Scale);
+
+							else if constexpr (is_i32<I> && is_f64<S>) return _mm_mask_i32scatter_pd(base, mask, ni, v, Scale);
+							else if constexpr (is_i32<I> && is_f32<S>) return _mm_mask_i32scatter_ps(base, mask, ni, v, Scale);
+							else if constexpr (is_i32<I> && any_i64<S>) return _mm_mask_i32scatter_epi64(base, mask, ni, v, Scale);
+							else if constexpr (is_i32<I> && any_i32<S>) return _mm_mask_i32scatter_epi32(base, mask, ni, v, Scale);
+							else static_assert(always_false_v<I, S>);
+						}
 						else static_assert(always_false_v<I, S>);
 					}
 					else static_assert(always_false_v<I, S>);
