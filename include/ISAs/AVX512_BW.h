@@ -13,6 +13,7 @@ namespace AVXXY_NAMESPACE
 		namespace ISA
 		{
 			using namespace concepts;
+			using namespace utils;
 			template<internals::FeatureSet FS>
 			struct AVX512BW
 			{
