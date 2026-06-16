@@ -326,18 +326,21 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename To, size_t N, typename From>
-					requires (std::max(sizeof(SIMD_Vector<To, N>), sizeof(SIMD_Vector<From, N>)) > 32 && any_small_int<From> && any_small_int<To>)
+					requires ((std::max(sizeof(SIMD_Vector<To, N>), sizeof(SIMD_Vector<From, N>)) > 32 && any_small_int<From> && any_small_int<To>) || (FS.has(AVX512_VL) && any_i16<From> && any_i8<To> && std::max(sizeof(SIMD_Vector<To, N>), sizeof(SIMD_Vector<From, N>)) <= 32))
 				static SIMD_Vector<To, N> eval(op_cvt<To>, const SIMD_Vector<From, N>& a)
 				{
 					using namespace concepts;
+					using namespace utils;
 					using TV = SIMD_Vector<To, N>;
 					using FV = SIMD_Vector<From, N>;
 					constexpr size_t MaxSize = std::max(sizeof(TV), sizeof(FV));
 
 					if constexpr (MaxSize > 64) return { vcvt<To>(a.lo()), vcvt<To>(a.hi()) };
-					else if constexpr (any_i16<From> && any_i8<To>) return _mm512_cvtepi16_epi8(a);
-					else if constexpr (is_i8<From> && any_i16<To>) return _mm512_cvtepi8_epi16(a);
-					else if constexpr (is_u8<From> && any_i16<To>) return _mm512_cvtepu8_epi16(a);
+					else if constexpr (is_zmm_size(MaxSize) && any_i16<From> && any_i8<To>) return _mm512_cvtepi16_epi8(a);
+					else if constexpr (is_zmm_size(MaxSize) && is_i8<From> && any_i16<To>) return _mm512_cvtepi8_epi16(a);
+					else if constexpr (is_zmm_size(MaxSize) && is_u8<From> && any_i16<To>) return _mm512_cvtepu8_epi16(a);
+					else if constexpr (FS.has(AVX512_VL) && is_ymm_size(MaxSize) && any_i16<From> && any_i8<To>) return _mm256_cvtepi16_epi8(a);
+					else if constexpr (FS.has(AVX512_VL) && is_xmm_size(MaxSize) && any_i16<From> && any_i8<To>) return _mm_cvtepi16_epi8(a);
 					else static_assert(always_false_v<To>);
 				}
 
