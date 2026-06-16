@@ -60,18 +60,6 @@ namespace AVXXY_NAMESPACE
 	//If returned vector's size is bigger than input, upper bits of returned value are undefined.
 	template<typename T, typename S, size_t N> requires (T::IsSimdVector) T vcast(const SIMD_Vector<S, N>& value);
 
-	//Extracts Part'th part of size (vector size)/PartCount from input vector and returns the result.
-	//For example, to extract third quarter of a vector, call extract<2,4> (2, because indices are starting from 0)
-	//To extract upper half, call extract<1,2>, to extract 6th part out of 8 call extract<5,8>, etc.
-	//template<size_t Part, size_t PartCount, typename S, size_t N> SIMD_Vector<S, N / PartCount> extract(const SIMD_Vector<S, N>& value);
-
-	//Inserts the vector `what` into vector `to` at Part'th division of sizeof(what). 
-	//I.e. treats target vector as multiple contigious vectors of the same size as `what`, and replaces Part'th one with `what`.
-	//For example, to replace upper half of target vector, call insert<1>(to, what), where `what` is half of `to`'s size.
-	//To override 5'th 16'th part, call insert<4>(to, what), where what is 1/16th the size of to.
-	//Sizes are checked and deduced automatically on compile time and raise static_assert errors on fail
-	//template<size_t Part, size_t N2, typename S, size_t N> SIMD_Vector<S, N> insert(const SIMD_Vector<S, N>& to, const SIMD_Vector<S, N2>& what);
-
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
 	//If the mask bit is 0, the corresponding element of `ifBitClear` is chosen
 	//If the mask bit is 1, the corresponding element of `ifBitSet` is chosen
