@@ -63,24 +63,30 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N, typename I>
-					requires (concepts::any_small_int<S>&& concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) > 32)
+					requires (concepts::any_small_int<S> && concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_Vector<S, N> eval(op_shl, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (!std::is_same_v<I, uint16_t>) return shift_left(a, vcvt<uint16_t>(b));
+					else if constexpr (any_i8<S>) return vcvt<S>(shift_left(vcvt<uint16_t>(a), b));
 					else if constexpr (sizeof(T) > 64) return { shift_left(a.lo(),b.lo()), shift_left(a.hi(),b.hi()) };
-					else if constexpr (any_i16<S>) return _mm512_sllv_epi16(a, b);
-					else return vcvt<S>(shift_left(vcvt<uint16_t>(a), vcvt<uint16_t>(b)));
+					else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_sllv_epi16(a, b);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_sllv_epi16(a, b);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_sllv_epi16(a, b);
+					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N, typename I>
-					requires (concepts::any_small_int<S>&& concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) > 32)
+					requires (concepts::any_small_int<S>&& concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 				static SIMD_Vector<S, N> eval(op_shr, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (!std::is_same_v<I, uint16_t>) return shift_right(a, vcvt<uint16_t>(b));
+					else if constexpr (any_i8<S>) return vcvt<S>(shift_right(vcvt<uint16_t>(a), b));
 					else if constexpr (sizeof(T) > 64) return { shift_right(a.lo(),b.lo()), shift_right(a.hi(),b.hi()) };
-					else if constexpr (any_i16<S>) return _mm512_srlv_epi16(a, b);
-					else return vcvt<S>(shift_left(vcvt<uint16_t>(a), vcvt<uint16_t>(b)));
+					else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_srlv_epi16(a, b);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_srlv_epi16(a, b);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_srlv_epi16(a, b);
+					else static_assert(always_false_v<S>);
 				}
 				template<typename S, size_t N>
 					requires (any_small_int<S> && sizeof(SIMD_Vector<S,N>) >= (FS.has(AVX512_VL) ? 0 : 33))
