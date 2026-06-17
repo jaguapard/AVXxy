@@ -7,6 +7,7 @@
 #include "ISAs/AVX512_VL.h"
 #include "ISAs/AVX512_DQ.h"
 #include "ISAs/AVX512_VBMI.h"
+#include "ISAs/AVX512_VBMI2.h"
 #include "ISAs/F16C.h"
 
 namespace AVXXY_NAMESPACE
@@ -23,6 +24,7 @@ namespace AVXXY_NAMESPACE
 		public:
 			static inline constexpr FeatureSet FeatureSet = FS;
 			using order = std::tuple<
+				std::conditional_t<FS.has(AVX512_VBMI2), ISA::AVX512VBMI2<FS>, Dummy>,
 				std::conditional_t<FS.has(AVX512_VBMI), ISA::AVX512VBMI<FS>, Dummy>,
 				std::conditional_t<FS.has(AVX512_DQ), ISA::AVX512DQ<FS>, Dummy>,
 				std::conditional_t<FS.has(AVX512_VL), ISA::AVX512VL<FS>, Dummy>,

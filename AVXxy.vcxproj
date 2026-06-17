@@ -270,6 +270,7 @@
     <ClInclude Include="include\ISAs\AVX512_DQ.h" />
     <ClInclude Include="include\ISAs\AVX512_F.h" />
     <ClInclude Include="include\ISAs\AVX512_VBMI.h" />
+    <ClInclude Include="include\ISAs\AVX512_VBMI2.h" />
     <ClInclude Include="include\ISAs\AVX512_VL.h" />
     <ClInclude Include="include\ISAs\F16C.h" />
     <ClInclude Include="include\ISAs\Scalar.h" />
