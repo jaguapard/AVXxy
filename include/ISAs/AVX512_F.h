@@ -102,27 +102,21 @@ namespace AVXXY_NAMESPACE
 				static SIMD_Vector<S, N> eval(op_or, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_or(a.lo(),b.lo()), logic_or(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_or_pd(a, b);
-					else if constexpr (is_f32<S>) return _mm512_or_ps(a, b);
-					else return _mm512_or_si512(a, b);
+					else return _mm512_or_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
 				}
 				template<typename S, size_t N>
 				requires (sizeof(SIMD_Vector<S,N>) > 32)
 				static SIMD_Vector<S, N> eval(op_and, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_and(a.lo(),b.lo()), logic_and(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_and_pd(a, b);
-					else if constexpr (is_f32<S>) return _mm512_and_ps(a, b);
-					else return _mm512_and_si512(a, b);
+					else return _mm512_and_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
 				}
 				template<typename S, size_t N>
 					requires (sizeof(SIMD_Vector<S, N>) > 32)
 				static SIMD_Vector<S, N> eval(op_xor, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
 					if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_xor(a.lo(),b.lo()), logic_xor(a.hi(),b.hi()) };
-					else if constexpr (is_f64<S>) return _mm512_xor_pd(a, b);
-					else if constexpr (is_f32<S>) return _mm512_xor_ps(a, b);
-					else return _mm512_xor_si512(a, b);
+					else return _mm512_xor_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
 				}
 				template<typename S, size_t N>
 					requires (sizeof(SIMD_Vector<S, N>) > 32)
