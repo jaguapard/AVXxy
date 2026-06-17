@@ -60,6 +60,11 @@ namespace AVXXY_NAMESPACE
 	//If returned vector's size is bigger than input, upper bits of returned value are undefined.
 	template<typename T, typename S, size_t N> requires (T::IsSimdVector) T vcast(const SIMD_Vector<S, N>& value);
 
+	//Reinterprets value as any other type and returns the result.
+	//If returned value's size is smaller than input, input's upper bits are discarded
+	//If returned value's size is bigger than input, upper bits of returned value are undefined.
+	template<typename T, typename S, size_t N> T vreinterpret(const SIMD_Vector<S, N>& value);
+
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
 	//If the mask bit is 0, the corresponding element of `ifBitClear` is chosen
 	//If the mask bit is 1, the corresponding element of `ifBitSet` is chosen
