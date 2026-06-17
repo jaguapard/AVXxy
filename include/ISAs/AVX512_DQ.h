@@ -92,6 +92,19 @@ namespace AVXXY_NAMESPACE
 				}
 
 				//TODO: add movm, movmask
+
+				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+					requires (sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33) && any_i64<S>)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 64) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+					else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_mullo_epi64(a, b);
+					else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_mullo_epi64(a, b);
+					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mullo_epi64(a, b);
+					else static_assert(always_false_v<T>);
+				}
 			};
 		}
 	}
