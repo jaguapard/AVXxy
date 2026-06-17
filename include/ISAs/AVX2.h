@@ -35,6 +35,43 @@ namespace AVXXY_NAMESPACE
 					}
 					else static_assert(always_false_v<T>);
 				}
+
+				template<typename S, size_t N>
+					requires (any_int<S> && sizeof(SIMD_Vector<S, N>) >= 17)
+				static SIMD_Vector<S,N> eval(op_mask2vec, const SIMD_BitMask<N>& a)
+				{
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { mask2vec<S>(a.lo()),mask2vec<S>(a.hi()) };
+					else if constexpr (ymm_sized<T> && any_i64<S>)
+					{
+						__m256i broadcasted = _mm256_set1_epi64x(a);
+						__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi64x(1, 2, 4, 8));
+						return _mm256_cmpeq_epi64(x, _mm256_set1_epi64x(0));
+					}
+					else if constexpr (ymm_sized<T> && any_i32<S>)
+					{
+						__m256i broadcasted = _mm256_set1_epi32(a);
+						__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi32(1, 2, 4, 8, 16, 32, 64, 128));
+						return _mm256_cmpeq_epi32(x, _mm256_set1_epi32(0));
+					}
+					else if constexpr (ymm_sized<T> && any_i16<S>)
+					{
+						__m256i broadcasted = _mm256_set1_epi16(a);
+						__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi16(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768));
+						return _mm256_cmpeq_epi16(x, _mm256_set1_epi16(0));
+					}
+					else if constexpr (ymm_sized<T> && any_i8<S>) //too much bits in mask (32 bits don't fit into 8 bits of elements). Thus, split the mask, deposit it into 16 bit elements and then combine
+					{
+						int16_t masklo = a.lo();
+						int16_t maskhi = a.hi();
+						static_assert(N % 2 == 0);
+						auto vlo = mask2vec<uint16_t, N/2>(masklo);
+						auto vhi = mask2vec<uint16_t, N/2>(maskhi) << 8;
+						return (vlo & 0xFF) | vhi;
+						//return _mm256_blendv_epi8(vlo,vhi, _mm256_setr_epi8())
+					}
+					else static_assert(always_false_v<T>);
+				}
 			};
 		}
 	}
