@@ -119,20 +119,20 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (ymm_sized<T> && any_i64<S>)
 					{
 						__m256i broadcasted = _mm256_set1_epi64x(a);
-						__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi64x(1, 2, 4, 8));
-						return _mm256_cmpeq_epi64(x, _mm256_set1_epi64x(0));
+						__m256i x = _mm256_sllv_epi64(broadcasted, _mm256_setr_epi64x(3, 2, 1, 0));
+						return _mm256_cmpgt_epi64(_mm256_set1_epi64x(0), x);
 					}
 					else if constexpr (ymm_sized<T> && any_i32<S>)
 					{
 						__m256i broadcasted = _mm256_set1_epi32(a);
-						__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi32(1, 2, 4, 8, 16, 32, 64, 128));
-						return _mm256_cmpeq_epi32(x, _mm256_set1_epi32(0));
+						__m256i x = _mm256_sllv_epi32(broadcasted, _mm256_setr_epi32(7, 6, 5, 4, 3, 2, 1, 0));
+						return _mm256_cmpgt_epi32(_mm256_set1_epi32(0), x);
 					}
 					else if constexpr (ymm_sized<T> && any_i16<S>)
 					{
 						__m256i broadcasted = _mm256_set1_epi16(a);
-						__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi16(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768));
-						return _mm256_cmpeq_epi16(x, _mm256_set1_epi16(0));
+						__m256i x = _mm256_sllv_epi16(broadcasted, _mm256_setr_epi16(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0));
+						return _mm256_cmpgt_epi16(_mm256_set1_epi16(0), x);
 					}
 					else if constexpr (ymm_sized<T> && any_i8<S>)
 					{
