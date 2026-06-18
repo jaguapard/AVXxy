@@ -4,6 +4,8 @@
 #include "../SIMD_BitMask.h"
 #include "../SIMD_Vector.h"
 #include "../FeatureSet.h"
+#include "../funcs.h"
+
 namespace AVXXY_NAMESPACE
 {
 	namespace internals
@@ -73,9 +75,38 @@ namespace AVXXY_NAMESPACE
 					else static_assert(always_false_v<T>);
 				}
 
+				template<typename S, size_t N, typename I>
+					requires (sizeof(S) >= 4 && concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) >= 17)
+				static SIMD_Vector<S, N> eval(op_permx, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
+				{
+					using namespace concepts;
+					using canon_t = typename same_size_uint_t<S>::type;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(I) != sizeof(S)) return permx(a, vcvt<canon_t>(ind));
+					else if constexpr (sizeof(T) > 32)
+					{
+						auto alo = a.lo();
+						auto ahi = a.hi();
+						return { permx2(alo, ahi, ind.lo()), permx2(alo, ahi, ind.hi()) };
+					}
+					else if constexpr (ymm_sized<T> && any_i32<S>) return _mm256_permutevar8x32_epi32(a, ind);
+					else if constexpr (ymm_sized<T> && is_f32<S>) return _mm256_permutevar8x32_ps(a, ind);
+					else if constexpr (ymm_sized<T> && sizeof(S) == 8)
+					{
+						//TODO: perhaps AVX _mm256_permutevar_pd + blend is better despite cross-domain and intralane limitations
+						//TODO: check if this works
+						using X = SIMD_Vector<int32_t, N * 2>;
+						X i32_a = vcast<X>(a); //reinterpret a as i32's
+						X i32_ind = vcast<X>(ind); //and ind too
+						X dup;
+						for (size_t i = 0; i < N * 2; ++i) dup[i] = i % 2;
+						return vcast<T>(permx(i32_a, i32_ind << 1 | dup)); //emulate 64-bit permute via 32-bits. I.e. permx(a, i64x4(0, 3, 1, 2)) will become permx(i32x_(a), i32x8(0, 1, 6, 7, 2, 3, 4, 5))
+					}
+				}
+
 				//Lookup table that maps 8-bit compress mask to 8-element permutexvar index register
-				//It it compressed to only take up 1 byte per index, thus, it needs to be expanded after loading at the call site (from int8_t's to your required signed type)
-				//Negative indices (when treated as int8_t) stored here means that value is masked out and should be passed through from other register.
+				//It it compressed to only take up 1 byte per index, thus, it needs to be expanded after loading at the call site (from int8_t's to required signed(!!!) type)
+				//Negative indices (when treated as int8_t) stored here means that value is masked out and should be passed through from source register.
 				//It is uncertain if 4 bit LUT would be better. 2 KiB size is decently large, but greatly simplifies the compress emulation for 8-element vectors, replacing it just with 1 mask extraction + lookup + cvt + cross-lane permute
 				static const std::array<uint64_t, 256> compress_to_permx_lut8 = []() {
 					std::array<uint64_t, 256> ret;
