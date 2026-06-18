@@ -63,15 +63,16 @@ namespace AVXXY_NAMESPACE
 						__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi16(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768));
 						return _mm256_cmpeq_epi16(x, _mm256_set1_epi16(0));
 					}
-					else if constexpr (ymm_sized<T> && any_i8<S>) //too much bits in mask (32 bits don't fit into 8 bits of elements). Thus, split the mask, deposit it into 16 bit elements and then combine
+					else if constexpr (ymm_sized<T> && any_i8<S>)
 					{
-						int16_t masklo = a.lo();
-						int16_t maskhi = a.hi();
-						static_assert(N % 2 == 0);
-						auto vlo = mask2vec<uint16_t, N/2>(masklo);
-						auto vhi = mask2vec<uint16_t, N/2>(maskhi) << 8;
-						return (vlo & 0xFF) | vhi;
-						//return _mm256_blendv_epi8(vlo,vhi, _mm256_setr_epi8())
+						//https://stackoverflow.com/questions/21622212/how-to-perform-the-inverse-of-mm256-movemask-epi8-vpmovmskb
+						__m256i vmask(_mm256_set1_epi32(a));
+						const __m256i shuffle(_mm256_setr_epi64x(0x0000000000000000,
+							0x0101010101010101, 0x0202020202020202, 0x0303030303030303));
+						vmask = _mm256_shuffle_epi8(vmask, shuffle);
+						const __m256i bit_mask(_mm256_set1_epi64x(0x7fbfdfeff7fbfdfe));
+						vmask = _mm256_or_si256(vmask, bit_mask);
+						return _mm256_cmpeq_epi8(vmask, _mm256_set1_epi64x(-1));
 					}
 					else static_assert(always_false_v<T>);
 				}
