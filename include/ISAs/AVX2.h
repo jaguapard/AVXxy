@@ -19,6 +19,52 @@ namespace AVXXY_NAMESPACE
 			struct AVX2
 			{
 				template<typename S, size_t N>
+					requires (std::is_signed_v<S> && std::is_integral_v<S> && sizeof(SIMD_Vector<S, N>) > 16)
+				static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { abs(a.lo()), abs(a.hi()) };
+					else if constexpr (ymm_sized<T> && is_i64<S>)
+					{
+						__m256i cmp = _mm256_cmpgt_epi64(_mm256_setzero_si256(), a);
+						return _mm256_blendv_epi8(a, -a, cmp);
+					}
+					else if constexpr (ymm_sized<T> && is_i32<S>) return _mm256_abs_epi32(a);
+					else if constexpr (ymm_sized<T> && is_i16<S>) return _mm256_abs_epi16(a);
+					else if constexpr (ymm_sized<T> && is_i16<S>) return _mm256_abs_epi8(a);
+					else static_assert(always_false_v<T>);
+				}
+
+				template<typename S, size_t N>
+				requires (any_int<S> && sizeof(SIMD_Vector<S, N>) > 16)
+				static SIMD_Vector<S, N> eval(op_add, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { add(a.lo(), b.lo()), add(a.hi(), b.hi()) };
+					else if constexpr (ymm_sized<T> && any_i64<S>) return _mm256_add_epi64(a, b);
+					else if constexpr (ymm_sized<T> && any_i32<S>) return _mm256_add_epi32(a, b);
+					else if constexpr (ymm_sized<T> && any_i16<S>) return _mm256_add_epi16(a, b);
+					else if constexpr (ymm_sized<T> && any_i8<S>) return _mm256_add_epi8(a, b);
+					else static_assert(always_false_v<T>);
+				}
+
+				template<typename S, size_t N>
+					requires (any_int<S> && sizeof(SIMD_Vector<S, N>) > 16)
+				static SIMD_Vector<S, N> eval(op_sub, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
+					else if constexpr (ymm_sized<T> && any_i64<S>) return _mm256_sub_epi64(a, b);
+					else if constexpr (ymm_sized<T> && any_i32<S>) return _mm256_sub_epi32(a, b);
+					else if constexpr (ymm_sized<T> && any_i16<S>) return _mm256_sub_epi16(a, b);
+					else if constexpr (ymm_sized<T> && any_i8<S>) return _mm256_sub_epi8(a, b);
+					else static_assert(always_false_v<T>);
+				}
+
+				template<typename S, size_t N>
 				requires (any_small_int<S> && sizeof(SIMD_Vector<S,N>) >= 17) //|| (FS.has(SSSE3) && any_i16<S>))
 				static SIMD_BitMask<N> eval(op_vec2mask, const SIMD_Vector<S, N>& a)
 				{
