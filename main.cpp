@@ -5,6 +5,8 @@ using namespace AVXXY_NAMESPACE;
 using namespace internals;
 int main()
 {
+	std::cout << "Compile target feature set: \n" << FS_compile_target << "\n\n";
+	std::cout << "Current feature set: " << FS_current << "\n\n";
 	char buf[64] = { 0 };
 	std::cout << "Input anything:\n";
 	fgets(buf, sizeof(buf), stdin);
