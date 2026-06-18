@@ -280,6 +280,7 @@
     <ClInclude Include="include\SIMD_BitMask.h" />
     <ClInclude Include="include\SIMD_BitMask_impl.h" />
     <ClInclude Include="include\SIMD_Vector.h" />
+    <ClInclude Include="include\tables.h" />
     <ClInclude Include="include\tags.h" />
     <ClInclude Include="include\utils.h" />
   </ItemGroup>
