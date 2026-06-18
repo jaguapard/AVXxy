@@ -65,6 +65,31 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+					requires (sizeof(SIMD_Vector<S, N>) > 16 && any_int<S>)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+					else if constexpr (ymm_sized<T> && any_i64<S>)
+					{
+						__m256i p1 = _mm256_mul_epu32(a, b); //alo*blo
+						__m256i ahi = _mm256_srli_epi64(a, 32);
+						__m256i bhi = _mm256_srli_epi64(b, 32);
+						__m256i p2 = _mm256_slli_epi64(_mm256_mul_epu32(a, bhi), 32);
+						__m256i p3 = _mm256_slli_epi64(_mm256_mul_epu32(b, ahi), 32);
+						return _mm256_add_epi64(p1, _mm256_add_epi64(p2, p3));
+					}
+					else if constexpr (ymm_sized<T> && any_i32<S>) return _mm256_mullo_epi32(a, b);
+					else if constexpr (ymm_sized<T> && any_i16<S>) return _mm256_mullo_epi16(a, b);
+					else if constexpr (ymm_sized<T> && any_i8<S>)
+					{
+						using canon_t = std::conditional_t<std::is_unsigned_v<S>, uint16_t, int16_t>;
+						return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
+					}
+				}
+
+				template<typename S, size_t N>
 				requires (any_small_int<S> && sizeof(SIMD_Vector<S,N>) >= 17) //|| (FS.has(SSSE3) && any_i16<S>))
 				static SIMD_BitMask<N> eval(op_vec2mask, const SIMD_Vector<S, N>& a)
 				{
