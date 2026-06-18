@@ -104,11 +104,30 @@ namespace AVXXY_NAMESPACE
 					}
 				}
 
+				template<typename S, size_t N>
+					requires (sizeof(S) == 4 && sizeof(SIMD_Vector<S, N>) >= 17)
+				static SIMD_Vector<S, N> eval(op_compress, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
+				{
+					using T = SIMD_Vector<S, N>;
+					using canon_t = same_size_int_t<S>::type;
+					//if constexpr (sizeof(T) > 32) //TODO: emulate larger compress
+					//else
+					if constexpr (ymm_sized<T> && sizeof(S) == 4)
+					{
+						auto permx_ind = vcvt<canon_t>(SIMD_Vector<int8_t, N>(_mm_loadu_si64(&compress_to_permx_lut8[mask])));
+						auto tmp = permx(a, permx_ind); //permx_ind is setup in such a way that is can be used both as index register and blend mask without extra conversions
+						if constexpr (is_f32<S>) return _mm256_blendv_ps(tmp, src, _mm256_castsi256_ps(permx_ind));
+						else if constexpr (any_i32<S>) return _mm256_blendv_epi8(tmp, src, permx_ind);
+						else static_assert(always_false_v<T>);
+					}
+					else static_assert(always_false_v<T>);
+				}
+
 				//Lookup table that maps 8-bit compress mask to 8-element permutexvar index register
 				//It it compressed to only take up 1 byte per index, thus, it needs to be expanded after loading at the call site (from int8_t's to required signed(!!!) type)
 				//Negative indices (when treated as int8_t) stored here means that value is masked out and should be passed through from source register.
 				//It is uncertain if 4 bit LUT would be better. 2 KiB size is decently large, but greatly simplifies the compress emulation for 8-element vectors, replacing it just with 1 mask extraction + lookup + cvt + cross-lane permute
-				static const std::array<uint64_t, 256> compress_to_permx_lut8 = []() {
+				static constexpr std::array<uint64_t, 256> compress_to_permx_lut8 = []() {
 					std::array<uint64_t, 256> ret;
 					for (int i = 0; i < 256; ++i)
 					{
