@@ -98,6 +98,9 @@
     <ClInclude Include="include\ISAs\F16C.h">
       <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512_CD.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
