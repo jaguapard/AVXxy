@@ -139,6 +139,20 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16 && any_int<S>)
+				static SIMD_BitMask<N> eval(op_cmple, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					return ~cmp_greater(a, b);
+				}
+
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16 && any_int<S>)
+				static SIMD_BitMask<N> eval(op_cmpge, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					return ~cmp_less(a, b);
+				}
+
+				template<typename S, size_t N>
 				requires (any_small_int<S> && sizeof(SIMD_Vector<S,N>) >= 17) //|| (FS.has(SSSE3) && any_i16<S>))
 				static SIMD_BitMask<N> eval(op_vec2mask, const SIMD_Vector<S, N>& a)
 				{
