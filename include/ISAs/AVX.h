@@ -120,7 +120,7 @@ namespace AVXXY_NAMESPACE
 					if constexpr (sizeof(T) > 32) return { load<S,N / 2>(sp, mask.lo(), src.lo()), load<S,N / 2>(sp + N / 2, mask.hi(),src.hi()) };
 					else
 					{
-						auto vec_mask = mask2vec<I, N>(mask);
+						auto vec_mask = vcast<SIMD_Vector<I, N>>(mask.as_vector());
 						if constexpr (ymm_sized<T> && sizeof(S) == 8) return _mm256_maskload_pd(sp, vec_mask);
 						else if constexpr (ymm_sized<T> && sizeof(S) == 4) return _mm256_maskload_ps(sp, vec_mask);
 						else if constexpr (xmm_sized<T> && sizeof(S) == 8) return _mm_maskload_pd(sp, vec_mask);
@@ -144,7 +144,7 @@ namespace AVXXY_NAMESPACE
 					}
 					else
 					{
-						auto vec_mask = mask2vec<I, N>(mask);
+						auto vec_mask = SIMD_Mask<I, N>(mask).as_vector();
 						if constexpr (ymm_sized<T> && sizeof(S) == 8) _mm256_maskstore_pd(sp, vec_mask, vec);
 						else if constexpr (ymm_sized<T> && sizeof(S) == 4) _mm256_maskstore_ps(sp, vec_mask, vec);
 						else if constexpr (xmm_sized<T> && sizeof(S) == 8) _mm_maskstore_pd(sp, vec_mask, vec);
@@ -159,8 +159,8 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32)  return { cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
-					else if constexpr (ymm_sized<T> && is_f64<S>) return vec2mask(T(_mm256_cmp_pd(a, b, _CMP_EQ_OQ)));
-					else if constexpr (ymm_sized<T> && is_f32<S>) return vec2mask(T(_mm256_cmp_ps(a, b, _CMP_EQ_OQ)));
+					else if constexpr (ymm_sized<T> && is_f64<S>) return _mm256_cmp_pd(a, b, _CMP_EQ_OQ);
+					else if constexpr (ymm_sized<T> && is_f32<S>) return _mm256_cmp_ps(a, b, _CMP_EQ_OQ);
 					else static_assert(always_false_v<T>);
 				}
 				template<typename S, size_t N>
@@ -169,8 +169,8 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32)  return { cmp_not_equal(a.lo(),b.lo()), cmp_not_equal(a.hi(),b.hi()) };
-					else if constexpr (ymm_sized<T> && is_f64<S>) return vec2mask(T(_mm256_cmp_pd(a, b, _CMP_NEQ_OQ)));
-					else if constexpr (ymm_sized<T> && is_f32<S>) return vec2mask(T(_mm256_cmp_ps(a, b, _CMP_NEQ_OQ)));
+					else if constexpr (ymm_sized<T> && is_f64<S>) return _mm256_cmp_pd(a, b, _CMP_NEQ_OQ);
+					else if constexpr (ymm_sized<T> && is_f32<S>) return _mm256_cmp_ps(a, b, _CMP_NEQ_OQ);
 					else static_assert(always_false_v<T>);
 				}
 				template<typename S, size_t N>
@@ -179,8 +179,8 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32)  return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
-					else if constexpr (ymm_sized<T> && is_f64<S>) return vec2mask(T(_mm256_cmp_pd(a, b, _CMP_GT_OQ)));
-					else if constexpr (ymm_sized<T> && is_f32<S>) return vec2mask(T(_mm256_cmp_ps(a, b, _CMP_GT_OQ)));
+					else if constexpr (ymm_sized<T> && is_f64<S>) return _mm256_cmp_pd(a, b, _CMP_GT_OQ);
+					else if constexpr (ymm_sized<T> && is_f32<S>) return _mm256_cmp_ps(a, b, _CMP_GT_OQ);
 					else static_assert(always_false_v<T>);
 				}
 				template<typename S, size_t N>
@@ -189,8 +189,8 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32)  return { cmp_greater_or_equal(a.lo(),b.lo()), cmp_greater_or_equal(a.hi(),b.hi()) };
-					else if constexpr (ymm_sized<T> && is_f64<S>) return vec2mask(T(_mm256_cmp_pd(a, b, _CMP_GE_OQ)));
-					else if constexpr (ymm_sized<T> && is_f32<S>) return vec2mask(T(_mm256_cmp_ps(a, b, _CMP_GE_OQ)));
+					else if constexpr (ymm_sized<T> && is_f64<S>) return _mm256_cmp_pd(a, b, _CMP_GE_OQ);
+					else if constexpr (ymm_sized<T> && is_f32<S>) return _mm256_cmp_ps(a, b, _CMP_GE_OQ);
 					else static_assert(always_false_v<T>);
 				}
 				template<typename S, size_t N>
@@ -199,8 +199,8 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32)  return { cmp_less(a.lo(),b.lo()), cmp_less(a.hi(),b.hi()) };
-					else if constexpr (ymm_sized<T> && is_f64<S>) return vec2mask(T(_mm256_cmp_pd(a, b, _CMP_LT_OQ)));
-					else if constexpr (ymm_sized<T> && is_f32<S>) return vec2mask(T(_mm256_cmp_ps(a, b, _CMP_LT_OQ)));
+					else if constexpr (ymm_sized<T> && is_f64<S>) return _mm256_cmp_pd(a, b, _CMP_LT_OQ);
+					else if constexpr (ymm_sized<T> && is_f32<S>) return _mm256_cmp_ps(a, b, _CMP_LT_OQ);
 					else static_assert(always_false_v<T>);
 				}
 				template<typename S, size_t N>
@@ -209,11 +209,12 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32)  return { cmp_less_or_equal(a.lo(),b.lo()), cmp_less_or_equal(a.hi(),b.hi()) };
-					else if constexpr (ymm_sized<T> && is_f64<S>) return vec2mask(T(_mm256_cmp_pd(a, b, _CMP_LE_OQ)));
-					else if constexpr (ymm_sized<T> && is_f32<S>) return vec2mask(T(_mm256_cmp_ps(a, b, _CMP_LE_OQ)));
+					else if constexpr (ymm_sized<T> && is_f64<S>) return _mm256_cmp_pd(a, b, _CMP_LE_OQ);
+					else if constexpr (ymm_sized<T> && is_f32<S>) return _mm256_cmp_ps(a, b, _CMP_LE_OQ);
 					else static_assert(always_false_v<T>);
 				}
 
+				/*
 				template<typename S, size_t N>
 					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= 17)
 				static SIMD_Mask<S, N>::UintT eval(op_maskvec2uint, const SIMD_Vector<S, N>& a)
@@ -223,7 +224,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (ymm_sized<T> && sizeof(S) == 8) return _mm256_movemask_pd(vreinterpret<__m256d>(a));
 					else if constexpr (ymm_sized<T> && sizeof(S) == 4) return _mm256_movemask_ps(vreinterpret<__m256>(a));
 					else static_assert(always_false_v<T>);
-				}
+				}*/
 
 				/* TODO: low bits will result in tiny values, potentially crushing comparison with 0. May play around it by oring to get something into exponent.
 				* Watch out of signed 0 and NaN!

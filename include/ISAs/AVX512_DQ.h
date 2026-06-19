@@ -105,7 +105,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mullo_epi64(a, b);
 					else static_assert(always_false_v<T>);
 				}
-
+				/*
 				template<typename S, size_t N>
 					requires (sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33) && sizeof(S) >= 4)
 				static SIMD_Mask<S,N> eval(op_vec2mask, const SIMD_Vector<S, N>& v)
@@ -119,7 +119,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 8) return _mm_movepi64_mask(vreinterpret<__m128i>(v));
 					else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 4) return _mm_movepi32_mask(vreinterpret<__m128i>(v));
 					else static_assert(always_false_v<T>);
-				}
+				}*/
 			};
 		}
 	}

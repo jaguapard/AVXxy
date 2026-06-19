@@ -254,16 +254,14 @@ namespace AVXXY_NAMESPACE
 		return internals::DefaultDispatcher::run(internals::op_compress{}, mask, a, src);
 	}
 	template<typename S, size_t N>
-	__forceinline typename SIMD_Vector<S, N>::MaskT::UintT vec2mask(const SIMD_Vector<S, N>& v)
+	typename concepts::bits_to_uint_t<N>::type movemask(const SIMD_Vector<S, N>& v)
 	{
-		return internals::DefaultDispatcher::run(internals::op_maskvec2uint{}, v);
+		return internals::DefaultDispatcher::run(internals::op_movemask{}, v);
 	}
 	template<typename S, size_t N>
-	__forceinline SIMD_Vector<S, N> mask2vec(const typename SIMD_Vector<S, N>::MaskT::UintT& mask)
+	SIMD_Vector<S, N> movm(const typename concepts::bits_to_uint_t<N>::type& mask)
 	{
-		return internals::DefaultDispatcher::run(internals::op_uint2maskvec<S, N>{}, mask);
-		//using U = concepts::same_size_uint_t<S>::type;
-		//return maskz_mov(mask, std::bit_cast<S>(~U(0)));
+		return internals::DefaultDispatcher::run(internals::op_movm<S,N>{}, mask);
 	}
 	template <typename S, size_t N> requires (sizeof(S) * 8 >= N)
 		__forceinline SIMD_Vector<typename concepts::same_size_uint_t<S>::type, N> conflict(const SIMD_Vector<S, N>& a)

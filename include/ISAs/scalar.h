@@ -228,7 +228,7 @@ namespace AVXXY_NAMESPACE
 				}
 				template<typename S, size_t N, size_t Scale, typename I>
 					requires (concepts::any_int<I>)
-				static SIMD_Vector<S, N> eval(op_gather<S, N, Scale>, const void* base, const SIMD_Vector<I, N>& ind, const SIMD_Mask<S, N>& mask = SIMD_Mask<S, N>::AllOnes(), const SIMD_Vector<S, N>& src = 0)
+				static SIMD_Vector<S, N> eval(op_gather<S, N, Scale>, const void* base, const SIMD_Vector<I, N>& ind, const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& src = 0)
 				{
 					scream();
 					SIMD_Vector<S, N> ret;
@@ -528,20 +528,27 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> eval(op_uint2maskvec<S, N>, const SIMD_Mask<S, N>::UintT& mask)
+				static SIMD_Vector<S, N> eval(op_movm<S,N>, const typename bits_to_uint_t<N>::type& mask)
 				{
 					using U = concepts::same_size_uint_t<S>::type;
+					using MU = bits_to_uint_t<N>::type;
 					SIMD_Vector<S, N> ret;
-					for (size_t i = 0; i < N; ++i) ret[i] = mask & (decltype(mask)(1) << i) ? std::bit_cast<S>(~U(0)) : S(0);
+					for (size_t i = 0; i < N; ++i)
+					{
+						U x = mask & (MU(1) << i) ? ~U(0) : U(0);
+						S y = std::bit_cast<S>(x);
+						ret[i] = y;
+					}
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Mask<S, N>::UintT eval(op_maskvec2uint, const SIMD_Vector<S, N>& a)
+				static typename bits_to_uint_t<N>::type eval(op_movemask, const SIMD_Vector<S, N>& a)
 				{
 					using U = concepts::same_size_uint_t<S>::type;
-					SIMD_Mask<S, N> ret;
+					using X = typename bits_to_uint_t<N>::type;
+					X ret = 0;
 					constexpr U sb = U(1) << (sizeof(U) * 8 - 1);
-					for (size_t i = 0; i < N; ++i) ret.setBit(i, std::bit_cast<U>(a[i]) & sb);
+					for (size_t i = 0; i < N; ++i) if (std::bit_cast<U>(a[i]) & sb) ret |= X(1) << i;
 					return ret;
 				}
 			private:

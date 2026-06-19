@@ -36,11 +36,6 @@ namespace AVXXY_NAMESPACE
 	}*/
 
 	template<size_t N>
-	inline SIMD_Mask<S,N>::operator UintT() const
-	{
-		return underlying & AllOnes;
-	}
-	template<size_t N>
 	inline bool SIMD_Mask<S,N>::operator[](size_t i) const
 	{
 		return underlying & (UintT(1) << i);
@@ -53,52 +48,11 @@ namespace AVXXY_NAMESPACE
 		underlying |= UintT(value) << i;
 		underlying &= AllOnes;
 	}
-	template<size_t N>
-	inline SIMD_Mask<S,N>::UintT SIMD_Mask<S,N>::as_uint() const
-	{
-		return UintT(*this);
-	}
+	
 	template<size_t N>
 	inline SIMD_Mask<S,N>::IntT SIMD_Mask<S,N>::as_int() const
 	{
 		return UintT(*this);
-	}
-	template<size_t N>
-	inline SIMD_BitMask<N / 2> SIMD_Mask<S,N>::lo() const
-	{
-		return underlying;
-	}
-	template<size_t N>
-	inline SIMD_BitMask<N / 2> SIMD_Mask<S,N>::hi() const
-	{
-		return underlying >> (N / 2);
-	}
-	
-	template<size_t N>
-	inline SIMD_Mask<S,N>& SIMD_Mask<S,N>::operator&=(const SIMD_Mask<S,N>& other)
-	{
-		*this = *this & other;
-		return *this;
-	}
-	template<size_t N>
-	inline SIMD_Mask<S,N>& SIMD_Mask<S,N>::operator|=(const SIMD_Mask<S,N>& other)
-	{
-		*this = *this | other;
-		return *this;
-	}
-	template<size_t N>
-	inline SIMD_Mask<S,N>& SIMD_Mask<S,N>::operator^=(const SIMD_Mask<S,N>& other)
-	{
-		*this = *this ^ other;
-		return *this;
-	}
-
-	template <size_t N>
-	static std::ostream& operator<<(std::ostream& os, const SIMD_Mask<S,N>& mask)
-	{
-		for (int i = 0; i < N; ++i) os << (mask[i] ? 1 : 0) << ",";
-		os << (mask[N - 1] ? 1 : 0);
-		return os;
 	}
 }
 #endif
