@@ -53,7 +53,7 @@ scatter<6>(m, scatterTarget, small_ind, mask2); //overrides Scale with 6
 # Features
 _This section describes feature set planned for release. Pre-release versions may not have some of the features, or may not implement them fully. Features italized are completely unimplemented as of now_
 - Implementation of subset of operations: 
-	- unmasked: add, sub, mul, div, logic or, and, xor, not, shift left and right, floor, ceil, abs, min, max, comparisons (==, !=, >, >=, <, \<=), cross-lane permute of 1 and 2 registers (permutex(2)var intrinsic, function name permx(2)), unpacklo, unpackhi, sqrtd, sqrtf, FP16 <-> FP32 conversions. 
+	- unmasked: add, sub, mul, div, logic or, and, xor, not, shift left and right, floor, ceil, abs, min, max, comparisons (==, !=, >, >=, <, \<=), cross-lane permute of 1 and 2 registers (permutex(2)var intrinsic, function name permx(2)), unpacklo, unpackhi, sqrtd, sqrtf, conflict detection, FP16 <-> FP32 conversions. 
 	- masked: mask(z)_mov, blend, compress, load, store, gather, scatter
 	- meta-operations: conversion of vector elements to other type, casting (reinterpreting) vectors
 - C++-style operators for vector types (`+, -, *, /, <<, >>, &, |, ^, ~`) and in-place variations of them.
@@ -69,7 +69,7 @@ _This section describes feature set planned for release. Pre-release versions ma
 	- Any size for index argument for permutex(2)var
 
 
-- _Compile-time detection of available instruction sets and adjustment of dispatching using it. The machinery is exposed in `FeatureSet.h`, so you can tweak manually for certain architectures (enable or disable some CPU feature flags)._
+- Compile-time detection of available instruction sets and adjustment of dispatching using it. The machinery is exposed in `FeatureSet.h`, so you can tweak manually for certain architectures (enable or disable some CPU feature flags).
 - Compile-time dispatch pipeline with fixed preference order for different instruction sets
 - Interoperability with intrinsics: the vector and mask vector types smaller than 65 bytes and bit masks smaller than 65 bits are implicitly castable to and from their intrinsic versions (__m512, __m256i, __mmask16, etc), allowing them to be used mostly seamlessly inside intrinsic functions.
 - `std::ostream&` operators for outputting vectors and masks as human-readable strings to output streams (console, files, etc).
