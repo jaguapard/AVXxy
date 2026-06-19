@@ -158,6 +158,20 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
+				requires (any_int<S> && sizeof(SIMD_Vector<S,N>) > 16)
+				static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+				{
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { mask_mov(ifBitClear.lo(), mask.lo(), ifBitSet.lo()), mask_mov(ifBitClear.hi(), mask.hi(), ifBitSet.hi()) };
+					else if constexpr (ymm_sized<T>)
+					{
+						auto vecm = mask2vec<S, N>(mask);
+						return _mm256_blendv_epi8(ifBitClear, ifBitSet, vecm);
+					}
+					else static_assert(always_false_v<T>);
+				}
+
+				template<typename S, size_t N>
 				requires (sizeof(SIMD_Vector<S, N>) > 16 && any_int<S>)
 				static SIMD_BitMask<N> eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				{
