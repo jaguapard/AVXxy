@@ -108,6 +108,51 @@ namespace AVXXY_NAMESPACE
 						else static_assert(always_false_v<T>);
 					}
 				}
+
+				template<typename S, size_t N>
+					requires (sizeof(S) >= 4)
+				static SIMD_Vector<S, N> eval(op_load<S, N>, const void* p, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes, const SIMD_Vector<S, N>& src = 0)
+				{
+					using T = SIMD_Vector<S, N>;
+					using F = std::conditional_t<(sizeof(S) > 4), double, float>;
+					using I = std::conditional_t<(sizeof(S) > 4), int64_t, int32_t>;
+					const F* sp = reinterpret_cast<const F*>(p);
+					if constexpr (sizeof(T) > 32) return { load<S,N / 2>(sp, mask.lo(), src.lo()), load<S,N / 2>(sp + N / 2, mask.hi(),src.hi()) };
+					else
+					{
+						auto vec_mask = mask2vec<I, N>(mask);
+						if constexpr (ymm_sized<T> && sizeof(S) == 8) return _mm256_maskload_pd(sp, vec_mask);
+						else if constexpr (ymm_sized<T> && sizeof(S) == 4) return _mm256_maskload_ps(sp, vec_mask);
+						else if constexpr (xmm_sized<T> && sizeof(S) == 8) return _mm_maskload_pd(sp, vec_mask);
+						else if constexpr (xmm_sized<T> && sizeof(S) == 4) return _mm_maskload_ps(sp, vec_mask);
+						else static_assert(always_false_v<T>);
+					}
+				}
+
+				template<typename S, size_t N>
+					requires (sizeof(S) >= 4)
+				static void eval(op_store, SIMD_Vector<S, N> vec, void* p, const SIMD_BitMask<N>& mask = SIMD_BitMask<N>::AllOnes)
+				{
+					using T = SIMD_Vector<S, N>;
+					using F = std::conditional_t<(sizeof(S) > 4), double, float>;
+					using I = std::conditional_t<(sizeof(S) > 4), int64_t, int32_t>;
+					F* sp = reinterpret_cast<F*>(p);
+					if constexpr (sizeof(T) > 32)
+					{
+						store(vec.lo(), sp, mask.lo());
+						store(vec.hi(), sp + N / 2, mask.hi());
+					}
+					else
+					{
+						auto vec_mask = mask2vec<I, N>(mask);
+						if constexpr (ymm_sized<T> && sizeof(S) == 8) _mm256_maskstore_pd(sp, vec_mask, vec);
+						else if constexpr (ymm_sized<T> && sizeof(S) == 4) _mm256_maskstore_ps(sp, vec_mask, vec);
+						else if constexpr (xmm_sized<T> && sizeof(S) == 8) _mm_maskstore_pd(sp, vec_mask, vec);
+						else if constexpr (xmm_sized<T> && sizeof(S) == 4) _mm_maskstore_ps(sp, vec_mask, vec);
+						else static_assert(always_false_v<T>);
+					}
+				}
+
 			};
 		}
 	}
