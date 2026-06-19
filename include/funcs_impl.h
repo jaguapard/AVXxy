@@ -261,7 +261,7 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	SIMD_Vector<S, N> mask2vec(const SIMD_BitMask<N>& mask)
 	{
-		return internals::DefaultDispatcher::run(internals::op_mask2vec{}, mask);
+		return internals::DefaultDispatcher::run(internals::op_mask2vec<S,N>{}, mask);
 		//using U = concepts::same_size_uint_t<S>::type;
 		//return maskz_mov(mask, std::bit_cast<S>(~U(0)));
 	}

@@ -175,7 +175,7 @@ namespace AVXXY_NAMESPACE
 
 				template<typename S, size_t N>
 					requires (any_int<S> && sizeof(SIMD_Vector<S, N>) >= 17)
-				static SIMD_Vector<S,N> eval(op_mask2vec, const SIMD_BitMask<N>& a)
+				static SIMD_Vector<S,N> eval(op_mask2vec<S,N>, const SIMD_BitMask<N>& a)
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32) return { mask2vec<S>(a.lo()),mask2vec<S>(a.hi()) };
@@ -241,14 +241,28 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-					requires (sizeof(S) == 4 && sizeof(SIMD_Vector<S, N>) >= 17 && sizeof(SIMD_Vector<S, N>) <= 32)
+					requires (sizeof(S) == 4 && sizeof(SIMD_Vector<S, N>) >= 17)
 				static SIMD_Vector<S, N> eval(op_compress, const SIMD_BitMask<N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
 				{
 					using T = SIMD_Vector<S, N>;
 					using canon_t = same_size_int_t<S>::type;
-					//if constexpr (sizeof(T) > 32) //TODO: emulate larger compress
-					//else
-					if constexpr (ymm_sized<T> && sizeof(S) == 4)
+					if constexpr (sizeof(T) > 32)
+					{
+						//TODO: check if src is passed properly. Also, can write it out at the end
+						T ret = src;
+						auto cl = compress(mask.lo(), a.lo(), src.lo());
+						auto ch = compress(mask.hi(), a.hi(), src.lo()); //doesn't matter which src, since that's useless anyway
+						size_t popcnt_lo = std::popcount(typename SIMD_BitMask<N>::UintT(mask.lo())); //TODO: _mm_popcnt_u* if is supported?
+						size_t popcnt_hi = std::popcount(typename SIMD_BitMask<N>::UintT(mask.hi()));
+
+						static_assert(sizeof(S) == 4);
+						float* p = (float*)&ret;
+						_mm256_storeu_ps(p, vreinterpret<__m256>(cl));
+						SIMD_BitMask<N / 2> cm = (uint64_t(1) << popcnt_hi) - 1;
+						_mm256_maskstore_ps(p + popcnt_lo, mask2vec<int32_t, N / 2>(cm), vreinterpret<__m256>(ch)); //don't overwrite src remains
+						return ret;
+					}
+					else if constexpr (ymm_sized<T> && sizeof(S) == 4)
 					{
 						auto permx_ind = vcvt<canon_t>(SIMD_Vector<int8_t, N>(_mm_loadu_si64(&tables::compress_to_permx8[mask])));
 						auto tmp = permx(a, permx_ind); //permx_ind is setup in such a way that is can be used both as index register and blend mask without extra conversions
