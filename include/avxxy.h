@@ -5,7 +5,7 @@
 #include "funcs.h"
 #include "funcs_impl.h"
 #include "operators.h"
-#include "SIMD_BitMask_impl.h"
+#include "SIMD_Mask_impl.h"
 
 namespace AVXXY_NAMESPACE
 {

@@ -1,6 +1,7 @@
 #pragma once
 #include "SIMD_BitMask.h"
 #include <iostream>
+#include "SIMD_Mask.h"
 #if 0
 namespace AVXXY_NAMESPACE
 {
@@ -72,6 +73,7 @@ namespace AVXXY_NAMESPACE
 	{
 		return underlying >> (N / 2);
 	}
+	
 	template<size_t N>
 	inline SIMD_Mask<S,N>& SIMD_Mask<S,N>::operator&=(const SIMD_Mask<S,N>& other)
 	{

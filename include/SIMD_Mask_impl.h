@@ -16,6 +16,7 @@ namespace AVXXY_NAMESPACE
 		if constexpr (IsBitMask) this->underlying = bits & AllOnesUint;
 		else
 		{
+			this->underlying = mask2vec<S, N>(bits);
 			//TODO: bits to vector mask conversion here!
 			//this->underlying = Default
 		}
@@ -26,6 +27,14 @@ namespace AVXXY_NAMESPACE
 	{
 		using U = typename VecT::UintScalarT;
 		if constexpr (IsBitMask) return underlying & (UintT(1) << i) & AllOnesUint;
-		else return vec2mask(underlying) & (UintT(1) << i) & AllOnesUint; //std::bit_cast<U>(underlying[i]) & (U(1) << (sizeof(U) * 8 - 1)); //TODO: clean?
+		else return (vec2mask(underlying) & (U(1) << i) & AllOnesUint).underlying != 0; //std::bit_cast<U>(underlying[i]) & (U(1) << (sizeof(U) * 8 - 1)); //TODO: clean?
+	}
+
+	template<typename S, size_t N>
+	inline SIMD_Mask<S, N> SIMD_Mask<S, N>::operator&(const SIMD_Mask<S, N>& other) const
+	{
+		return underlying & other.underlying;
+		//SIMD_Mask<S, N> ret;
+		//if constexpr (IsBitMask) ret.underlying = 
 	}
 }
