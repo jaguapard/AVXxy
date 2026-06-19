@@ -106,7 +106,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N>
-	requires (std::is_floating_point_v<S>)
+		requires (std::is_floating_point_v<S>)
 	__forceinline SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a)
 	{
 		return internals::DefaultDispatcher::run(internals::op_floor{}, a);
@@ -155,74 +155,74 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N>
-	__forceinline SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& ifBitSet)
+	__forceinline SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet)
 	{
 		return internals::DefaultDispatcher::run(internals::op_mask_mov{}, ifBitClear, mask, ifBitSet);
 	}
 
 	template<typename S, size_t N>
-	__forceinline SIMD_Vector<S, N> maskz_mov(const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& ifBitSet)
+	__forceinline SIMD_Vector<S, N> maskz_mov(const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet)
 	{
 		return mask_mov(SIMD_Vector<S, N>(0), mask, ifBitSet);
 	}
 
 	template<typename S, size_t N>
-	__forceinline SIMD_Vector<S, N> blend(const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& ifBitClear, const SIMD_Vector<S, N>& ifBitSet)
+	__forceinline SIMD_Vector<S, N> blend(const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& ifBitClear, const SIMD_Vector<S, N>& ifBitSet)
 	{
 		return mask_mov(ifBitClear, mask, ifBitSet);
 	}
 
 	template<typename S, size_t N>
-	__forceinline SIMD_Vector<S, N> load(const void* p, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& src)
+	__forceinline SIMD_Vector<S, N> load(const void* p, const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& src)
 	{
 		return internals::DefaultDispatcher::run(internals::op_load<S, N>{}, p, mask, src);
 	}
 
 	template<typename S, size_t N>
-	__forceinline void store(const SIMD_Vector<S, N>& v, void* p, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask)
+	__forceinline void store(const SIMD_Vector<S, N>& v, void* p, const SIMD_Mask<S, N>& mask)
 	{
 		return internals::DefaultDispatcher::run(internals::op_store{}, v, p, mask);
 	}
 
 	template<typename S, size_t N, size_t Scale, typename I>
-	__forceinline SIMD_Vector<S, N> __gather_impl(const void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& src)
+	__forceinline SIMD_Vector<S, N> __gather_impl(const void* base, const SIMD_Vector<I, N>& ind, const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& src)
 	{
 		return internals::DefaultDispatcher::run(internals::op_gather<S, N, Scale>{}, base, ind, mask, src);
 	}
 
 	template<typename S, size_t N, size_t Scale, typename I>
-	__forceinline void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask)
+	__forceinline void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const SIMD_Mask<S, N>& mask)
 	{
 		return internals::DefaultDispatcher::run(internals::op_scatter<Scale>{}, vec, base, ind, mask);
 	}
 
 	template<typename S, size_t N>
-	__forceinline SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	__forceinline SIMD_Mask<S, N> cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		return internals::DefaultDispatcher::run(internals::op_cmpeq{}, a, b);
 	}
 	template<typename S, size_t N>
-	__forceinline SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_not_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	__forceinline SIMD_Mask<S, N> cmp_not_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		return internals::DefaultDispatcher::run(internals::op_cmpneq{}, a, b);
 	}
 	template<typename S, size_t N>
-	__forceinline SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_less(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	__forceinline SIMD_Mask<S, N> cmp_less(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		return internals::DefaultDispatcher::run(internals::op_cmplt{}, a, b);
 	}
 	template<typename S, size_t N>
-	__forceinline SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_less_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	__forceinline SIMD_Mask<S, N> cmp_less_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		return internals::DefaultDispatcher::run(internals::op_cmple{}, a, b);
 	}
 	template<typename S, size_t N>
-	__forceinline SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	__forceinline SIMD_Mask<S, N> cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		return internals::DefaultDispatcher::run(internals::op_cmpgt{}, a, b);
 	}
 	template<typename S, size_t N>
-	__forceinline SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	__forceinline SIMD_Mask<S, N> cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		return internals::DefaultDispatcher::run(internals::op_cmpge{}, a, b);
 	}
@@ -249,7 +249,7 @@ namespace AVXXY_NAMESPACE
 		return internals::DefaultDispatcher::run(internals::op_fp32_to_fp16{}, a);
 	}
 	template<typename S, size_t N>
-	__forceinline SIMD_Vector<S, N> compress(const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src)
+	__forceinline SIMD_Vector<S, N> compress(const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src)
 	{
 		return internals::DefaultDispatcher::run(internals::op_compress{}, mask, a, src);
 	}
@@ -261,12 +261,12 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> mask2vec(const SIMD_Mask<S, N>& mask)
 	{
-		return internals::DefaultDispatcher::run(internals::op_mask2vec<S,N>{}, mask);
+		return internals::DefaultDispatcher::run(internals::op_mask2vec<S, N>{}, mask);
 		//using U = concepts::same_size_uint_t<S>::type;
 		//return maskz_mov(mask, std::bit_cast<S>(~U(0)));
 	}
 	template <typename S, size_t N> requires (sizeof(S) * 8 >= N)
-	__forceinline SIMD_Vector<typename concepts::same_size_uint_t<S>::type, N> conflict(const SIMD_Vector<S, N>& a)
+		__forceinline SIMD_Vector<typename concepts::same_size_uint_t<S>::type, N> conflict(const SIMD_Vector<S, N>& a)
 	{
 		return internals::DefaultDispatcher::run(internals::op_conflict{}, a);
 	}
