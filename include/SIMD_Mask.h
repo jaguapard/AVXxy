@@ -21,7 +21,7 @@ namespace AVXXY_NAMESPACE
 		using UintT = typename concepts::bits_to_uint_t<N>::type;
 		using IntT = typename concepts::bits_to_int_t<N>::type;
 		using VecT = SIMD_Vector<S, N>;
-		//static inline constexpr UintT AllOnes = (N == sizeof(UintT) * 8) ? ~UintT(0) : ((UintT(1) << N) - 1);
+		static inline constexpr UintT AllOnesUint = (N == sizeof(UintT) * 8) ? ~UintT(0) : ((UintT(1) << N) - 1);
 		static inline constexpr bool IsVectorMask = !internals::FS_current.has(internals::Feature::AVX512_F);
 		static inline constexpr bool IsBitMask = !IsVectorMask;
 		static constexpr SIMD_Mask<S, N> AllOnes();
