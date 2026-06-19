@@ -8,7 +8,6 @@ class SIMD_Vector;
 
 namespace AVXXY_NAMESPACE
 {
-	//Represents a compacted mask with N bits.
 	template<typename S, size_t N>
 	struct SIMD_Mask
 	{
