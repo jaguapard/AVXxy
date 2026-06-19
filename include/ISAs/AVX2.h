@@ -90,6 +90,29 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
+				requires (sizeof(SIMD_Vector<S, N>) > 16 && any_int<S>)
+				static SIMD_BitMask<N> eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
+					else if constexpr (ymm_sized<T> && any_i64<S>) return _mm256_cmpeq_epi64(a, b);
+					else if constexpr (ymm_sized<T> && any_i32<S>) return _mm256_cmpeq_epi32(a, b);
+					else if constexpr (ymm_sized<T> && any_i16<S>) return _mm256_cmpeq_epi16(a, b);
+					else if constexpr (ymm_sized<T> && any_i8<S>) return _mm256_cmpeq_epi8(a, b);
+					else static_assert(always_false_v<T>);
+				}
+
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16 && any_int<S>)
+				static SIMD_BitMask<N> eval(op_cmpneq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					return ~cmp_equal(a, b);
+				}
+
+				template<typename S, size_t N>
 				requires (any_small_int<S> && sizeof(SIMD_Vector<S,N>) >= 17) //|| (FS.has(SSSE3) && any_i16<S>))
 				static SIMD_BitMask<N> eval(op_vec2mask, const SIMD_Vector<S, N>& a)
 				{
