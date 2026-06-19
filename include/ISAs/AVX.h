@@ -24,7 +24,7 @@ namespace AVXXY_NAMESPACE
 				{
 					using U = same_size_uint_t<S>::type;
 					constexpr U sb = U(1) << (sizeof(S) * 8 - 1);
-					return logic_xor(a, std::bit_cast<S>(~sb)); //force sign bit to 0
+					return logic_xor(a, SIMD_Vector<S, N>(std::bit_cast<S>(~sb))); //force sign bit to 0
 				}
 
 				template<typename S, size_t N>
@@ -54,7 +54,7 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32) return { logic_and(a.lo(), b.lo()), logic_and(a.hi(), b.hi()) };
-					else if (ymm_sized<T>) return _mm256_and_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
+					else if constexpr (ymm_sized<T>) return _mm256_and_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
 					else static_assert(always_false_v<T>);
 				}
 				template<typename S, size_t N>
@@ -63,7 +63,7 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32) return { logic_or(a.lo(), b.lo()), logic_or(a.hi(), b.hi()) };
-					else if (ymm_sized<T>) return _mm256_or_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
+					else if constexpr (ymm_sized<T>) return _mm256_or_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
 					else static_assert(always_false_v<T>);
 				}
 				template<typename S, size_t N>
@@ -72,7 +72,7 @@ namespace AVXXY_NAMESPACE
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32) return { logic_xor(a.lo(), b.lo()), logic_xor(a.hi(), b.hi()) };
-					else if (ymm_sized<T>) return _mm256_xor_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
+					else if constexpr (ymm_sized<T>) return _mm256_xor_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
 					else static_assert(always_false_v<T>);
 				}
 				template<typename S, size_t N>
