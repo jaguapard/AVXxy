@@ -281,6 +281,8 @@
     <ClInclude Include="include\operators.h" />
     <ClInclude Include="include\SIMD_BitMask.h" />
     <ClInclude Include="include\SIMD_BitMask_impl.h" />
+    <ClInclude Include="include\SIMD_Mask.h" />
+    <ClInclude Include="include\SIMD_Mask_impl.h" />
     <ClInclude Include="include\SIMD_Vector.h" />
     <ClInclude Include="include\tables.h" />
     <ClInclude Include="include\tags.h" />
