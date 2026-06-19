@@ -96,10 +96,10 @@ namespace AVXXY_NAMESPACE
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32) return { cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
-					else if constexpr (ymm_sized<T> && any_i64<S>) return _mm256_cmpeq_epi64(a, b);
-					else if constexpr (ymm_sized<T> && any_i32<S>) return _mm256_cmpeq_epi32(a, b);
-					else if constexpr (ymm_sized<T> && any_i16<S>) return _mm256_cmpeq_epi16(a, b);
-					else if constexpr (ymm_sized<T> && any_i8<S>) return _mm256_cmpeq_epi8(a, b);
+					else if constexpr (ymm_sized<T> && any_i64<S>) return vec2mask(_mm256_cmpeq_epi64(a, b));
+					else if constexpr (ymm_sized<T> && any_i32<S>) return vec2mask(_mm256_cmpeq_epi32(a, b));
+					else if constexpr (ymm_sized<T> && any_i16<S>) return vec2mask(_mm256_cmpeq_epi16(a, b));
+					else if constexpr (ymm_sized<T> && any_i8<S>) return vec2mask(_mm256_cmpeq_epi8(a, b));
 					else static_assert(always_false_v<T>);
 				}
 
@@ -110,6 +110,32 @@ namespace AVXXY_NAMESPACE
 					using namespace concepts;
 					using T = SIMD_Vector<S, N>;
 					return ~cmp_equal(a, b);
+				}
+
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16 && any_int<S>)
+				static SIMD_BitMask<N> eval(op_cmpgt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using namespace concepts;
+					using T = SIMD_Vector<S, N>;
+					using I = same_size_int_t<S>::type;
+					if constexpr (std::is_unsigned_v<S>)
+					{
+						S xorv = S(1) << (sizeof(S) * 8 - 1); //xor with 0x800..000 before comparison
+						return cmp_greater(vcvt<I>(a) ^ xorv, vcvt<I>(b) ^ xorv);
+					}
+					else if constexpr (sizeof(T) > 32) return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
+					else if constexpr (ymm_sized<T> && is_i64<S>) return vec2mask(_mm256_cmpgt_epi64(a, b));
+					else if constexpr (ymm_sized<T> && is_i32<S>) return vec2mask(_mm256_cmpgt_epi32(a, b));
+					else if constexpr (ymm_sized<T> && is_i16<S>) return vec2mask(_mm256_cmpgt_epi16(a, b));
+					else if constexpr (ymm_sized<T> && is_i8<S>) return vec2mask(_mm256_cmpgt_epi8(a, b));
+					else static_assert(always_false_v<T>);
+				}
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16 && any_int<S>)
+				static SIMD_BitMask<N> eval(op_cmplt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					return cmp_greater(b, a); //flip arguments
 				}
 
 				template<typename S, size_t N>
