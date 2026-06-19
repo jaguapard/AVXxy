@@ -528,7 +528,7 @@ namespace AVXXY_NAMESPACE
 				}
 
 				template<typename S, size_t N>
-				static SIMD_Vector<S, N> eval(op_mask2vec<S, N>, const SIMD_Mask<S, N>::UintT& mask)
+				static SIMD_Vector<S, N> eval(op_uint2maskvec<S, N>, const SIMD_Mask<S, N>::UintT& mask)
 				{
 					using U = concepts::same_size_uint_t<S>::type;
 					SIMD_Vector<S, N> ret;
@@ -536,7 +536,7 @@ namespace AVXXY_NAMESPACE
 					return ret;
 				}
 				template<typename S, size_t N>
-				static SIMD_Mask<S, N>::UintT eval(op_vec2mask, const SIMD_Vector<S, N>& a)
+				static SIMD_Mask<S, N>::UintT eval(op_maskvec2uint, const SIMD_Vector<S, N>& a)
 				{
 					using U = concepts::same_size_uint_t<S>::type;
 					SIMD_Mask<S, N> ret;

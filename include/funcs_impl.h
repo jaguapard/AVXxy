@@ -256,12 +256,12 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	__forceinline typename SIMD_Vector<S, N>::MaskT::UintT vec2mask(const SIMD_Vector<S, N>& v)
 	{
-		return internals::DefaultDispatcher::run(internals::op_vec2mask{}, v);
+		return internals::DefaultDispatcher::run(internals::op_maskvec2uint{}, v);
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> mask2vec(const typename SIMD_Vector<S, N>::MaskT::UintT& mask)
 	{
-		return internals::DefaultDispatcher::run(internals::op_mask2vec<S, N>{}, mask);
+		return internals::DefaultDispatcher::run(internals::op_uint2maskvec<S, N>{}, mask);
 		//using U = concepts::same_size_uint_t<S>::type;
 		//return maskz_mov(mask, std::bit_cast<S>(~U(0)));
 	}

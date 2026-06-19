@@ -216,7 +216,7 @@ namespace AVXXY_NAMESPACE
 
 				template<typename S, size_t N>
 					requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= 17)
-				static SIMD_Mask<S, N> eval(op_vec2mask, const SIMD_Vector<S, N>& a)
+				static SIMD_Mask<S, N>::UintT eval(op_maskvec2uint, const SIMD_Vector<S, N>& a)
 				{
 					using T = SIMD_Vector<S, N>;
 					if constexpr (sizeof(T) > 32) return { vec2mask(a.lo()),vec2mask(a.hi()) };
