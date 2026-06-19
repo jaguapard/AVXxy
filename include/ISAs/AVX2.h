@@ -78,7 +78,7 @@ namespace AVXXY_NAMESPACE
 						__m256i bhi = _mm256_srli_epi64(b, 32);
 						__m256i p2 = _mm256_slli_epi64(_mm256_mul_epu32(a, bhi), 32);
 						__m256i p3 = _mm256_slli_epi64(_mm256_mul_epu32(b, ahi), 32);
-						return _mm256_add_epi64(p1, _mm256_add_epi64(p2, p3));
+						return _mm256_add_epi64(p3, _mm256_add_epi64(p1, p2));
 					}
 					else if constexpr (ymm_sized<T> && any_i32<S>) return _mm256_mullo_epi32(a, b);
 					else if constexpr (ymm_sized<T> && any_i16<S>) return _mm256_mullo_epi16(a, b);
