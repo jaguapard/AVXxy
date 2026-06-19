@@ -23,6 +23,13 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N>
+	inline SIMD_Mask<S, N>::SIMD_Mask(const SIMD_Mask<S, N / 2>& lo, const SIMD_Mask<S, N / 2>& hi)
+	{
+		if constexpr (IsBitMask) this->underlying = (UintT(lo.underlying) | (U(hi.underlying) << (N / 2))) & AllOnesUint;
+		else this->underlying = { lo.underlying, hi.underlying };
+	}
+
+	template<typename S, size_t N>
 	inline bool SIMD_Mask<S, N>::operator[](size_t i) const
 	{
 		using U = typename VecT::UintScalarT;
