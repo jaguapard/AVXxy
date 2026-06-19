@@ -47,6 +47,44 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (ymm_sized<T> && is_f32<S>) return _mm256_sub_ps(a, b);
 					else static_assert(always_false_v<T>);
 				}
+
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16)
+				static SIMD_Vector<S, N> eval(op_and, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { logic_and(a.lo(), b.lo()), logic_and(a.hi(), b.hi()) };
+					else if (ymm_sized<T>) return _mm256_and_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
+					else static_assert(always_false_v<T>);
+				}
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16)
+				static SIMD_Vector<S, N> eval(op_or, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { logic_or(a.lo(), b.lo()), logic_or(a.hi(), b.hi()) };
+					else if (ymm_sized<T>) return _mm256_or_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
+					else static_assert(always_false_v<T>);
+				}
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16)
+				static SIMD_Vector<S, N> eval(op_xor, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				{
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { logic_xor(a.lo(), b.lo()), logic_xor(a.hi(), b.hi()) };
+					else if (ymm_sized<T>) return _mm256_xor_ps(vreinterpret<__m256>(a), vreinterpret<__m256>(b));
+					else static_assert(always_false_v<T>);
+				}
+				template<typename S, size_t N>
+					requires (sizeof(SIMD_Vector<S, N>) > 16)
+				static SIMD_Vector<S, N> eval(op_not, const SIMD_Vector<S, N>& a)
+				{
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(T) > 32) return { logic_not(a.lo()), logic_not(a.hi()) };
+					//can't use compare random vectors trick, since FP comparisons are wonky with NaNs and signed 0, thus, have to explicitly set all ones
+					else if (ymm_sized<T>) return _mm256_xor_ps(vreinterpret<__m256>(a), _mm256_set1_ps(std::bit_cast<float>(0xFFFFFFFF)));
+					else static_assert(always_false_v<T>);
+				}
 			};
 		}
 	}
