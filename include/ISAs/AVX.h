@@ -85,6 +85,29 @@ namespace AVXXY_NAMESPACE
 					else if (ymm_sized<T>) return _mm256_xor_ps(vreinterpret<__m256>(a), _mm256_set1_ps(std::bit_cast<float>(0xFFFFFFFF)));
 					else static_assert(always_false_v<T>);
 				}
+
+				template<typename S, size_t N, typename I>
+					requires (sizeof(S) >= 4 && concepts::any_int<I>)
+				static SIMD_Vector<S, N> eval(op_permx, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
+				{
+					using namespace concepts;
+					using canon_t = typename same_size_uint_t<S>::type;
+					using T = SIMD_Vector<S, N>;
+					if constexpr (sizeof(I) != sizeof(S)) return permx(a, vcvt<canon_t>(ind));
+					else if constexpr (sizeof(T) > 16)
+					{
+						auto alo = a.lo();
+						auto ahi = a.hi();
+						return { permx2(alo, ahi, ind.lo()), permx2(alo, ahi, ind.hi()) };
+					}
+					else
+					{
+						//these are only good for 128 bits, 256 are intra-lanes
+						if constexpr (xmm_sized<T> && sizeof(S) == 8) return vreinterpret<T>(_mm_permutevar_pd(vreinterpret<__m128d>(a), ind));
+						else if constexpr (xmm_sized<T> && sizeof(S) == 4) return vreinterpret<T>(_mm_permutevar_ps(vreinterpret<__m128d>(a), ind));
+						else static_assert(always_false_v<T>);
+					}
+				}
 			};
 		}
 	}
