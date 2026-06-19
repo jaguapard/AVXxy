@@ -9,6 +9,7 @@ namespace AVXXY_NAMESPACE
 		struct op_add {};
 		struct op_sub {};
 		struct op_mul {};
+		struct op_conflict {};
 		struct op_div {};
 		struct op_mod {};
 		struct op_or {};
@@ -43,5 +44,8 @@ namespace AVXXY_NAMESPACE
 		struct op_max {};
 		struct op_fp16_to_fp32 {};
 		struct op_fp32_to_fp16 {};
+
+		struct op_vec2mask {};
+		template <typename S, size_t N> struct op_mask2vec {};
 	}
 }

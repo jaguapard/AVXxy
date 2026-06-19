@@ -13,6 +13,7 @@ namespace AVXXY_NAMESPACE
 	{
 		namespace ISA
 		{
+			using namespace concepts;
 			template<internals::FeatureSet FS>
 			struct Scalar
 			{
@@ -31,6 +32,25 @@ namespace AVXXY_NAMESPACE
 					scream();
 					SIMD_Vector<To, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = a[i];
+					return ret;
+				}
+
+				template<typename S, size_t N>
+					requires (sizeof(S) * 8 >= N)
+				static SIMD_Vector<typename same_size_uint_t<S>::type, N> eval(op_conflict, const SIMD_Vector<S, N>& a)
+				{
+					using U = same_size_uint_t<S>::type;
+					using T = SIMD_Vector<U, N>;
+					T ret;
+					for (size_t i = 0; i < N; ++i)
+					{
+						U acc = 0;
+						for (size_t j = 0; j < i; ++j)
+						{
+							if (a[i] == a[j]) acc |= U(1) << j;
+						}
+						ret[i] = acc;
+					}
 					return ret;
 				}
 
@@ -95,7 +115,7 @@ namespace AVXXY_NAMESPACE
 					scream();
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
-					for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(std::bit_cast<T>(a[i]) ^ std::bit_cast<T>(b[i]));
+					for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(S(std::bit_cast<T>(a[i]) ^ std::bit_cast<T>(b[i])));
 					return ret;
 				}
 				template<typename S, size_t N>
@@ -504,6 +524,24 @@ namespace AVXXY_NAMESPACE
 					scream();
 					SIMD_Vector<float, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = fp16_to_fp32(a[i]);
+					return ret;
+				}
+
+				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_mask2vec<S,N>, const SIMD_BitMask<N>& mask)
+				{
+					using U = concepts::same_size_uint_t<S>::type;
+					SIMD_Vector<S, N> ret;
+					for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? std::bit_cast<S>(~U(0)) : S(0);
+					return ret;
+				}
+				template<typename S, size_t N>
+				static SIMD_BitMask<N> eval(op_vec2mask, const SIMD_Vector<S, N>& a)
+				{
+					using U = concepts::same_size_uint_t<S>::type;
+					SIMD_BitMask<N> ret;
+					constexpr U sb = U(1) << (sizeof(U) * 8 - 1);
+					for (size_t i = 0; i < N; ++i) ret.setBit(i, std::bit_cast<U>(a[i]) & sb);
 					return ret;
 				}
 			private:

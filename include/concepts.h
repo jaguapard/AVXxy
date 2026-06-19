@@ -56,6 +56,14 @@ namespace AVXXY_NAMESPACE
 				std::conditional_t<sizeof(T) == 4, uint32_t,
 				std::conditional_t<sizeof(T) == 2, uint16_t, uint8_t>>>;
 		};
+		template<typename T>
+		struct same_size_int_t
+		{
+			static_assert(sizeof(T) > 0 && sizeof(T) <= 8 && utils::isPowerOf2(sizeof(T)), "Unsupported size for same_size_int_t");
+			using type = std::conditional_t<sizeof(T) == 8, int64_t,
+				std::conditional_t<sizeof(T) == 4, int32_t,
+				std::conditional_t<sizeof(T) == 2, int16_t, int8_t>>>;
+		};
 
 		//Maps bit count to smallest unsigned integer type that has greater or equal number of bits
 		template <size_t Size>
@@ -66,6 +74,16 @@ namespace AVXXY_NAMESPACE
 				std::conditional_t<Size >= 33, uint64_t,
 				std::conditional_t<Size >= 17, uint32_t,
 				std::conditional_t<Size >= 9, uint16_t, uint8_t>>>;
+		};
+		//Maps bit count to smallest signed integer type that has greater or equal number of bits
+		template <size_t Size>
+		struct bits_to_int_t
+		{
+			static_assert(Size <= 64, "Unsupported size for bits_to_int_t");
+			using type =
+				std::conditional_t<Size >= 33, int64_t,
+				std::conditional_t<Size >= 17, int32_t,
+				std::conditional_t<Size >= 9, int16_t, int8_t>>>;
 		};
 
 		template<typename T>
