@@ -155,7 +155,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N>
-	__forceinline SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+	__forceinline SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& ifBitSet)
 	{
 		return internals::DefaultDispatcher::run(internals::op_mask_mov{}, ifBitClear, mask, ifBitSet);
 	}

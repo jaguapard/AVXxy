@@ -72,7 +72,7 @@ namespace AVXXY_NAMESPACE
 	//If the mask bit is 1, the corresponding element of `ifBitSet` is chosen
 	//This function differs from blend only by the order of it's arguments
 	//ret[i] = mask[i] ? ifBitSet[i] : ifBitClear[i]
-	template <typename S, size_t N> SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet);
+	template <typename S, size_t N> SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& ifBitSet);
 	//Selects elements from input vector by corresponding mask bits and returns the result.
 	//If the mask bit is 0, the corresponding element of the returned vector is set to zero
 	//If the mask bit is 1, the corresponding element of `ifBitSet` is chosen
