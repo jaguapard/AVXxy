@@ -95,7 +95,7 @@ namespace AVXXY_NAMESPACE
 					scream();
 					SIMD_Vector<S, N> ret;
 					using T = typename concepts::same_size_uint_t<S>::type;
-					for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(std::bit_cast<T>(a[i]) ^ std::bit_cast<T>(b[i]));
+					for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(S(std::bit_cast<T>(a[i]) ^ std::bit_cast<T>(b[i])));
 					return ret;
 				}
 				template<typename S, size_t N>
@@ -504,6 +504,24 @@ namespace AVXXY_NAMESPACE
 					scream();
 					SIMD_Vector<float, N> ret;
 					for (size_t i = 0; i < N; ++i) ret[i] = fp16_to_fp32(a[i]);
+					return ret;
+				}
+
+				template<typename S, size_t N>
+				static SIMD_Vector<S, N> eval(op_mask2vec, const SIMD_BitMask<N>& mask)
+				{
+					using U = concepts::same_size_uint_t<S>::type;
+					SIMD_Vector<S, N> ret;
+					for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? std::bit_cast<S>(~U(0)) : S(0);
+					return ret;
+				}
+				template<typename S, size_t N>
+				static SIMD_BitMask<N> eval(op_vec2mask, const SIMD_Vector<S, N>& a)
+				{
+					using U = concepts::same_size_uint_t<S>::type;
+					SIMD_BitMask<N> ret;
+					constexpr U sb = U(1) << (sizeof(U) * 8 - 1);
+					for (size_t i = 0; i < N; ++i) ret.setBit(i, std::bit_cast<U>(a[i]) & sb);
 					return ret;
 				}
 			private:
