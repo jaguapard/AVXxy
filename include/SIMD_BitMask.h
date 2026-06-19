@@ -4,6 +4,7 @@
 
 namespace AVXXY_NAMESPACE
 {
+#if 0
 	//Represents a compacted mask with N bits.
 	template<size_t N>
 	struct SIMD_BitMask
@@ -55,4 +56,5 @@ namespace AVXXY_NAMESPACE
 	private:
 		UintT underlying;
 	};
+#endif
 }
