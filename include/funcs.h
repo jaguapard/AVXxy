@@ -1,6 +1,8 @@
 #pragma once
 #include "SIMD_Vector.h"
 #include "SIMD_BitMask.h"
+
+template <typename S, size_t N> class SIMD_Mask;
 namespace AVXXY_NAMESPACE
 {
 	//Performs element-wise addition of vectors and returns the result
@@ -217,9 +219,9 @@ namespace AVXXY_NAMESPACE
 
 	//Extracts sign bits of each element and returns them as mask. 
 	//The mask bits are set to 1 if sign bits are 1 (negative), or 0 otherwise.
-	template <typename S, size_t N> SIMD_BitMask<N> vec2mask(const SIMD_Vector<S, N>& v);
+	template <typename S, size_t N> SIMD_Mask<S, N> vec2mask(const SIMD_Vector<S, N>& v);
 	//Sets all bits of each element to 0 if corresponding mask bit is 0, or 1 otherwise
-	template <typename S, size_t N> SIMD_Vector<S,N> mask2vec(const SIMD_BitMask<N>& mask);
+	template <typename S, size_t N> SIMD_Vector<S,N> mask2vec(const SIMD_Mask<S, N>& mask);
 
 	template <typename S, size_t N> requires (sizeof(S)*8 >= N) 
 	SIMD_Vector<typename concepts::same_size_uint_t<S>::type, N> conflict(const SIMD_Vector<S, N>& a);
