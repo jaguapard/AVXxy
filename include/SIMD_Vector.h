@@ -15,7 +15,7 @@ namespace AVXXY_NAMESPACE
 		(concepts::ymm_sized<Vec> && std::is_same_v<IntrinVec, typename concepts::reg256<typename Vec::ScalarType>::type>) ||
 		(concepts::zmm_sized<Vec> && std::is_same_v<IntrinVec, typename concepts::reg512<typename Vec::ScalarType>::type>);
 
-	template <typename S, size_t N> class SIMD_Mask;
+	template <concepts::LaneSizeEnum LS, size_t N> class SIMD_Mask;
 	template<typename _S, size_t _N>
 		requires IsValid_SIMD_Vector<_S, _N>
 	struct alignas(std::min<uint32_t>(64, sizeof(_S)* _N)) SIMD_Vector

@@ -10,6 +10,11 @@ namespace AVXXY_NAMESPACE
 {
 	namespace concepts
 	{
+		enum class LaneSizeEnum
+		{
+			byte = 1, word = 2, dword = 4, qword = 8
+		};
+
 		template <typename T, typename... Ts> inline constexpr bool is_any_of_v = (std::is_same_v<T, Ts> || ...);
 		template<typename T> concept IsScalarType = is_any_of_v<T, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double>;
 		template<typename... Ts> concept AllAreScalarTypes = (IsScalarType<Ts> && ...);
