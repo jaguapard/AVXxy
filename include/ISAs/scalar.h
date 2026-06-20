@@ -228,7 +228,7 @@ namespace AVXXY_NAMESPACE
 				}
 				template<typename S, size_t N, size_t Scale, typename I>
 					requires (concepts::any_int<I>)
-				static SIMD_Vector<S, N> eval(op_gather<S, N, Scale>, const void* base, const SIMD_Vector<I, N>& ind, const SIMD_Mask<S, N>& mask, const SIMD_Vector<S, N>& src = 0)
+				static SIMD_Vector<S, N> eval(op_gather<S, N, Scale>, const void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src = 0)
 				{
 					scream();
 					SIMD_Vector<S, N> ret;
