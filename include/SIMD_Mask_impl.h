@@ -16,7 +16,7 @@ namespace AVXXY_NAMESPACE
 		if constexpr (IsBitMask) this->underlying = bits & AllOnesUint;
 		else
 		{
-			this->underlying = movm<S, N>(bits);
+			this->underlying = movm<IntT, N>(bits);
 			//TODO: bits to vector mask conversion here!
 			//this->underlying = Default
 		}
@@ -52,13 +52,6 @@ namespace AVXXY_NAMESPACE
 	inline SIMD_Mask<LS, N>::IntT SIMD_Mask<LS, N>::as_int() const
 	{
 		return as_uint();
-	}
-
-	template<concepts::LaneSizeEnum LS, size_t N>
-	inline SIMD_Mask<LS, N>::VecT SIMD_Mask<LS, N>::as_vector() const
-	{
-		if constexpr (IsBitMask) return movm(underlying & AllOnesUint);
-		else return underlying; //TODO: clean it (i.e. ensure all values are 0 or 0xFFFFFFF)
 	}
 
 	template<concepts::LaneSizeEnum LS, size_t N>
@@ -114,6 +107,18 @@ namespace AVXXY_NAMESPACE
 	inline SIMD_Mask<LS, N>::SIMD_Mask(const T& intrVec)
 	{
 		*this = SIMD_Vector<S, N>(intrVec);
+	}
+
+	template<concepts::LaneSizeEnum LS, size_t N>
+	template<typename S>
+	inline SIMD_Vector<S, N> SIMD_Mask<LS, N>::as_vector() const
+	{
+		if constexpr (IsBitMask) return movm<S, N>(underlying & AllOnesUint);
+		else
+		{
+			if (sizeof(S) == sizeof(IntT)) return vcast<SIMD_Vector<S, N>>(underlying);
+			else return movm<S, N>(movemask(underlying) & AllOnesUint);
+		}
 	}
 
 	template<concepts::LaneSizeEnum LS, size_t N>

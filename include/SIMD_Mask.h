@@ -53,7 +53,9 @@ namespace AVXXY_NAMESPACE
 
 		//Returns the vector type, where each lane is filled with 1 bits if corresponding mask bits are set, or 0 otherwise.
 		//Thus, a SIMD_Mask<float, 4> with bits 0100 will return {0, std::bit_cast<float>(0xFFFFFFFF), 0, 0}
-		VecT as_vector() const;
+		template<typename S = IntT>
+			//requires (LS == concepts::TypeToLaneSizeEnum<S>)
+		SIMD_Vector<S, N> as_vector() const;
 
 		//Returns this mask converted to smallest signed integer type that can hold it
 		IntT as_int() const;
