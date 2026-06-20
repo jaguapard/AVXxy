@@ -114,11 +114,13 @@ namespace AVXXY_NAMESPACE
 		if constexpr (IsBitMask) return movm<S, N>(underlying & AllOnesUint);
 		else
 		{
+			/*
 			if constexpr (sizeof(S) == sizeof(IntT))
 			{
 				return vcast<SIMD_Vector<S, N>>(underlying < 0); //TODO: check all of it ensure strict masks! (elements in each lane are all zeroes or all ones)
 			}
-			else return movm<S, N>(movemask(underlying) & AllOnesUint);
+			else*/
+				return movm<S, N>(movemask(underlying) & AllOnesUint);
 		}
 	}
 
