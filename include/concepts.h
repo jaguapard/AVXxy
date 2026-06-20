@@ -9,11 +9,9 @@
 namespace AVXXY_NAMESPACE
 {
 	namespace concepts
-	{
-		enum class LaneSizeEnum
-		{
-			byte = 1, word = 2, dword = 4, qword = 8
-		};
+	{		
+		template<class...>
+		inline constexpr bool always_false_v = false;
 
 		template <typename T, typename... Ts> inline constexpr bool is_any_of_v = (std::is_same_v<T, Ts> || ...);
 		template<typename T> concept IsScalarType = is_any_of_v<T, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double>;
@@ -52,6 +50,11 @@ namespace AVXXY_NAMESPACE
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool any_int = std::is_integral_v<T>;
 		//indicates wheter this type is not integral (TODO: limit it only to doubles and floats, and maybe FP16/BF16?)
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool not_int = !std::is_integral_v<T>;
+
+		enum class LaneSizeEnum
+		{
+			byte = 1, word = 2, dword = 4, qword = 8
+		};
 
 		template<typename T>
 		struct same_size_uint_t
@@ -113,7 +116,14 @@ namespace AVXXY_NAMESPACE
 				std::conditional_t<std::is_same_v<T, double>, __m512d, void>>>;
 		};
 
-		template<class...>
-		inline constexpr bool always_false_v = false;
+		template<typename T>
+		requires (utils::isPowerOf2(sizeof(T)) && sizeof(T) <=8)
+		inline constexpr LaneSizeEnum TypeToLaneSizeEnum = []() {
+			if constexpr (sizeof(T) == 1) return LaneSizeEnum::byte;
+			else if constexpr (sizeof(T) == 2) return LaneSizeEnum::word;
+			else if constexpr (sizeof(T) == 4) return LaneSizeEnum::dword;
+			else if constexpr (sizeof(T) == 8) return LaneSizeEnum::qword;
+			else static_assert(always_false_v<T>);
+			}();
 	}
 }
