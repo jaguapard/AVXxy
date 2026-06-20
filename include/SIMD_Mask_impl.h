@@ -96,7 +96,7 @@ namespace AVXXY_NAMESPACE
 	inline SIMD_Mask<LS, N>::SIMD_Mask(const SIMD_Mask<LS2, N>& other)
 	{
 		if constexpr (IsBitMask) underlying = other.underlying;
-		else if constexpr (sizeof(S) == sizeof(S2)) underlying = vcast<VecT>(other.underlying);
+		else if constexpr (LS == LS2) underlying = vcast<VecT>(other.underlying);
 		else *this = UintT(other);
 	}
 

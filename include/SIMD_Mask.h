@@ -27,7 +27,7 @@ namespace AVXXY_NAMESPACE
 		static inline constexpr UintT AllOnesUint = (N == sizeof(UintT) * 8) ? ~UintT(0) : ((UintT(1) << N) - 1);
 		static inline constexpr bool IsVectorMask = !internals::FS_current.has(internals::Feature::AVX512_F);
 		static inline constexpr bool IsBitMask = !IsVectorMask;
-		static SIMD_Mask<S, N> AllOnes();
+		static SIMD_Mask<LS, N> AllOnes();
 
 		SIMD_Mask() {};
 		SIMD_Mask(UintT bits);
