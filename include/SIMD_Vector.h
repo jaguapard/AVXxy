@@ -19,7 +19,7 @@ namespace AVXXY_NAMESPACE
 		requires concepts::IsValid_SIMD_Vector<_S, _N>
 	struct alignas(std::min<uint32_t>(64, sizeof(_S)* _N)) SIMD_Vector
 	{
-		template<typename FriendS, size_t FriendN> requires IsValid_SIMD_Vector<FriendS, FriendN>
+		template<typename FriendS, size_t FriendN> requires concepts::IsValid_SIMD_Vector<FriendS, FriendN>
 		friend struct SIMD_Vector;
 
 		using ScalarType = _S;

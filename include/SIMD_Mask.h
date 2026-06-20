@@ -86,4 +86,7 @@ namespace AVXXY_NAMESPACE
 	private:
 		std::conditional_t<IsVectorMask, VecT, UintT> underlying;
 	};
+
+	template<typename S, size_t N>
+	using mask_t = SIMD_Mask<concepts::TypeToLaneSizeEnum<S>, N>;
 }

@@ -412,7 +412,7 @@ namespace AVXXY_NAMESPACE
 						static_assert(sizeof(S) == 4);
 						float* p = (float*)&ret;
 						store(cl, p);
-						SIMD_Mask<canon_t, N / 2> cm = (uint64_t(1) << popcnt_hi) - 1;
+						mask_t<canon_t, N/2> cm = (uint64_t(1) << popcnt_hi) - 1;
 						store(ch, p + popcnt_lo, cm); //don't overwrite src remains
 						//_mm256_maskstore_ps(p + popcnt_lo, mask2vec<int32_t, N / 2>(cm), vreinterpret<__m256>(ch)); //don't overwrite src remains
 						return ret;
