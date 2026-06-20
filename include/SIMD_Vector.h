@@ -27,7 +27,7 @@ namespace AVXXY_NAMESPACE
 		using Self = SIMD_Vector<_S, _N>;
 		using UintScalarT = concepts::same_size_uint_t<_S>::type;
 		using IntScalarT = concepts::same_size_int_t<_S>::type;
-		using MaskT = SIMD_Mask<_S, _N>;
+		using MaskT = SIMD_Mask<concepts::TypeToLaneSizeEnum<_S>, _N>;
 		static inline constexpr size_t LaneCount = _N;
 		//Size of vector's active elements. The size of actual struct (sizeof(SIMD_Vector)) may differ from it due to padding and unused elements
 		static inline constexpr size_t ActiveByteSize = sizeof(ScalarType) * LaneCount;
