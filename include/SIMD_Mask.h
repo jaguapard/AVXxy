@@ -8,6 +8,10 @@ class SIMD_Vector;
 
 namespace AVXXY_NAMESPACE
 {
+	enum class LaneSizeEnum
+	{
+		byte = 1, word = 2, dword = 4, qword = 8
+	};
 	template<typename S, size_t N>
 	class SIMD_Mask
 	{
