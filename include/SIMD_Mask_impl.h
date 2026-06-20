@@ -17,15 +17,13 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			this->underlying = movm<IntT, N>(bits);
-			//TODO: bits to vector mask conversion here!
-			//this->underlying = Default
 		}
 	}
 
 	template<concepts::LaneSizeEnum LS, size_t N>
 	inline SIMD_Mask<LS, N>::SIMD_Mask(const SIMD_Mask<LS, N / 2>& lo, const SIMD_Mask<LS, N / 2>& hi)
 	{
-		if constexpr (IsBitMask) this->underlying = (UintT(lo.underlying) | (U(hi.underlying) << (N / 2))) & AllOnesUint;
+		if constexpr (IsBitMask) this->underlying = concat_bitmasks<N / 2>(lo.underlying, hi.underlying) & AllOnesUint;
 		else this->underlying = { lo.underlying, hi.underlying };
 	}
 
@@ -116,7 +114,10 @@ namespace AVXXY_NAMESPACE
 		if constexpr (IsBitMask) return movm<S, N>(underlying & AllOnesUint);
 		else
 		{
-			if (sizeof(S) == sizeof(IntT)) return vcast<SIMD_Vector<S, N>>(underlying);
+			if constexpr (sizeof(S) == sizeof(IntT))
+			{
+				return vcast<SIMD_Vector<S, N>>(underlying < 0); //TODO: check all of it ensure strict masks! (elements in each lane are all zeroes or all ones)
+			}
 			else return movm<S, N>(movemask(underlying) & AllOnesUint);
 		}
 	}
