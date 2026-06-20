@@ -17,13 +17,13 @@ namespace AVXXY_NAMESPACE
 		static_assert(N >= 2);
 		static_assert(N <= 64);
 		static_assert(utils::isPowerOf2(N));
-		template <typename FriendS, size_t FriendN>
+		template <concepts::LaneSizeEnum FriendS, size_t FriendN>
 		friend class SIMD_Mask;
 
 		static inline constexpr size_t BitCount = N;
 		using UintT = typename concepts::bits_to_uint_t<N>::type;
 		using IntT = typename concepts::bits_to_int_t<N>::type;
-		using VecT = SIMD_Vector<S, N>;
+		using VecT = SIMD_Vector<IntT, N>;
 		static inline constexpr UintT AllOnesUint = (N == sizeof(UintT) * 8) ? ~UintT(0) : ((UintT(1) << N) - 1);
 		static inline constexpr bool IsVectorMask = !internals::FS_current.has(internals::Feature::AVX512_F);
 		static inline constexpr bool IsBitMask = !IsVectorMask;
@@ -31,11 +31,11 @@ namespace AVXXY_NAMESPACE
 
 		SIMD_Mask() {};
 		SIMD_Mask(UintT bits);
-		SIMD_Mask(const SIMD_Mask<S, N / 2>& lo, const SIMD_Mask<S, N / 2>& hi);
-		SIMD_Mask(const SIMD_Vector<S, N>& v);
+		SIMD_Mask(const SIMD_Mask<LS, N / 2>& lo, const SIMD_Mask<LS, N / 2>& hi);
+		SIMD_Mask(const SIMD_Vector<IntT, N>& v);
 
-		template <typename S2>
-		SIMD_Mask(const SIMD_Mask<S2, N>& other);
+		template <concepts::LaneSizeEnum LS2>
+		SIMD_Mask(const SIMD_Mask<LS2, N>& other);
 
 		operator UintT() const;
 
@@ -69,16 +69,16 @@ namespace AVXXY_NAMESPACE
 		//Sets the bit i of the mask to 1 if value is true, or 0 otherwise
 		void setBit(size_t i, bool value);
 
-		SIMD_Mask<S, N / 2> lo() const;
-		SIMD_Mask<S, N / 2> hi() const;
+		SIMD_Mask<LS, N / 2> lo() const;
+		SIMD_Mask<LS, N / 2> hi() const;
 
-		SIMD_Mask<S, N> operator&(const SIMD_Mask<S, N>& other) const;
-		SIMD_Mask<S, N> operator|(const SIMD_Mask<S, N>& other) const;
-		SIMD_Mask<S, N> operator^(const SIMD_Mask<S, N>& other) const;
-		SIMD_Mask<S, N> operator~() const;
-		SIMD_Mask<S, N>& operator&=(const SIMD_Mask<S, N>& other);
-		SIMD_Mask<S, N>& operator|=(const SIMD_Mask<S, N>& other);
-		SIMD_Mask<S, N>& operator^=(const SIMD_Mask<S, N>& other);
+		SIMD_Mask<LS, N> operator&(const SIMD_Mask<LS, N>& other) const;
+		SIMD_Mask<LS, N> operator|(const SIMD_Mask<LS, N>& other) const;
+		SIMD_Mask<LS, N> operator^(const SIMD_Mask<LS, N>& other) const;
+		SIMD_Mask<LS, N> operator~() const;
+		SIMD_Mask<LS, N>& operator&=(const SIMD_Mask<LS, N>& other);
+		SIMD_Mask<LS, N>& operator|=(const SIMD_Mask<LS, N>& other);
+		SIMD_Mask<LS, N>& operator^=(const SIMD_Mask<LS, N>& other);
 	private:
 		std::conditional_t<IsVectorMask, VecT, UintT> underlying;
 	};
