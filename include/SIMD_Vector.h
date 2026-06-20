@@ -7,7 +7,6 @@
 
 namespace AVXXY_NAMESPACE
 {
-	template<typename _S, size_t _N> concept IsValid_SIMD_Vector = _N >= 2 && _N <= 64 && utils::isPowerOf2(_N) && concepts::IsScalarType<_S>; //for now, bigger than 64 lanes vectors are not supported (mainly due to mask type not being ready for it)
 
 	template<typename Vec, typename IntrinVec>
 	concept ConversionToNativeVectorLegal =
@@ -17,7 +16,7 @@ namespace AVXXY_NAMESPACE
 
 	template <concepts::LaneSizeEnum LS, size_t N> class SIMD_Mask;
 	template<typename _S, size_t _N>
-		requires IsValid_SIMD_Vector<_S, _N>
+		requires concepts::IsValid_SIMD_Vector<_S, _N>
 	struct alignas(std::min<uint32_t>(64, sizeof(_S)* _N)) SIMD_Vector
 	{
 		template<typename FriendS, size_t FriendN> requires IsValid_SIMD_Vector<FriendS, FriendN>

@@ -3,12 +3,14 @@
 #include "concepts.h"
 #include "FeatureSet.h"
 
-template<typename S, size_t N>
-class SIMD_Vector;
-
 namespace AVXXY_NAMESPACE
 {
+	template<typename S, size_t N>
+		requires concepts::IsValid_SIMD_Vector<S, N>
+	class SIMD_Vector;
 
+	template<concepts::LaneSizeEnum LS, size_t N>
+	class SIMD_Mask;
 
 	template<concepts::LaneSizeEnum LS, size_t N>
 	class SIMD_Mask

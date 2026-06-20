@@ -125,5 +125,7 @@ namespace AVXXY_NAMESPACE
 			else if constexpr (sizeof(T) == 8) return LaneSizeEnum::qword;
 			else static_assert(always_false_v<T>);
 			}();
+
+		template<typename _S, size_t _N> concept IsValid_SIMD_Vector = _N >= 2 && _N <= 64 && utils::isPowerOf2(_N) && concepts::IsScalarType<_S>; //for now, bigger than 64 lanes vectors are not supported (mainly due to mask type not being ready for it)
 	}
 }
