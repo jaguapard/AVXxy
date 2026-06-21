@@ -56,6 +56,12 @@ namespace AVXXY_NAMESPACE
 	//Appends vector `what` to vector `to` and returns the result
 	template<typename S, size_t N> SIMD_Vector<S, N * 2> concat(const SIMD_Vector<S, N>& to, const SIMD_Vector<S, N>& what);
 
+	//Reinterprets value as vector of other type and returns the result.
+	//If returned vector's size is smaller than input, input's upper bits are discarded
+	//If returned vector's size is bigger than input, upper bits of returned value are undefined.
+	//@note TODO: different way of limiting to only SIMD_Vectors!
+	template<typename T, typename S, size_t N> requires (T::IsSimdVector) T vcast(const SIMD_Vector<S, N>& value);
+
 	//Reinterprets value as any other type and returns the result.
 	//If returned value's size is smaller than input, input's upper bits are discarded
 	//If returned value's size is bigger than input, upper bits of returned value are undefined.
