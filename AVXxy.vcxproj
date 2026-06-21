@@ -261,10 +261,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\avxxy.h" />
+    <ClInclude Include="include\meta\concepts.h" />
     <ClInclude Include="include\meta\enums.h" />
+    <ClInclude Include="include\meta\predicates.h" />
     <ClInclude Include="include\namespace.h" />
     <ClInclude Include="include\op_tags.h" />
     <ClInclude Include="include\SIMD_Vector.h" />
+    <ClInclude Include="include\small_fp.h" />
     <ClInclude Include="include\tables.h" />
   </ItemGroup>
   <ItemGroup>
