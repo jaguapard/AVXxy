@@ -50,6 +50,12 @@ namespace AVXXY_NAMESPACE
 			std::conditional_t<sizeof(S) == 1, uint8_t,
 			std::conditional_t<sizeof(S) == 2, uint16_t,
 			std::conditional_t<sizeof(S) == 4, uint32_t, uint64_t>>>;
+
+		/*
+		template<typename S, size_t N>
+			requires (IsScalarType<S>)
+		using mask_t = SIMD_Mask<scalar_size_class_v<S>, N>; 
+		*/
 		//using typed_intrinsic_storage_t = 
 		//	std::conditional_t<
 		//template<typename S, size_t N>
