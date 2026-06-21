@@ -52,6 +52,20 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Vector<uint16_t, 32> u16x32;
 	typedef SIMD_Vector<uint16_t, 64> u16x64;
 
+	typedef SIMD_Vector<fp16_t, 2> fp16x2;
+	typedef SIMD_Vector<fp16_t, 4> fp16x4;
+	typedef SIMD_Vector<fp16_t, 8> fp16x8;
+	typedef SIMD_Vector<fp16_t, 16> fp16x16;
+	typedef SIMD_Vector<fp16_t, 32> fp16x32;
+	typedef SIMD_Vector<fp16_t, 64> fp16x64;
+	
+	typedef SIMD_Vector<bf16_t, 2> bf16x2;
+	typedef SIMD_Vector<bf16_t, 4> bf16x4;
+	typedef SIMD_Vector<bf16_t, 8> bf16x8;
+	typedef SIMD_Vector<bf16_t, 16> bf16x16;
+	typedef SIMD_Vector<bf16_t, 32> bf16x32;
+	typedef SIMD_Vector<bf16_t, 64> bf16x64;
+
 	typedef SIMD_Vector<uint32_t, 2> u32x2;
 	typedef SIMD_Vector<uint32_t, 4> u32x4;
 	typedef SIMD_Vector<uint32_t, 8> u32x8;
@@ -87,6 +101,8 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Vector<int64_t, 2> xmm_i64;
 	typedef SIMD_Vector<uint8_t, 16> xmm_u8;
 	typedef SIMD_Vector<uint16_t, 8> xmm_u16;
+	typedef SIMD_Vector<fp16_t, 8> xmm_fp16;
+	typedef SIMD_Vector<bf16_t, 8> xmm_bf16;
 	typedef SIMD_Vector<uint32_t, 4> xmm_u32;
 	typedef SIMD_Vector<uint64_t, 2> xmm_u64;
 	typedef SIMD_Vector<float, 4> xmm_f32;
@@ -98,6 +114,8 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Vector<int64_t, 4> ymm_i64;
 	typedef SIMD_Vector<uint8_t, 32> ymm_u8;
 	typedef SIMD_Vector<uint16_t, 16> ymm_u16;
+	typedef SIMD_Vector<fp16_t, 16> ymm_fp16;
+	typedef SIMD_Vector<bf16_t, 16> ymm_bf16;
 	typedef SIMD_Vector<uint32_t, 8> ymm_u32;
 	typedef SIMD_Vector<uint64_t, 4> ymm_u64;
 	typedef SIMD_Vector<float, 8> ymm_f32;
@@ -109,6 +127,8 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Vector<int64_t, 8> zmm_i64;
 	typedef SIMD_Vector<uint8_t, 64> zmm_u8;
 	typedef SIMD_Vector<uint16_t, 32> zmm_u16;
+	typedef SIMD_Vector<fp16_t, 32> zmm_fp16;
+	typedef SIMD_Vector<bf16_t, 32> zmm_bf16;
 	typedef SIMD_Vector<uint32_t, 16> zmm_u32;
 	typedef SIMD_Vector<uint64_t, 8> zmm_u64;
 	typedef SIMD_Vector<float, 16> zmm_f32;
