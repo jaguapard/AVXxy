@@ -16,6 +16,7 @@ namespace AVXXY_NAMESPACE
 
 		template<class...> inline constexpr bool always_false_v = false;
 		template <typename T, typename... Ts> inline constexpr bool is_any_of_v = (std::is_same_v<T, Ts> || ...);
+		//Is this a supported scalar type? Any of these: signed/unsigned 8, 16, 32 and 64 bit ints, float, double, custom FP16 or BF16 type
 		template<typename T> concept IsScalarType = is_any_of_v<T, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double, fp16_t, bf16_t>;
 		template<typename... Ts> concept AllAreScalarTypes = (IsScalarType<Ts> && ...);
 		//Is this a valid intrinsic vector type? Does not check for actual availabilty (i.e. __m512 will pass this test even if AVX512 is not available)
