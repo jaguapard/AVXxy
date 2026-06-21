@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstring>
 #include "meta/meta.h"
+#include "meta/type_factories.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -16,9 +17,29 @@ namespace AVXXY_NAMESPACE
 		std::array<S, N> arr;
 
 	public:
+		using IntrinsicT = meta::typed_intrinsic_storage_t<S, N>;
+
 		SIMD_Vector() {};
 		const S& operator[](size_t i) const { return arr[i]; }
 		S& operator[](size_t i) { return arr[i]; }
+
+		SIMD_Vector(const IntrinsicT& intrinsicVec)
+		{
+			memcpy(arr.data(), &intrinsicVec, std::min(sizeof(arr), sizeof(intrinsicVec)));
+		}
+
+		operator IntrinsicT() const
+		{
+			IntrinsicT ret;
+			memcpy(&ret, arr.data(), std::min(sizeof(arr), sizeof(ret)));
+			return ret;
+		}
+
+		
+
+		//Broadcasts a scalar value to all lanes of a vector. The input value is converted to vector's scalar type before broadcasting
+		template<typename T> requires meta::IsScalarType<T>
+		SIMD_Vector(T s) { for (size_t i = 0; i < N; ++i) (*this)[i] = s; }
 
 		//Returns vector filled with sequential values (value == lane index, like 0, 1, 2, ..., N-1)
 		static SIMD_Vector<S, N> iota()
