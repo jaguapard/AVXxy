@@ -5,6 +5,7 @@
 #include <immintrin.h>
 #include <cstdint>
 #include <cstddef>
+#include <array>
 
 namespace AVXXY_NAMESPACE
 {
@@ -134,5 +135,12 @@ namespace AVXXY_NAMESPACE
 
 		template<size_t N> using bits_to_uint_t = _struct_bits_to_uint_t<N>::type;
 		template<size_t N> using bits_to_int_t = _struct_bits_to_int_t<N>::type;
+
+		template<typename S, size_t N>
+		using intinsic_vec_t = 
+			std::conditional_t<utils::is_xmm_size(sizeof(S)* N), typename reg128<S>::type,
+			std::conditional_t<utils::is_ymm_size(sizeof(S)* N), typename reg256<S>::type,
+			std::conditional_t<utils::is_zmm_size(sizeof(S)* N), typename reg512<S>::type,
+			std::array<typename reg512<S>::type, (sizeof(S) * N) / 64>>>>;
 	}
 }
