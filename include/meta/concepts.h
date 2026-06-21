@@ -15,6 +15,6 @@ namespace AVXXY_NAMESPACE
 
 		template<typename T> concept IsScalarType = is_any_of_v<T, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double, fp16_t, bf16_t>;
 		template<typename... Ts> concept AllAreScalarTypes = (IsScalarType<Ts> && ...);
-		template<typename T> concept IsIntrinsicVector = is_any_of_v<T, __m128i, __m128, __m128d, __m256i, __m256, __m256d, __m512i, __m512, __m512d>;
+		template<typename T> concept IsIntrinsicVector = is_any_of_v<T, __m128i, __m128, __m128d, __m128h, __m128bh, __m256i, __m256, __m256d, __m256h, __m256bh, __m512i, __m512, __m512d, __m512h, __m512bh>;
 	}
 }
