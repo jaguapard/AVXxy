@@ -17,17 +17,29 @@ namespace AVXXY_NAMESPACE
 		std::array<S, N> arr;
 
 	public:
+		template<typename FriendS, size_t FriendN> requires meta::IsValid_SIMD_Vector<FriendS, FriendN>
+		friend class SIMD_Vector;
+
 		using IntrinsicT = meta::typed_intrinsic_storage_t<S, N>;
 
 		SIMD_Vector() {};
 		const S& operator[](size_t i) const { return arr[i]; }
 		S& operator[](size_t i) { return arr[i]; }
 
+		//Constructs vector from it's intrinsic type. The intrinsic vector type must be of the same size class as constructed vector:
+		//Vectors less than 17 bytes can be constructed from 128 bit intrinsic types.
+		//Vectors between 17 and 32 bytes can be constructed from 256 bit intrinsic types.
+		//Vectors between 33 and 64 bytes can be constructed from 512 bit intrinsic types.
+		//Integral intrinsic vectors can be used to construct any integral SIMD_Vector of same size class
+		//Floating point vectors require the scalar type of intrinsic vector and SIMD_Vector to match
+		//If SIMD_Vector and intrinsic vector sizes mismatch, only the lower sizeof(SIMD_Vector) bytes from intrinsic vector are copied to the constructed SIMD_Vector
 		SIMD_Vector(const IntrinsicT& intrinsicVec)
 		{
 			memcpy(arr.data(), &intrinsicVec, std::min(sizeof(arr), sizeof(intrinsicVec)));
 		}
 
+		//Converts the SIMD_Vector to it's intrinsic vector type.
+		//If intrinsic vector is larger than SIMD_Vector, upper bytes of returned value are undefined
 		operator IntrinsicT() const
 		{
 			IntrinsicT ret;
@@ -35,6 +47,13 @@ namespace AVXXY_NAMESPACE
 			return ret;
 		}
 
+		//Constructs vector from halves
+		SIMD_Vector(const SIMD_Vector<S, N / 2>& lo, const SIMD_Vector<S, N / 2>& hi)
+		{
+			static_assert(N % 2 == 0);
+			memcpy(arr.data(), lo.arr.data(), sizeof(arr) / 2);
+			memcpy(arr.data() + N/2, hi.arr.data(), sizeof(arr) / 2);
+		}
 		
 
 		//Broadcasts a scalar value to all lanes of a vector. The input value is converted to vector's scalar type before broadcasting
