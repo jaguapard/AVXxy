@@ -2,6 +2,7 @@
 #include "../namespace.h"
 #include "meta.h"
 #include <type_traits>
+#include <array>
 
 namespace AVXXY_NAMESPACE
 {
@@ -51,6 +52,13 @@ namespace AVXXY_NAMESPACE
 			std::conditional_t<sizeof(S) == 2, uint16_t,
 			std::conditional_t<sizeof(S) == 4, uint32_t, uint64_t>>>;
 
+		template<typename S, size_t N>
+		requires (IsScalarType<S> && meta::isPowerOf2(N))
+		using typed_intrinsic_storage_t =
+			std::conditional_t<sizeof(S)* N <= 16, xmm_t<S>,
+			std::conditional_t<sizeof(S)* N <= 32, ymm_t<S>,
+			std::conditional_t<sizeof(S)* N <= 64, zmm_t<S>,
+			std::array<zmm_t<S>, sizeof(S)* N / 64>>>>;
 		/*
 		template<typename S, size_t N>
 			requires (IsScalarType<S>)
