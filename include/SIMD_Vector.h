@@ -197,4 +197,10 @@ namespace AVXXY_NAMESPACE
 		}
 		return os;
 	}
+
+	namespace meta
+	{
+		template<typename T>
+		concept IsSimdVector = requires { T::IsSimdVector; };
+	}
 }

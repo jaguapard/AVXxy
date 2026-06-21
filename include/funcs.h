@@ -64,7 +64,7 @@ namespace AVXXY_NAMESPACE
 	//@tparam T vector type to be casted to (return type)
 	//@tparam S scalar type of input vector
 	//@tparam N lane count of both vectors (conversion doesn't change lane count)
-	template<typename T, typename S, size_t N> requires (T::IsSimdVector) T vcast(const SIMD_Vector<S, N>& value);
+	template<typename T, typename S, size_t N> requires (meta::IsSimdVector<T>) T vcast(const SIMD_Vector<S, N>& value);
 
 	//Reinterprets value as any other type and returns the result.
 	//If returned value's size is smaller than input, input's upper bits are discarded
@@ -104,7 +104,7 @@ namespace AVXXY_NAMESPACE
 	//If the corresponding mask bit is cleared, the corresponding element in memory is not read and the corresponding element from src is stored into the retuned vector
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : src[i]
-	template<typename T> requires (T::IsSimdVector)
+	template<typename T> requires meta::IsSimdVector<T>
 		__forceinline T load(const void* p, const typename T::MaskT& mask = T::MaskT::AllOnes(), const T& src = 0)
 	{
 		return load<typename T::ScalarType, T::LaneCount>(p, mask, src);
@@ -136,7 +136,7 @@ namespace AVXXY_NAMESPACE
 	//By default, scale is set to the size of vector's scalar type
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
 	template <typename T, size_t Scale = sizeof(typename T::ScalarType), typename I>
-		requires (T::IsSimdVector)
+		requires meta::IsSimdVector<T>
 	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskType& mask = T::MaskType::AllOnes(), const T& src = 0)
 	{
 		return __gather_impl<typename T::ScalarType, T::LaneCount, Scale>(base, ind, mask, src);
