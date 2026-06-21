@@ -127,5 +127,9 @@ namespace AVXXY_NAMESPACE
 			}();
 
 		template<typename _S, size_t _N> concept IsValid_SIMD_Vector = _N >= 2 && _N <= 64 && utils::isPowerOf2(_N) && concepts::IsScalarType<_S>; //for now, bigger than 64 lanes vectors are not supported (mainly due to mask type not being ready for it)
+
+		template <typename T, typename U>
+			requires (!utils::is_XL_size(sizeof(T)) && (!utils::is_XL_size(sizeof(U))))
+		inline constexpr bool SameRegisterSizeClass = ((xmm_sized<T> && xmm_sized<U>) || (ymm_sized<T> && ymm_sized<U>) || (zmm_sized<T> && zmm_sized<U>));
 	}
 }
