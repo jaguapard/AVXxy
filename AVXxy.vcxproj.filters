@@ -35,6 +35,9 @@
     <ClInclude Include="include\tables.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\op_tags.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
