@@ -50,16 +50,13 @@
     <ClInclude Include="include\meta\enums.h">
       <Filter>Header Files\include\meta</Filter>
     </ClInclude>
-    <ClInclude Include="include\meta\predicates.h">
-      <Filter>Header Files\include\meta</Filter>
-    </ClInclude>
-    <ClInclude Include="include\meta\concepts.h">
-      <Filter>Header Files\include\meta</Filter>
-    </ClInclude>
     <ClInclude Include="include\small_fp.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="include\meta\type_factories.h">
+      <Filter>Header Files\include\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="include\meta\meta.h">
       <Filter>Header Files\include\meta</Filter>
     </ClInclude>
   </ItemGroup>
