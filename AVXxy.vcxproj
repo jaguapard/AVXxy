@@ -260,6 +260,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\avxxy.h" />
     <ClInclude Include="include\namespace.h" />
     <ClInclude Include="include\op_tags.h" />
     <ClInclude Include="include\tables.h" />
