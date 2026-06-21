@@ -49,6 +49,8 @@ namespace AVXXY_NAMESPACE
 		using UintT = concepts::bits_to_uint_t<N>;//typename LaneSizeTraits<LS>::UintT;
 		using IntT = concepts::bits_to_int_t<N>;
 		using VecT = SIMD_Vector<IntT, N>;
+		using IntrinsicT = concepts::intinsic_vec_t<IntT, N>;
+
 		static inline constexpr UintT AllOnesUint = (N == sizeof(UintT) * 8) ? ~UintT(0) : ((UintT(1) << N) - 1);
 		static inline constexpr bool IsVectorMask = !internals::FS_current.has(internals::Feature::AVX512_F);
 		static inline constexpr bool IsBitMask = !IsVectorMask;
