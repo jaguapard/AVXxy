@@ -1,7 +1,6 @@
 #pragma once
 #include "namespace.h"
-#include "meta/concepts.h"
-#include "meta/predicates.h"
+#include "meta/meta.h"
 #include "meta/type_factories.h"
 #include "SIMD_Vector.h"
 

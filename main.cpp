@@ -7,9 +7,8 @@ int main()
 {
 	meta::xmm_t<bf16_t> a;
 
-	uint16_t xx;
-	memcpy(&xx, &a, 2);
-	std::cout << xx << "\n";
+	fp16_t f16 = 5;
+	std::cout << f16 << "\n";
 	int x = 0;
 #if 0
 	std::cout << "Compile target feature set: \n" << FS_compile_target << "\n\n";
