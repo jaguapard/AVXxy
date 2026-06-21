@@ -13,19 +13,66 @@ namespace AVXXY_NAMESPACE
 	{
 		//template <typename T>
 		//concept SupportsSizeClass = 
-		template <typename T, typename... Ts> inline constexpr bool is_any_of_v = (std::is_same_v<T, Ts> || ...);
 
+		template<class...> inline constexpr bool always_false_v = false;
+		template <typename T, typename... Ts> inline constexpr bool is_any_of_v = (std::is_same_v<T, Ts> || ...);
 		template<typename T> concept IsScalarType = is_any_of_v<T, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double, fp16_t, bf16_t>;
 		template<typename... Ts> concept AllAreScalarTypes = (IsScalarType<Ts> && ...);
-
 		//Is this a valid intrinsic vector type? Does not check for actual availabilty (i.e. __m512 will pass this test even if AVX512 is not available)
 		template<typename T> concept IsIntrinsicVector = is_any_of_v<T, __m128i, __m128, __m128d, __m128h, __m128bh, __m256i, __m256, __m256d, __m256h, __m256bh, __m512i, __m512, __m512d, __m512h, __m512bh>;
 
 
+		//template <typename T>
+		//struct ScalarTraits;
 
+		template<meta::ScalarSizeClassEnum LS>
+		struct ScalarSizeTraits
+		{
+			using IntT = std::conditional_t <LS == ScalarSizeClassEnum::byte, int8_t,
+				std::conditional_t<LS == ScalarSizeClassEnum::word, int16_t,
+				std::conditional_t<LS == ScalarSizeClassEnum::dword, int32_t, int64_t>>>;
+			using UintT = std::conditional_t<LS == ScalarSizeClassEnum::byte, uint8_t,
+				std::conditional_t<LS == ScalarSizeClassEnum::word, uint16_t,
+				std::conditional_t<LS == ScalarSizeClassEnum::dword, uint32_t, uint64_t>>>;
+			static constexpr ScalarSizeClassEnum size_class = LS;
+		};
+		
+		/*
+		template<auto T>
+		requires (std::is_same_v<T, ScalarSizeClassEnum> )
 		//PREDICATES
-		template<class...>
-		inline constexpr bool always_false_v = false;
+		template<meta::ScalarSizeClassEnum LS>
+		struct ScalarTraits
+		{
+			using IntT = std::conditional_t <LS == ScalarSizeClassEnum::byte, int8_t,
+				std::conditional_t<LS == ScalarSizeClassEnum::word, int16_t,
+				std::conditional_t<LS == ScalarSizeClassEnum::dword, int32_t, int64_t>>>;
+			using UintT = std::conditional_t<LS == ScalarSizeClassEnum::byte, uint8_t,
+				std::conditional_t<LS == ScalarSizeClassEnum::word, uint16_t,
+				std::conditional_t<LS == ScalarSizeClassEnum::dword, uint32_t, uint64_t>>>;
+			static constexpr ScalarSizeClassEnum size_class = LS;
+		};
+		*/
+		
+		template<typename T> requires (IsScalarType<T>)
+			inline constexpr ScalarSizeClassEnum scalar_size_class_v = []() {
+			if constexpr (sizeof(T) == 1) return ScalarSizeClassEnum::byte;
+			else if constexpr (sizeof(T) == 2) return ScalarSizeClassEnum::word;
+			else if constexpr (sizeof(T) == 4) return ScalarSizeClassEnum::dword;
+			else return ScalarSizeClassEnum::qword;
+			}();
+
+		template<typename S>
+			requires IsScalarType<S>
+		struct ScalarTraits : ScalarSizeTraits<scalar_size_class_v<S>>
+		{
+
+		};
+
+		/*
+		template<typename S>
+		requires IsScalarType<S>
+		struct ScalarTraits : ScalarTraits<scalar_size_class_v<S>> {};*/
 
 		//Returns true if this value is a power of 2.
 		//0 and 1 are NOT considered powers of 2
@@ -45,14 +92,6 @@ namespace AVXXY_NAMESPACE
 
 		template<typename T> //requires (SupportsSizeClass<T>) 
 		inline constexpr VectorSizeClassEnum vector_size_class_v = vector_size_class(sizeof(T));
-
-		template<typename T> requires (IsScalarType<T>)
-			inline constexpr ScalarSizeClassEnum scalar_size_class_v = []() {
-			if constexpr (sizeof(T) == 1) return ScalarSizeClassEnum::byte;
-			else if constexpr (sizeof(T) == 2) return ScalarSizeClassEnum::word;
-			else if constexpr (sizeof(T) == 4) return ScalarSizeClassEnum::dword;
-			else return ScalarSizeClassEnum::qword;
-			}();
 
 		//@note for now, bigger than 64 lanes vectors are not supported (mainly due to mask type not being ready for it)
 		//@tparam S scalar type of the would-be vector
