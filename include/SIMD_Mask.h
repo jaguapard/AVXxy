@@ -22,7 +22,7 @@ namespace AVXXY_NAMESPACE
 	class SIMD_Mask
 	{
 	public:
-		template <concepts::LaneSizeEnum FriendS, size_t FriendN>
+		template <meta::ScalarSizeClassEnum FriendLS, size_t FriendN>
 			requires IsValid_SIMD_Mask<N>
 		friend class SIMD_Mask;
 
@@ -38,7 +38,7 @@ namespace AVXXY_NAMESPACE
 		SIMD_Mask(UintT bits);
 		SIMD_Mask(const SIMD_Mask<LS, N / 2>& lo, const SIMD_Mask<LS, N / 2>& hi);
 
-		template <concepts::LaneSizeEnum LS2>
+		template <meta::ScalarSizeClassEnum LS2>
 		SIMD_Mask(const SIMD_Mask<LS2, N>& other);
 
 		SIMD_Mask<LS, N / 2> lo() const;

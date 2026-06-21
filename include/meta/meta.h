@@ -1,6 +1,5 @@
 #pragma once
 #include "../namespace.h"
-#include "enums.h"
 #include <stdint.h>
 #include <immintrin.h>
 #include "../small_fp.h"
