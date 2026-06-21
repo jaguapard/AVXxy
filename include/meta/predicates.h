@@ -11,6 +11,10 @@ namespace AVXXY_NAMESPACE
 		template<class...>
 		inline constexpr bool always_false_v = false;
 
+		static constexpr bool isPowerOf2(size_t N)
+		{
+			return std::popcount(N) == 1 && N >= 2;
+		}
 		static constexpr VectorSizeClassEnum vector_size_class(size_t sizeInBytes)
 		{
 			if (sizeInBytes <= 16) return VectorSizeClassEnum::XMM;
