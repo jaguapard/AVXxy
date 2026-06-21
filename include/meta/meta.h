@@ -16,6 +16,8 @@ namespace AVXXY_NAMESPACE
 
 		template<typename T> concept IsScalarType = is_any_of_v<T, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double, fp16_t, bf16_t>;
 		template<typename... Ts> concept AllAreScalarTypes = (IsScalarType<Ts> && ...);
+
+		//Is this a valid intrinsic vector type? Does not check for actual availabilty (i.e. __m512 will pass this test even if AVX512 is not available)
 		template<typename T> concept IsIntrinsicVector = is_any_of_v<T, __m128i, __m128, __m128d, __m128h, __m128bh, __m256i, __m256, __m256d, __m256h, __m256bh, __m512i, __m512, __m512d, __m512h, __m512bh>;
 
 
@@ -24,10 +26,14 @@ namespace AVXXY_NAMESPACE
 		template<class...>
 		inline constexpr bool always_false_v = false;
 
+		//Returns true if this value is a power of 2.
+		//0 and 1 are NOT considered powers of 2
 		static constexpr bool isPowerOf2(size_t N)
 		{
 			return std::popcount(N) == 1 && N >= 2;
 		}
+
+		//Maps sizeInBytes to VectorSizeClassEnum member
 		static constexpr VectorSizeClassEnum vector_size_class(size_t sizeInBytes)
 		{
 			if (sizeInBytes <= 16) return VectorSizeClassEnum::XMM;
@@ -64,21 +70,28 @@ namespace AVXXY_NAMESPACE
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_u32 = std::is_same_v<T, uint32_t>;
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_u16 = std::is_same_v<T, uint16_t>;
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_u8 = std::is_same_v<T, uint8_t>;
+
+		//indicates wheteher this type is a signed 8 or 16 bit integer
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_small_sint = is_i16<T> || is_i8<T>;
+		//indicates wheteher this type is a unsigned 8 or 16 bit integer
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_small_uint = is_u16<T> || is_u8<T>;
+		//indicates wheteher this type is any 8 or 16 bit integer, signed or unsigned
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool any_small_int = is_small_sint<T> || is_small_uint<T>;
+
+		//indicates wheteher this type is a floating point type (double, single, half precision or BF16)
+		//Note that std::is_floating_point_v is not exactly equal to this, since FP16 and BF16 have limited support and are using custom types
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool any_float = is_any_of_v<T, float, double, fp16_t, bf16_t>;
-		//indicates wheter this type is 8 bit integer, signed or unsigned
+		//indicates whether this type is 8 bit integer, signed or unsigned
 		template <typename T> inline constexpr bool any_i8 = (is_u8<T> || is_i8<T>);
-		//indicates wheter this type is 16 bit integer, signed or unsigned
+		//indicates whether this type is 16 bit integer, signed or unsigned
 		template <typename T> inline constexpr bool any_i16 = (is_u16<T> || is_i16<T>);
-		//indicates wheter this type is 32 bit integer, signed or unsigned
+		//indicates whether this type is 32 bit integer, signed or unsigned
 		template <typename T> inline constexpr bool any_i32 = (is_u32<T> || is_i32<T>);
-		//indicates wheter this type is 64 bit integer, signed or unsigned
+		//indicates whether this type is 64 bit integer, signed or unsigned
 		template <typename T> inline constexpr bool any_i64 = (is_u64<T> || is_i64<T>);
-		//indicates wheter this type is integral
+		//indicates whether this type is integral
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool any_int = std::is_integral_v<T>;
-		//indicates wheter this type is not integral (TODO: limit it only to doubles and floats, and maybe FP16/BF16?)
+		//indicates whether this type is not integralmore
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool not_int = !std::is_integral_v<T>;
 	}
 }
