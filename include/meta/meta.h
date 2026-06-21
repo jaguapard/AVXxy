@@ -48,7 +48,7 @@ namespace AVXXY_NAMESPACE
 
 		template<typename S>
 			requires IsScalarType<S>
-		struct ScalarSraits : ScalarSizeTraits<scalar_size_class_v<S>>
+		struct ScalarTraits : ScalarSizeTraits<scalar_size_class_v<S>>
 		{
 			static inline constexpr bool is_fp16 = std::is_same_v<S, fp16_t>;
 			static inline constexpr bool is_bf16 = std::is_same_v<S, bf16_t>;
