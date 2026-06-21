@@ -75,9 +75,9 @@ namespace AVXXY_NAMESPACE
 
 		//Maps bit count to smallest unsigned integer type that has greater or equal number of bits
 		template <size_t Size>
-		struct bits_to_uint_t
+		struct _struct_bits_to_uint_t
 		{
-			static_assert(Size <= 64, "Unsupported size for bits_to_uint_t");
+			static_assert(Size <= 64, "Unsupported size for _struct_bits_to_uint_t");
 			using type =
 				std::conditional_t<Size >= 33, uint64_t,
 				std::conditional_t<Size >= 17, uint32_t,
@@ -85,9 +85,9 @@ namespace AVXXY_NAMESPACE
 		};
 		//Maps bit count to smallest signed integer type that has greater or equal number of bits
 		template <size_t Size>
-		struct bits_to_int_t
+		struct _struct_bits_to_int_t
 		{
-			static_assert(Size <= 64, "Unsupported size for bits_to_int_t");
+			static_assert(Size <= 64, "Unsupported size for _struct_bits_to_int_t");
 			using type =
 				std::conditional_t<Size >= 33, int64_t,
 				std::conditional_t<Size >= 17, int32_t,
@@ -131,5 +131,8 @@ namespace AVXXY_NAMESPACE
 		template <typename T, typename U>
 			requires (!utils::is_XL_size(sizeof(T)) && (!utils::is_XL_size(sizeof(U))))
 		inline constexpr bool SameRegisterSizeClass = ((xmm_sized<T> && xmm_sized<U>) || (ymm_sized<T> && ymm_sized<U>) || (zmm_sized<T> && zmm_sized<U>));
+
+		template<size_t N> using bits_to_uint_t = _struct_bits_to_uint_t<N>::type;
+		template<size_t N> using bits_to_int_t = _struct_bits_to_int_t<N>::type;
 	}
 }

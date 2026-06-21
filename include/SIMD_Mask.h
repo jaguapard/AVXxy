@@ -27,6 +27,14 @@ namespace AVXXY_NAMESPACE
 		//	requires (LS == concepts::LaneSizeEnum::dword || LS == concepts::LaneSizeEnum::qword)
 		//using FloatT = 
 	};
+
+	/*
+	template<typename N>
+	struct SizedUint
+	{
+		concepts::bits_to_uint_t<N>::type storage;
+
+	};*/
 	template<concepts::LaneSizeEnum LS, size_t N>
 	class SIMD_Mask
 	{
@@ -38,8 +46,8 @@ namespace AVXXY_NAMESPACE
 		friend class SIMD_Mask;
 
 		static inline constexpr size_t BitCount = N;
-		using UintT = LaneSizeTraits<LS>::UintT;
-		using IntT = LaneSizeTraits<LS>::IntT;
+		using UintT = concepts::bits_to_uint_t<N>;//typename LaneSizeTraits<LS>::UintT;
+		using IntT = concepts::bits_to_int_t<N>;
 		using VecT = SIMD_Vector<IntT, N>;
 		static inline constexpr UintT AllOnesUint = (N == sizeof(UintT) * 8) ? ~UintT(0) : ((UintT(1) << N) - 1);
 		static inline constexpr bool IsVectorMask = !internals::FS_current.has(internals::Feature::AVX512_F);
@@ -49,8 +57,8 @@ namespace AVXXY_NAMESPACE
 		SIMD_Mask() {};
 		SIMD_Mask(UintT bits);
 		SIMD_Mask(const SIMD_Mask<LS, N / 2>& lo, const SIMD_Mask<LS, N / 2>& hi);
-		template <typename S>
-		SIMD_Mask(const SIMD_Vector<S, N>& v);
+		//template <typename S>
+		//SIMD_Mask(const SIMD_Vector<S, N>& v);
 
 		template <concepts::LaneSizeEnum LS2>
 		SIMD_Mask(const SIMD_Mask<LS2, N>& other);

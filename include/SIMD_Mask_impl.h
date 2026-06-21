@@ -27,13 +27,14 @@ namespace AVXXY_NAMESPACE
 		else this->underlying = { lo.underlying, hi.underlying };
 	}
 
+	/*
 	template<concepts::LaneSizeEnum LS, size_t N>
 	template <typename S>
 	inline SIMD_Mask<LS, N>::SIMD_Mask(const SIMD_Vector<S, N>& v)
 	{
 		if constexpr (IsBitMask) this->underlying = movemask(v);
 		else *this = movemask(v.underlying);
-	}
+	}*/
 
 	template<concepts::LaneSizeEnum LS, size_t N>
 	inline SIMD_Mask<LS, N>::operator UintT() const
@@ -126,14 +127,16 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
+	/*
 	template<concepts::LaneSizeEnum LS, size_t N>
 	template<typename T>
 		requires (concepts::SameRegisterSizeClass<T, typename SIMD_Mask<LS,N>::VecT> && !concepts::IsScalarType<T>)
 	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::constructNoClean(const T& intr)
 	{
-		if constexpr (IsBitMask) underlying = movemask(VecT(intr));
-		return SIMD_Mask<LS, N>();
-	}
+		SIMD_Mask<LS, N> ret;
+		if constexpr (IsBitMask) ret.underlying = movemask(VecT(intr)) & ret.AllOnesUint;
+		else return ret.underlying = intr;
+	}*/
 
 	template<concepts::LaneSizeEnum LS, size_t N>
 	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator~() const
