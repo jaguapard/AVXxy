@@ -1,0 +1,29 @@
+#pragma once
+#include "../namespace.h"
+#include "../FeatureSet.h"
+#include "../SIMD_Vector.h"
+#include "../SIMD_Mask.h"
+#include "../meta/meta.h"
+namespace AVXXY_NAMESPACE
+{
+	namespace internals
+	{
+		using namespace meta;
+		struct OperationBase
+		{
+			static inline constexpr internals::FeatureSet FS = internals::FS_current;
+			static inline constexpr size_t MaxVectorSize = []() {
+				if constexpr (FS.has(AVX512_F)) return 64;
+				else if constexpr (FS.has(AVX)) return 32;
+				else if constexpr (FS.has(SSE)) return 16;
+				else return 0;
+				}();
+			/*
+			template<size_t VecSizeThreshold, typename... Args>
+			static auto split_trivial(Args&&... args)
+			{
+				if constexpr (requires {split_trivial(std::forward<Args>(args)...); }
+			}*/
+		};
+	}
+}

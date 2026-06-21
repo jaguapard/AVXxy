@@ -1,16 +1,11 @@
 #include <iostream>
 #include "include/avxxy.h"
+#include "include/operations/add.h"
 
 using namespace AVXXY_NAMESPACE;
-//using namespace internals;
+using namespace internals;
 int main()
 {
-	meta::xmm_t<bf16_t> a;
-
-	fp16_t f16 = 5;
-	std::cout << f16 << "\n";
-	int x = 0;
-#if 0
 	std::cout << "Compile target feature set: \n" << FS_compile_target << "\n\n";
 	std::cout << "Current feature set: " << FS_current << "\n\n";
 	char buf[64] = { 0 };
@@ -37,6 +32,13 @@ int main()
 	}
 
 	std::cout << "Read as f32x16: " << read << "\n";
+
+	f32x16 read_x2 = op_add::run(read, read);
+	std::cout << "Read + read as f32x16: " << read_x2 << "\n";
+#if 0
+	
+
+	
 
 	//This is not how users will use it, but they can if they want to be really specific. This will be dressed in much nicer calls, Dispatcher and tags should be basically invisible to users
 	f32x16 read_x2 = Dispatcher::run(op_add{}, read, read);
