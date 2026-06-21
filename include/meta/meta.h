@@ -5,6 +5,7 @@
 #include <immintrin.h>
 #include "../small_fp.h"
 #include <bit>
+#include "enums.h"
 
 namespace AVXXY_NAMESPACE
 {
