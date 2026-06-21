@@ -41,6 +41,9 @@
     <ClInclude Include="include\avxxy.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\SIMD_Vector.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">

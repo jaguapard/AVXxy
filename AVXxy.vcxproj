@@ -263,6 +263,7 @@
     <ClInclude Include="include\avxxy.h" />
     <ClInclude Include="include\namespace.h" />
     <ClInclude Include="include\op_tags.h" />
+    <ClInclude Include="include\SIMD_Vector.h" />
     <ClInclude Include="include\tables.h" />
   </ItemGroup>
   <ItemGroup>
