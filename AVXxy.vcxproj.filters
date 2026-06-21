@@ -22,6 +22,9 @@
     <Filter Include="Resource Files\docs">
       <UniqueIdentifier>{c9810155-769c-4dc7-9d15-1b4e4ac39dc6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\include\meta">
+      <UniqueIdentifier>{4138a3e0-fc63-4e6f-8027-19b4f9860d73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -43,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="include\SIMD_Vector.h">
       <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\meta\enums.h">
+      <Filter>Header Files\include\meta</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
