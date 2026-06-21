@@ -52,9 +52,31 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N / 2> SIMD_Mask<LS, N>::lo() const
+	{
+		static_assert(N % 2 == 0);
+		if constexpr (IsBitMask) return underlying;
+		else return underlying.lo();
+	}
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N / 2> SIMD_Mask<LS, N>::hi() const
+	{
+		static_assert(N % 2 == 0);
+		if constexpr (IsBitMask) return underlying >> (N/2);
+		else return underlying.hi();
+	}
+
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N>::operator UintT() const
 	{
 		if constexpr (IsBitMask) return underlying & AllOnesUint;
 		else return this->_movemask();
+	}
+
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	template<meta::ScalarSizeClassEnum LS2, size_t N2> requires (N >= N2)
+	inline SIMD_Mask<LS, N>::SIMD_Mask(const SIMD_Mask<LS2, N2>& other)
+	{
+		*this = other._movemask();
 	}
 }

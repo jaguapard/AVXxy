@@ -50,9 +50,10 @@ namespace AVXXY_NAMESPACE
 		//@param hi Upper half for the constructed mask
 		SIMD_Mask(const SIMD_Mask<LS, N / 2>& lo, const SIMD_Mask<LS, N / 2>& hi);
 
-		//Constructs this mask from other mask type. Logical bits are preserved
-		template <meta::ScalarSizeClassEnum LS2>
-		SIMD_Mask(const SIMD_Mask<LS2, N>& other);
+		//Constructs this mask from other mask type. Logical bits are preserved.
+		//If constructed mask has more bits that the input mask, the upper bits of the constructed mask are set to zero
+		template <meta::ScalarSizeClassEnum LS2, size_t N2> requires (N >= N2)
+		SIMD_Mask(const SIMD_Mask<LS2, N2>& other);
 
 		//Returns true if bit i is set, false otherwise. Cannot be used to modify mask bits, for that use setBit
 		bool operator[](size_t i) const;
