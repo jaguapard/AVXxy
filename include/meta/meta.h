@@ -48,7 +48,7 @@ namespace AVXXY_NAMESPACE
 
 		template<typename S>
 			requires IsScalarType<S>
-		struct ScalarSraits : ScalarSizeSraits<scalar_size_class_v<S>>
+		struct ScalarSraits : ScalarSizeTraits<scalar_size_class_v<S>>
 		{
 			static inline constexpr bool is_fp16 = std::is_same_v<S, fp16_t>;
 			static inline constexpr bool is_bf16 = std::is_same_v<S, bf16_t>;
@@ -74,13 +74,13 @@ namespace AVXXY_NAMESPACE
 			//Note that std::is_floating_point_v is not exactly equal to this, since FP16 and BF16 have limited support and are using custom types
 			static inline constexpr bool any_float = is_any_of_v<S, float, double, fp16_t, bf16_t>;
 			//indicates whether this type is 8 bit integer, signed or unsigned
-			template <typename S> inline constexpr bool any_i8 = (is_u8 || is_i8);
+			static inline constexpr bool any_i8 = (is_u8 || is_i8);
 			//indicates whether this type is 16 bit integer, signed or unsigned
-			template <typename S> inline constexpr bool any_i16 = (is_u16 || is_i16);
+			static inline constexpr bool any_i16 = (is_u16 || is_i16);
 			//indicates whether this type is 32 bit integer, signed or unsigned
-			template <typename S> inline constexpr bool any_i32 = (is_u32 || is_i32);
+			static inline constexpr bool any_i32 = (is_u32 || is_i32);
 			//indicates whether this type is 64 bit integer, signed or unsigned
-			template <typename S> inline constexpr bool any_i64 = (is_u64 || is_i64);
+			static inline constexpr bool any_i64 = (is_u64 || is_i64);
 			//indicates whether this type is integral
 			static inline constexpr bool any_int = std::is_integral_v<S>;
 			//indicates whether this type is not integral
