@@ -272,6 +272,12 @@
     <ClInclude Include="include\operations\all.h" />
     <ClInclude Include="include\operations\and.h" />
     <ClInclude Include="include\operations\ceil.h" />
+    <ClInclude Include="include\operations\cmpeq.h" />
+    <ClInclude Include="include\operations\cmpge.h" />
+    <ClInclude Include="include\operations\cmpgt.h" />
+    <ClInclude Include="include\operations\cmple.h" />
+    <ClInclude Include="include\operations\cmplt.h" />
+    <ClInclude Include="include\operations\cmpneq.h" />
     <ClInclude Include="include\operations\floor.h" />
     <ClInclude Include="include\operations\shared.h" />
     <ClInclude Include="include\operations\sub.h" />
