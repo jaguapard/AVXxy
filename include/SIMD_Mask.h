@@ -41,6 +41,12 @@ namespace AVXXY_NAMESPACE
 		template <meta::ScalarSizeClassEnum LS2>
 		SIMD_Mask(const SIMD_Mask<LS2, N>& other);
 
+		//Returns true if bit i is set, false otherwise. Cannot be used to modify mask bits, for that use setBit
+		bool operator[](size_t i) const;
+
+		//Sets the bit i of the mask to 1 if value is true, or 0 otherwise
+		void setBit(size_t i, bool value);
+
 		SIMD_Mask<LS, N / 2> lo() const;
 		SIMD_Mask<LS, N / 2> hi() const;
 
