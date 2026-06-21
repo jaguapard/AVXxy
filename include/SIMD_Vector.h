@@ -4,10 +4,12 @@
 #include <array>
 #include <iostream>
 #include <cstring>
+#include "meta/meta.h"
 
 namespace AVXXY_NAMESPACE
 {
 	template <typename S, size_t N>
+		requires meta::IsValid_SIMD_Vector<S, N>
 	class alignas(std::min<uint32_t>(64, sizeof(S)* N)) SIMD_Vector
 	{
 	private:

@@ -47,7 +47,9 @@ namespace AVXXY_NAMESPACE
 			else return ScalarSizeClassEnum::qword;
 			}();
 
-		//for now, bigger than 64 lanes vectors are not supported (mainly due to mask type not being ready for it)
+		//@note for now, bigger than 64 lanes vectors are not supported (mainly due to mask type not being ready for it)
+		//@tparam S scalar type of the would-be vector
+		//@tparam N lane count of the would-be vector
 		template<typename S, size_t N> concept IsValid_SIMD_Vector = N >= 2 && N <= 64 && isPowerOf2(N) && IsScalarType<S>;
 
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool is_fp16 = std::is_same_v<T, fp16_t>;
