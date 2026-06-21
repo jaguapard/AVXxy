@@ -270,6 +270,7 @@
     <ClInclude Include="include\operations\add.h" />
     <ClInclude Include="include\operations\all.h" />
     <ClInclude Include="include\operations\shared.h" />
+    <ClInclude Include="include\operations\sub.h" />
     <ClInclude Include="include\op_tags.h" />
     <ClInclude Include="include\SIMD_Mask.h" />
     <ClInclude Include="include\SIMD_Mask_impl.h" />
