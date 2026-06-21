@@ -17,6 +17,10 @@ namespace AVXXY_NAMESPACE
 	class SIMD_Mask;
 
 
+	//SIMD_Mask is a semantic type that can be either vector mask or bit mask underneath, depending on current feature set.
+	//AVX512F or absent SSE makes this a bit mask. Otherwise, it's a vector mask 
+	//@tparam LS size class of the masks' elements. Ignored in case of bit mask
+	//@tparam N logical bit count of the mask. The actual storage holds at least this much bits
 	template<meta::ScalarSizeClassEnum LS, size_t N>
 		requires IsValid_SIMD_Mask<N>
 	class SIMD_Mask
@@ -26,8 +30,11 @@ namespace AVXXY_NAMESPACE
 			requires IsValid_SIMD_Mask<N>
 		friend class SIMD_Mask;
 
+		//Smallest unsigned integer type is able to hold of this mask's bits
 		using UintT = meta::ScalarSizeTraits<LS>::UintT;
+		//Smallest signed integer type is able to hold of this mask's bits
 		using IntT = meta::ScalarSizeTraits<LS>::IntT;
+		//Vector type that has lane count equal to this mask's bit count, and whose lane size is the same as size class of this mask
 		using VecT = SIMD_Vector<IntT, N>;
 
 		static inline constexpr bool IsBitMask = internals::FS_current.has(internals::AVX512_F) || !internals::FS_current.has(internals::SSE);
@@ -36,8 +43,14 @@ namespace AVXXY_NAMESPACE
 		
 		SIMD_Mask() {};
 		SIMD_Mask(UintT bits);
+		//Construct this mask by extracting uppermost bits of each lane and storing them the mask
+		template<typename T> SIMD_Mask(const SIMD_Vector<T, N>& vec);
+		//Constructs this mask by concatenating two masks of half it's size.
+		//@param lo Lower half for the constructed mask
+		//@param hi Upper half for the constructed mask
 		SIMD_Mask(const SIMD_Mask<LS, N / 2>& lo, const SIMD_Mask<LS, N / 2>& hi);
 
+		//Constructs this mask from other mask type. Logical bits are preserved
 		template <meta::ScalarSizeClassEnum LS2>
 		SIMD_Mask(const SIMD_Mask<LS2, N>& other);
 
@@ -47,7 +60,9 @@ namespace AVXXY_NAMESPACE
 		//Sets the bit i of the mask to 1 if value is true, or 0 otherwise
 		void setBit(size_t i, bool value);
 
+		//Returns lower half of this mask
 		SIMD_Mask<LS, N / 2> lo() const;
+		//Return upper half of this mask
 		SIMD_Mask<LS, N / 2> hi() const;
 
 		SIMD_Mask<LS, N> operator&(const SIMD_Mask<LS, N>& other) const;
