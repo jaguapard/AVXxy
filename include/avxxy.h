@@ -3,14 +3,7 @@
 #include "meta/concepts.h"
 #include "meta/predicates.h"
 #include "meta/type_factories.h"
-#if 0
 #include "SIMD_Vector.h"
-#include "Dispatcher.h" //TODO: remove this from releases?
-#include "funcs.h"
-#include "funcs_impl.h"
-#include "operators.h"
-#include "SIMD_Mask_impl.h"
-#include "concepts.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -117,6 +110,18 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Vector<uint64_t, 8> zmm_u64;
 	typedef SIMD_Vector<float, 16> zmm_f32;
 	typedef SIMD_Vector<double, 8> zmm_f64;
+}
+#if 0
+#include "SIMD_Vector.h"
+#include "Dispatcher.h" //TODO: remove this from releases?
+#include "funcs.h"
+#include "funcs_impl.h"
+#include "operators.h"
+#include "SIMD_Mask_impl.h"
+#include "concepts.h"
+
+namespace AVXXY_NAMESPACE
+{
 
 
 
