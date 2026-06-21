@@ -33,7 +33,7 @@ int main()
 
 	std::cout << "Read as f32x16: " << read << "\n";
 
-	f32x16 read_x2 = op_add::run(read, read);
+	f32x16 read_x2 = add(read, read);
 	std::cout << "Read + read as f32x16: " << read_x2 << "\n";
 #if 0
 	

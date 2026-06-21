@@ -262,11 +262,13 @@
   <ItemGroup>
     <ClInclude Include="include\avxxy.h" />
     <ClInclude Include="include\funcs.h" />
+    <ClInclude Include="include\funcs_impl.h" />
     <ClInclude Include="include\meta\enums.h" />
     <ClInclude Include="include\meta\meta.h" />
     <ClInclude Include="include\meta\type_factories.h" />
     <ClInclude Include="include\namespace.h" />
     <ClInclude Include="include\operations\add.h" />
+    <ClInclude Include="include\operations\all.h" />
     <ClInclude Include="include\operations\shared.h" />
     <ClInclude Include="include\op_tags.h" />
     <ClInclude Include="include\SIMD_Mask.h" />

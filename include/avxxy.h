@@ -4,6 +4,9 @@
 #include "meta/type_factories.h"
 #include "SIMD_Mask.h"
 #include "SIMD_Vector.h"
+#include "funcs.h"
+#include "funcs_impl.h"
+#include "SIMD_Mask_impl.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -147,12 +150,10 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Mask<meta::ScalarSizeClassEnum::qword, 64> mask64q;
 }
 #if 0
-#include "SIMD_Vector.h"
 #include "Dispatcher.h" //TODO: remove this from releases?
-#include "funcs.h"
-#include "funcs_impl.h"
+
 #include "operators.h"
-#include "SIMD_Mask_impl.h"
+
 #include "concepts.h"
 
 namespace AVXXY_NAMESPACE
