@@ -59,12 +59,20 @@ namespace AVXXY_NAMESPACE
 	//Reinterprets value as vector of other type and returns the result.
 	//If returned vector's size is smaller than input, input's upper bits are discarded
 	//If returned vector's size is bigger than input, upper bits of returned value are undefined.
+	//Unlike vreinterpret, this function is limited to only allow casting to other SIMD_Vectors
 	//@note TODO: different way of limiting to only SIMD_Vectors!
+	//@tparam T vector type to be casted to (return type)
+	//@tparam S scalar type of input vector
+	//@tparam N lane count of both vectors (conversion doesn't change lane count)
 	template<typename T, typename S, size_t N> requires (T::IsSimdVector) T vcast(const SIMD_Vector<S, N>& value);
 
 	//Reinterprets value as any other type and returns the result.
 	//If returned value's size is smaller than input, input's upper bits are discarded
 	//If returned value's size is bigger than input, upper bits of returned value are undefined.
+	//Unlike vcast, this function allows to reinterpret to any type of any size
+	//@tparam T type to be casted to (return type)
+	//@tparam S scalar type of input vector
+	//@tparam N lane count of input vector
 	template<typename T, typename S, size_t N> T vreinterpret(const SIMD_Vector<S, N>& value);
 
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
