@@ -12,6 +12,8 @@ namespace AVXXY_NAMESPACE
 		struct OperationBase
 		{
 			static inline constexpr internals::FeatureSet FS = internals::FS_current;
+			//Maximum vector size of bytes, or 0 if no vector operations are supported
+			//Value of 0 can be here only if scalar operations supported
 			static inline constexpr size_t MaxVectorSize = []() {
 				if constexpr (FS.has(AVX512_F)) return 64;
 				else if constexpr (FS.has(AVX)) return 32;
