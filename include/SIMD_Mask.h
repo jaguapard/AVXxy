@@ -12,6 +12,21 @@ namespace AVXXY_NAMESPACE
 	template<concepts::LaneSizeEnum LS, size_t N>
 	class SIMD_Mask;
 
+	template<concepts::LaneSizeEnum LS>
+	struct LaneSizeTraits
+	{
+		using IntT = std::conditional_t<LS == concepts::LaneSizeEnum::byte, int8_t,
+			std::conditional_t<LS == concepts::LaneSizeEnum::word, int16_t,
+			std::conditional_t<LS == concepts::LaneSizeEnum::dword, int32_t,
+			std::conditional_t<LS == concepts::LaneSizeEnum::qword, int64_t, void>>>>;
+		using UintT = std::conditional_t<LS == concepts::LaneSizeEnum::byte, uint8_t,
+			std::conditional_t<LS == concepts::LaneSizeEnum::word, uint16_t,
+			std::conditional_t<LS == concepts::LaneSizeEnum::dword, uint32_t,
+			std::conditional_t<LS == concepts::LaneSizeEnum::qword, uint64_t, void>>>>;
+		
+		//	requires (LS == concepts::LaneSizeEnum::dword || LS == concepts::LaneSizeEnum::qword)
+		//using FloatT = 
+	};
 	template<concepts::LaneSizeEnum LS, size_t N>
 	class SIMD_Mask
 	{
@@ -23,8 +38,8 @@ namespace AVXXY_NAMESPACE
 		friend class SIMD_Mask;
 
 		static inline constexpr size_t BitCount = N;
-		using UintT = typename concepts::bits_to_uint_t<N>::type;
-		using IntT = typename concepts::bits_to_int_t<N>::type;
+		using UintT = LaneSizeTraits<LS>::UintT;
+		using IntT = LaneSizeTraits<LS>::IntT;
 		using VecT = SIMD_Vector<IntT, N>;
 		static inline constexpr UintT AllOnesUint = (N == sizeof(UintT) * 8) ? ~UintT(0) : ((UintT(1) << N) - 1);
 		static inline constexpr bool IsVectorMask = !internals::FS_current.has(internals::Feature::AVX512_F);
@@ -92,7 +107,7 @@ namespace AVXXY_NAMESPACE
 			requires (concepts::SameRegisterSizeClass<T, VecT> && !concepts::IsScalarType<T>)
 		static SIMD_Mask<LS, N> constructNoClean(const T& intr);
 	private:
-		std::conditional_t<IsVectorMask, VecT, UintT> underlying;
+		std::conditional_t<IsBitMask, UintT, VecT> underlying;
 	};
 
 	template<typename S, size_t N>
