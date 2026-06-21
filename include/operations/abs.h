@@ -54,6 +54,7 @@ namespace AVXXY_NAMESPACE
 				}
 				if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_add_ps(a, b);*/
 
+				scream();
 				SIMD_Vector<S, N> ret;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::abs(a[i]);
 				return ret;
