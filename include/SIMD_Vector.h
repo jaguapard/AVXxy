@@ -21,6 +21,7 @@ namespace AVXXY_NAMESPACE
 		friend class SIMD_Vector;
 
 		using IntrinsicT = meta::typed_intrinsic_storage_t<S, N>;
+		using MaskT = mask_t<S, N>;
 
 		SIMD_Vector() {};
 		const S& operator[](size_t i) const { return arr[i]; }
