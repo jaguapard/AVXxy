@@ -34,6 +34,7 @@ namespace AVXXY_NAMESPACE
 			using UintT = std::conditional_t<LS == ScalarSizeClassEnum::byte, uint8_t,
 				std::conditional_t<LS == ScalarSizeClassEnum::word, uint16_t,
 				std::conditional_t<LS == ScalarSizeClassEnum::dword, uint32_t, uint64_t>>>;
+			static constexpr UintT AllOnesUint = ~UintT(0);
 			static constexpr ScalarSizeClassEnum size_class = LS;
 		};
 		

@@ -62,6 +62,9 @@
     <ClInclude Include="include\SIMD_Mask.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\SIMD_Mask_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">

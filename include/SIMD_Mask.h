@@ -65,6 +65,8 @@ namespace AVXXY_NAMESPACE
 		//Return upper half of this mask
 		SIMD_Mask<LS, N / 2> hi() const;
 
+		operator UintT() const;
+
 		SIMD_Mask<LS, N> operator&(const SIMD_Mask<LS, N>& other) const;
 		SIMD_Mask<LS, N> operator|(const SIMD_Mask<LS, N>& other) const;
 		SIMD_Mask<LS, N> operator^(const SIMD_Mask<LS, N>& other) const;
@@ -73,7 +75,14 @@ namespace AVXXY_NAMESPACE
 		SIMD_Mask<LS, N>& operator|=(const SIMD_Mask<LS, N>& other);
 		SIMD_Mask<LS, N>& operator^=(const SIMD_Mask<LS, N>& other);
 	private:
+		using SizeTraits = meta::ScalarSizeTraits<LS>;
 		std::conditional_t<IsBitMask, UintT, VecT> underlying;
+
+		//deposits uint bits to each lane of the vector.
+		static VecT _movm(UintT value);
+
+		//extracts uppermost bits out of each lane of this mask and puts them into returned bits
+		UintT _movemask() const;
 	};
 
 	template<typename S, size_t N>
