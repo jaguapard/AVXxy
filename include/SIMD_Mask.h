@@ -34,24 +34,26 @@ namespace AVXXY_NAMESPACE
 		SIMD_Mask() {};
 		SIMD_Mask(UintT bits);
 		SIMD_Mask(const SIMD_Mask<LS, N / 2>& lo, const SIMD_Mask<LS, N / 2>& hi);
-		SIMD_Mask(const SIMD_Vector<IntT, N>& v);
+		template <typename S>
+		SIMD_Mask(const SIMD_Vector<S, N>& v);
 
 		template <concepts::LaneSizeEnum LS2>
 		SIMD_Mask(const SIMD_Mask<LS2, N>& other);
 
 		operator UintT() const;
 
+		/*
 		template<typename T>
 		requires (concepts::IsIntrinsicVector<T>&& std::is_convertible_v<SIMD_Vector<S, N>, T>)
-		operator T() const;
+		operator T() const;*/
 
 		//bool operator!
 
 		
-		template<typename T>
+		//template<typename T>
 		//requires (concepts::IsIntrinsicVector<T> && ((concepts::xmm_sized<VecT> && concepts::xmm_sized<T>) || (concepts::ymm_sized<VecT> && concepts::ymm_sized<T>) || (concepts::zmm_sized<VecT> && concepts::zmm_sized<T>)))
-		requires (std::is_convertible_v<T, SIMD_Vector<S,N>> && concepts::IsIntrinsicVector<T>)
-		SIMD_Mask(const T& intrVec);
+		//requires (std::is_convertible_v<T, SIMD_Vector<S,N>> && concepts::IsIntrinsicVector<T>)
+		//SIMD_Mask(const T& intrVec);
 
 		//Returns the vector type, where each lane is filled with 1 bits if corresponding mask bits are set, or 0 otherwise.
 		//Thus, a SIMD_Mask<float, 4> with bits 0100 will return {0, std::bit_cast<float>(0xFFFFFFFF), 0, 0}
@@ -83,6 +85,12 @@ namespace AVXXY_NAMESPACE
 		SIMD_Mask<LS, N>& operator&=(const SIMD_Mask<LS, N>& other);
 		SIMD_Mask<LS, N>& operator|=(const SIMD_Mask<LS, N>& other);
 		SIMD_Mask<LS, N>& operator^=(const SIMD_Mask<LS, N>& other);
+
+		//Builds a SIMD_Mask from the type without any cleaning.
+		//This function is dangerous and should only ever be used 
+		template<typename T>
+			requires (concepts::SameRegisterSizeClass<T, VecT> && !concepts::IsScalarType<T>)
+		static SIMD_Mask<LS, N> constructNoClean(const T& intr);
 	private:
 		std::conditional_t<IsVectorMask, VecT, UintT> underlying;
 	};
