@@ -111,10 +111,11 @@ namespace AVXXY_NAMESPACE
 		SIMD_Mask<LS, N>& operator|=(const SIMD_Mask<LS, N>& other);
 		SIMD_Mask<LS, N>& operator^=(const SIMD_Mask<LS, N>& other);
 
-		//Builds a SIMD_Mask from the type without any cleaning.
-		//This function is dangerous and should only ever be used 
+		//Builds a SIMD_Mask from the type without any cleaning or type checking,
+		//except basic size checks.
+		//This function is dangerous and should only ever be used for trivial conversions
 		template<typename T>
-			requires (concepts::SameRegisterSizeClass<T, VecT> && !concepts::IsScalarType<T>)
+			requires (concepts::IsIntrinsicTypeThatCanHold<T, typename SIMD_Mask<LS, N>::VecT>)
 		static SIMD_Mask<LS, N> constructNoClean(const T& intr);
 	private:
 		std::conditional_t<IsBitMask, UintT, VecT> underlying;

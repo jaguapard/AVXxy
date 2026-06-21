@@ -10,7 +10,7 @@
 namespace AVXXY_NAMESPACE
 {
 	namespace concepts
-	{		
+	{
 		template<class...>
 		inline constexpr bool always_false_v = false;
 
@@ -118,7 +118,7 @@ namespace AVXXY_NAMESPACE
 		};
 
 		template<typename T>
-		requires (utils::isPowerOf2(sizeof(T)) && sizeof(T) <=8)
+			requires (utils::isPowerOf2(sizeof(T)) && sizeof(T) <= 8)
 		inline constexpr LaneSizeEnum TypeToLaneSizeEnum = []() {
 			if constexpr (sizeof(T) == 1) return LaneSizeEnum::byte;
 			else if constexpr (sizeof(T) == 2) return LaneSizeEnum::word;
@@ -137,11 +137,11 @@ namespace AVXXY_NAMESPACE
 		template<size_t N> using bits_to_int_t = _struct_bits_to_int_t<N>::type;
 
 		template<typename S, size_t N>
-		using intinsic_vec_t = 
+		using intinsic_vec_t =
 			std::conditional_t<utils::is_xmm_size(sizeof(S)* N), typename reg128<S>::type,
 			std::conditional_t<utils::is_ymm_size(sizeof(S)* N), typename reg256<S>::type,
 			std::conditional_t<utils::is_zmm_size(sizeof(S)* N), typename reg512<S>::type,
-			std::array<typename reg512<S>::type, (sizeof(S) * N) / 64>>>>;
+			std::array<typename reg512<S>::type, (sizeof(S)* N) / 64>>>>;
 
 		template<typename T, typename Holdee>
 		inline constexpr bool IsIntrinsicTypeThatCanHold = []() {
@@ -162,6 +162,5 @@ namespace AVXXY_NAMESPACE
 			else return false;
 			}();
 
-		);
 	}
 }
