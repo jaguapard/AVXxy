@@ -142,5 +142,26 @@ namespace AVXXY_NAMESPACE
 			std::conditional_t<utils::is_ymm_size(sizeof(S)* N), typename reg256<S>::type,
 			std::conditional_t<utils::is_zmm_size(sizeof(S)* N), typename reg512<S>::type,
 			std::array<typename reg512<S>::type, (sizeof(S) * N) / 64>>>>;
+
+		template<typename T, typename Holdee>
+		inline constexpr bool IsIntrinsicTypeThatCanHold = []() {
+			if constexpr (
+				(utils::is_xmm_size(sizeof(Holdee)) && is_any_of_v<T, __m128i, __m128, __m128d>) ||
+				(utils::is_ymm_size(sizeof(Holdee)) && is_any_of_v<T, __m256i, __m256, __m256d>) ||
+				(utils::is_zmm_size(sizeof(Holdee)) && is_any_of_v<T, __m512i, __m512, __m512d>)
+				) return true;
+			else if constexpr (sizeof(Holdee) > 64)
+			{
+				constexpr size_t N = sizeof(Holdee) / 64;
+				static_assert(sizeof(Holdee) % 64 == 0);
+				using T1 = std::array<__m512i, N>;
+				using T2 = std::array<__m512, N>;
+				using T3 = std::array<__m512d, N>;
+				return is_any_of_v<T, T1, T2, T3>;
+			}
+			else return false;
+			}();
+
+		);
 	}
 }
