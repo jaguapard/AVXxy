@@ -2,9 +2,16 @@
 #include "include/avxxy.h"
 
 using namespace AVXXY_NAMESPACE;
-using namespace internals;
+//using namespace internals;
 int main()
 {
+	meta::xmm_t<bf16_t> a;
+
+	uint16_t xx;
+	memcpy(&xx, &a, 2);
+	std::cout << xx << "\n";
+	int x = 0;
+#if 0
 	std::cout << "Compile target feature set: \n" << FS_compile_target << "\n\n";
 	std::cout << "Current feature set: " << FS_current << "\n\n";
 	char buf[64] = { 0 };
@@ -50,6 +57,7 @@ int main()
 	f32x8 readLo = vcast<f32x8>(read);
 	f32x8 readLo_x2 = readLo + readLo;
 	std::cout << "Read low half x2:" << readLo_x2 << "\n";
+#endif
 	system("pause");
 	return 0;
 }

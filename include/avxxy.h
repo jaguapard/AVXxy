@@ -1,5 +1,9 @@
 #pragma once
 #include "namespace.h"
+#include "meta/concepts.h"
+#include "meta/predicates.h"
+#include "meta/type_factories.h"
+#if 0
 #include "SIMD_Vector.h"
 #include "Dispatcher.h" //TODO: remove this from releases?
 #include "funcs.h"
@@ -147,3 +151,4 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Mask<concepts::LaneSizeEnum::dword, 64> mask64d;
 	typedef SIMD_Mask<concepts::LaneSizeEnum::qword, 64> mask64q;
 }
+#endif

@@ -1,0 +1,58 @@
+#pragma once
+#include "../namespace.h"
+#include "concepts.h"
+#include <type_traits>
+
+namespace AVXXY_NAMESPACE
+{
+	namespace meta
+	{
+		template<typename S>
+		requires (IsScalarType<S>)
+		using xmm_t =
+			std::conditional_t<std::is_integral_v<S>, __m128i,
+			std::conditional_t<std::is_same_v<S, float>, __m128,
+			std::conditional_t<std::is_same_v<S, double>, __m128d,
+			std::conditional_t<std::is_same_v<S, fp16_t>, __m128h,
+			std::conditional_t<std::is_same_v<S, bf16_t>, __m128bh,
+			void>>>>>;
+
+		template<typename S>
+			requires (IsScalarType<S>)
+		using ymm_t =
+			std::conditional_t<std::is_integral_v<S>, __m256i,
+			std::conditional_t<std::is_same_v<S, float>, __m256,
+			std::conditional_t<std::is_same_v<S, double>, __m256d,
+			std::conditional_t<std::is_same_v<S, fp16_t>, __m256h,
+			std::conditional_t<std::is_same_v<S, bf16_t>, __m256bh,
+			void>>>>>;
+
+		template<typename S>
+			requires (IsScalarType<S>)
+		using zmm_t =
+			std::conditional_t<std::is_integral_v<S>, __m512i,
+			std::conditional_t<std::is_same_v<S, float>, __m512,
+			std::conditional_t<std::is_same_v<S, double>, __m512d,
+			std::conditional_t<std::is_same_v<S, fp16_t>, __m512h,
+			std::conditional_t<std::is_same_v<S, bf16_t>, __m512bh,
+			void>>>>>;
+
+		template<typename S>
+			requires (IsScalarType<S>)
+		using same_sized_int_t =
+			std::conditional_t<sizeof(S) == 1, int8_t,
+			std::conditional_t<sizeof(S) == 2, int16_t,
+			std::conditional_t<sizeof(S) == 4, int32_t, int64_t>>>;
+
+		template<typename S>
+			requires (IsScalarType<S>)
+		using same_sized_uint_t =
+			std::conditional_t<sizeof(S) == 1, uint8_t,
+			std::conditional_t<sizeof(S) == 2, uint16_t,
+			std::conditional_t<sizeof(S) == 4, uint32_t, uint64_t>>>;
+		//using typed_intrinsic_storage_t = 
+		//	std::conditional_t<
+		//template<typename S, size_t N>
+		//using typed_intrinsic_storage_t =  
+	}
+}

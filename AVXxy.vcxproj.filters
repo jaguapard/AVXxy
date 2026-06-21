@@ -59,6 +59,9 @@
     <ClInclude Include="include\small_fp.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\meta\type_factories.h">
+      <Filter>Header Files\include\meta</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
