@@ -52,6 +52,12 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	inline bool SIMD_Mask<LS, N>::operator[](size_t i) const
+	{
+		return BitsUintT(*this) & (BitsUintT(1) << i);
+	}
+
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N / 2> SIMD_Mask<LS, N>::lo() const
 	{
 		static_assert(N % 2 == 0);
