@@ -44,4 +44,24 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::op_not::run(a);
 	}
+	template<typename S, size_t N, typename I>
+	SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
+	{
+		return internals::op_shl::run(a, amount);
+	}
+	template<typename S, size_t N, typename I>
+	SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
+	{
+		return internals::op_shr::run(a, amount);
+	}
+	template<typename S, size_t N, typename I>
+	SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
+	{
+		return internals::op_permx::run(a, ind);
+	}
+	template<typename S, size_t N, typename I>
+	SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
+	{
+		return internals::op_permx2::run(a, b, ind);
+	}
 }
