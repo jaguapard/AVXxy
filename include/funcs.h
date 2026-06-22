@@ -106,7 +106,7 @@ namespace AVXXY_NAMESPACE
 	template<typename T> requires meta::IsSimdVector<T>
 	__forceinline T load(const void* p, const typename T::MaskT& mask = T::MaskT::AllOnesUint, const T& src = 0)
 	{
-		return load<typename T::ScalarType, T::LaneCount>(p, mask, src);
+		return load<typename T::ScalarT, T::LaneCount>(p, mask, src);
 	}
 
 	//Conditionally stores vector `v` to memory location pointed by `p` using mask `mask`.
@@ -134,11 +134,11 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//By default, scale is set to the size of vector's scalar type
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
-	template <typename T, size_t Scale = sizeof(typename T::ScalarType), typename I>
+	template <typename T, size_t Scale = sizeof(typename T::ScalarT), typename I>
 		requires meta::IsSimdVector<T>
 	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskType& mask = T::MaskType::AllOnesUint, const T& src = 0)
 	{
-		return __gather_impl<typename T::ScalarType, T::LaneCount, Scale>(base, ind, mask, src);
+		return __gather_impl<typename T::ScalarT, T::LaneCount, Scale>(base, ind, mask, src);
 	}
 
 	//Conditionally scatters vector `v` to memory location pointed by `base` using mask `mask`.

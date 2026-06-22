@@ -19,10 +19,13 @@ namespace AVXXY_NAMESPACE
 	public:
 		template<typename FriendS, size_t FriendN> requires meta::IsValid_SIMD_Vector<FriendS, FriendN>
 		friend class SIMD_Vector;
+
 		static inline constexpr bool IsSimdVector = true;
+		static inline constexpr size_t LaneCount = N;
 
 		using IntrinsicT = meta::typed_intrinsic_storage_t<S, N>;
 		using MaskT = mask_t<S, N>;
+		using ScalarT = S;
 
 		SIMD_Vector() {};
 		const S& operator[](size_t i) const { return arr[i]; }
