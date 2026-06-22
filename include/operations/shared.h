@@ -36,6 +36,25 @@ namespace AVXXY_NAMESPACE
 				std::cout << "\nScalar fallback reached:" << loc.function_name() << "\n";
 #endif
 			}
+
+			template<typename S, size_t N, bool Lo>
+			static SIMD_Vector<S, N> scalar_unpack_base(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				SIMD_Vector<S, N> ret;
+				constexpr size_t pairs_per_xmm = 8 / sizeof(S); //8, since unpack only processes lower/upper half of each input
+				constexpr size_t elements_per_xmm = 16 / sizeof(S); //how much elements of type S fit into one 128 bit lane
+				constexpr size_t xmm_count = sizeof(ret) / 16;
+				for (size_t xmm_i = 0; xmm_i < xmm_count; ++xmm_i) //for each 128-bit lane
+				{
+					for (size_t i = 0; i < elements_per_xmm; i += 2)
+					{
+						size_t srcI = xmm_i * elements_per_xmm + i / 2 + (Lo ? 0 : elements_per_xmm / 2);
+						ret[xmm_i * elements_per_xmm + i] = a[srcI];
+						ret[xmm_i * elements_per_xmm + i + 1] = b[srcI];
+					}
+				}
+				return ret;
+			}
 		};
 	}
 }

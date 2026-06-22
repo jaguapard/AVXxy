@@ -50,5 +50,25 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 		};
+
+		struct op_unpacklo : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				return scalar_unpack_base<S, N, true>(a, b);
+			}
+		};
+
+		struct op_unpackhi : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				return scalar_unpack_base<S, N, false>(a, b);
+			}
+		};
 	}
 }
