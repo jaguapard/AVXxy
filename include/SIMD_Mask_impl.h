@@ -57,6 +57,14 @@ namespace AVXXY_NAMESPACE
 		return BitsUintT(*this) & (BitsUintT(1) << i);
 	}
 
+	template<meta::ScalarSizeClassEnum LS, size_t N>  requires IsValid_SIMD_Mask<N>
+	inline void SIMD_Mask<LS, N>::setBit(size_t i, bool value)
+	{
+		BitsUintT u = *this;
+		u &= ~(BitsUintT(1) << i);
+		*this = u | BitsUintT(value) << i;
+	}
+
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N / 2> SIMD_Mask<LS, N>::lo() const
 	{
