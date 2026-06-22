@@ -185,5 +185,44 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 		};
+
+		struct op_scatter : OperationBase
+		{
+			template<typename S, size_t N, size_t Scale, typename I>
+				requires (meta::any_int<I>)
+			static void run(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask)
+			{
+				scream();
+				size_t addr = size_t(base);
+				for (size_t i = 0; i < N; ++i) if (mask[i]) *(S*)(addr + Scale * ind[i]) = v[i];
+			}
+		};
+
+		struct op_shl : OperationBase
+		{
+			template<typename S, size_t N, typename I>
+				requires (meta::any_int<S> && meta::any_int<I>)
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				//using T = typename concepts::same_size_uint_t<S>::type;
+				for (size_t i = 0; i < N; ++i) ret[i] = a[i] << b[i];
+				return ret;
+			}
+		};
+		struct op_shr : OperationBase
+		{
+			template<typename S, size_t N, typename I>
+				requires (meta::any_int<S> && meta::any_int<I>)
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				//using T = typename concepts::same_size_uint_t<S>::type;
+				for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> b[i];
+				return ret;
+			}
+		};
 	}
 }
