@@ -93,4 +93,24 @@ namespace AVXXY_NAMESPACE
 		memcpy(&ret, &value, std::min(sizeof(ret), sizeof(value)));
 		return ret;
 	}
+	template<typename S, size_t N>
+	SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+	{
+		return internals::op_mask_mov::run(ifBitClear, mask, ifBitSet);
+	}
+	template<typename S, size_t N>
+	SIMD_Vector<S, N> maskz_mov(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+	{
+		return mask_mov(SIMD_Vector<S, N>(0), mask, ifBitSet);
+	}
+	template<typename S, size_t N>
+	SIMD_Vector<S, N> blend(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitClear, const SIMD_Vector<S, N>& ifBitSet)
+	{
+		return mask_mov(ifBitClear, mask, ifBitSet);
+	}
+	template<typename S, size_t N>
+	SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask, const SIMD_Vector<S, N>& src)
+	{
+		return internals::op_load::run<S, N>(p, mask, src);
+	}
 }
