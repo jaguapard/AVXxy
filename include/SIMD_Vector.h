@@ -32,6 +32,10 @@ namespace AVXXY_NAMESPACE
 		const S& operator[](size_t i) const { return arr[i]; }
 		S& operator[](size_t i) { return arr[i]; }
 
+		//Constructs this vector from other vector. If vector scalar types mismatch, the input is converted to this vector's scalar type before assignment
+		template<typename T>
+		SIMD_Vector(const SIMD_Vector<T, N>& other) { *this = vcvt<S>(other); }
+
 		//Constructs vector from it's intrinsic type. The intrinsic vector type must be of the same size class as constructed vector:
 		//Vectors less than 17 bytes can be constructed from 128 bit intrinsic types.
 		//Vectors between 17 and 32 bytes can be constructed from 256 bit intrinsic types.
