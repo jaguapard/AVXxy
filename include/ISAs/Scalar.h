@@ -60,6 +60,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_mul>)
 			static SIMD_Vector<S, N> eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -68,6 +69,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_div>)
 			static SIMD_Vector<S, N> eval(op_div, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -76,6 +78,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_mod>)
 			static SIMD_Vector<S, N> eval(op_mod, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -89,6 +92,7 @@ namespace AVXXY_NAMESPACE
 
 			//TODO: limit bitwise operations to int types?
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_or>)
 			static SIMD_Vector<S, N> eval(op_or, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -98,6 +102,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_and>)
 			static SIMD_Vector<S, N> eval(op_and, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -107,6 +112,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_xor>)
 			static SIMD_Vector<S, N> eval(op_xor, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -116,6 +122,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_not>)
 			static SIMD_Vector<S, N> eval(op_not, const SIMD_Vector<S, N>& a)
 			{
 				scream();
@@ -127,7 +134,7 @@ namespace AVXXY_NAMESPACE
 
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (concepts::any_int<S>&& concepts::any_int<I>)
+				requires (std::same_as<Op, op_shl>, meta::any_int<S>&& meta::any_int<I>)
 			static SIMD_Vector<S, N> eval(op_shl, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				scream();
@@ -137,7 +144,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (concepts::any_int<S>&& concepts::any_int<I>)
+				requires (std::same_as<Op, op_shr> && meta::any_int<S> && meta::any_int<I>)
 			static SIMD_Vector<S, N> eval(op_shr, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				scream();
@@ -148,6 +155,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_sqrtf>)
 			static SIMD_Vector<float, N> eval(op_sqrtf, const SIMD_Vector<S, N>& a)
 			{
 				scream();
@@ -156,6 +164,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_sqrtd>)
 			static SIMD_Vector<double, N> eval(op_sqrtd, const SIMD_Vector<S, N>& a)
 			{
 				scream();
@@ -165,7 +174,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (concepts::any_int<I>)
+				requires (meta::any_int<I> && std::same_as<Op, op_permx>)
 			static SIMD_Vector<S, N> eval(op_permx, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
 			{
 				scream();
@@ -174,7 +183,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (concepts::any_int<I>)
+				requires (meta::any_int<I> && std::same_as<Op,op_permx2>)
 			static SIMD_Vector<S, N> eval(op_permx2, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
 			{
 				scream();
@@ -188,7 +197,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (std::is_floating_point_v<S>)
+				requires (std::is_floating_point_v<S> && std::same_as<Op, op_floor>)
 			static SIMD_Vector<S, N> eval(op_floor, const SIMD_Vector<S, N>& a)
 			{
 				scream();
@@ -197,7 +206,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
-				requires (std::is_floating_point_v<S>)
+				requires (std::is_floating_point_v<S> && std::same_as<Op, op_ceil>)
 			static SIMD_Vector<S, N> eval(op_ceil, const SIMD_Vector<S, N>& a)
 			{
 				scream();
