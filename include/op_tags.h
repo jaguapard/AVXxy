@@ -38,7 +38,10 @@ namespace AVXXY_NAMESPACE
 		struct op_min {};
 		struct op_mod {};
 		struct op_movemask {};
-		template <typename S, size_t N> struct op_movm {};
+		template <typename _S> struct op_movm {
+			using S = _S;
+			static constexpr bool _avxxy_is_movm_tag = true;
+		};
 		struct op_mul {};
 		struct op_not {};
 		struct op_or {};

@@ -379,28 +379,33 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 
-			template<typename Op, typename S, size_t N>
-			static SIMD_Vector<S, N> eval(op_movm<S, N>, const typename bits_to_uint_t<N>::type& mask)
+			template<typename Op, size_t N, meta::ScalarSizeClassEnum C>
+			requires (meta::IsMovmOp<Op>)
+			static SIMD_Vector<Op::S, N> eval(const SIMD_Mask<C, N>& mask)
 			{
-				using U = concepts::same_size_uint_t<S>::type;
-				using MU = bits_to_uint_t<N>::type;
-				SIMD_Vector<S, N> ret;
+				scream();
+				SIMD_Vector<Op::S, N> ret;
+				using Tr = ScalarTraits<Op::S>;
 				for (size_t i = 0; i < N; ++i)
 				{
-					U x = mask & (MU(1) << i) ? ~U(0) : U(0);
-					S y = std::bit_cast<S>(x);
-					ret[i] = y;
+					typename Tr::UintT u = mask[i] ? Tr::AllOnesUint : 0;
+					ret[i] = std::bit_cast<Op::S>(u);
 				}
 				return ret;
 			}
+			
 			template<typename Op, typename S, size_t N>
-			static typename bits_to_uint_t<N>::type eval(op_movemask, const SIMD_Vector<S, N>& a)
+			requires (std::same_as<Op, op_movemask>)
+			static mask_t<S, N> eval(const SIMD_Vector<S, N>& vec)
 			{
-				using U = concepts::same_size_uint_t<S>::type;
-				using X = typename bits_to_uint_t<N>::type;
-				X ret = 0;
-				constexpr U sb = U(1) << (sizeof(U) * 8 - 1);
-				for (size_t i = 0; i < N; ++i) if (std::bit_cast<U>(a[i]) & sb) ret |= X(1) << i;
+				mask_t<S, N> ret;
+				using Tr = ScalarTraits<S>;
+				using U = Tr::UintT;
+				for (size_t i = 0; i < N; ++i)
+				{
+					U sb = std::bit_cast<U>(vec[i]) & Tr::SignMask;
+					ret.setBit(i, sb);
+				}
 				return ret;
 			}
 		private:
