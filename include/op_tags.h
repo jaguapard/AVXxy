@@ -3,7 +3,6 @@
 
 namespace AVXXY_NAMESPACE
 {
-#if 0
 	namespace internals
 	{
 		struct op_abs {};
@@ -48,5 +47,4 @@ namespace AVXXY_NAMESPACE
 		struct op_unpacklo {};
 		struct op_xor {};
 	}
-#endif
 }

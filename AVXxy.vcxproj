@@ -261,8 +261,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\avxxy.h" />
+    <ClInclude Include="include\Dispatcher.h" />
     <ClInclude Include="include\funcs.h" />
     <ClInclude Include="include\funcs_impl.h" />
+    <ClInclude Include="include\ISAs\Scalar.h" />
     <ClInclude Include="include\meta\enums.h" />
     <ClInclude Include="include\meta\meta.h" />
     <ClInclude Include="include\meta\type_factories.h" />

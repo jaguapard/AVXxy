@@ -7,12 +7,21 @@ namespace AVXXY_NAMESPACE
 	{
 		struct op_add : OperationBase
 		{
+			template<scalar, typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = a[i] + b[i];
+				return ret;
+			}
+			/*
 			template<typename S, size_t N>
 			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				if constexpr (MaxVectorSize != 0 && sizeof(SIMD_Vector<S, N>) > MaxVectorSize) return { run(a.lo(), b.lo()), run(a.hi(),b.hi()) };
 				else return backend(a, b);
-			}
+			}*/
 
 		private:
 			template<typename S, size_t N>
@@ -53,10 +62,7 @@ namespace AVXXY_NAMESPACE
 				}
 				if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_add_ps(a, b);
 
-				scream();
-				SIMD_Vector<S, N> ret;
-				for (size_t i = 0; i < N; ++i) ret[i] = a[i] + b[i];
-				return ret;
+				
 			}
 		};
 	}
