@@ -60,7 +60,6 @@ namespace AVXXY_NAMESPACE
 	//If returned vector's size is smaller than input, input's upper bits are discarded
 	//If returned vector's size is bigger than input, upper bits of returned value are undefined.
 	//Unlike vreinterpret, this function is limited to only allow casting to other SIMD_Vectors
-	//@note TODO: different way of limiting to only SIMD_Vectors!
 	//@tparam T vector type to be casted to (return type)
 	//@tparam S scalar type of input vector
 	//@tparam N lane count of both vectors (conversion doesn't change lane count)

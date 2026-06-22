@@ -64,4 +64,33 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::op_permx2::run(a, b, ind);
 	}
+	template<typename S, size_t N>
+	SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a)
+	{
+		return internals::op_sqrtf::run(a);
+	}
+	template<typename S, size_t N>
+	SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a)
+	{
+		return internals::op_sqrtd::run(a);
+	}
+	template<typename To, size_t N, typename From>
+	SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value)
+	{
+		return internals::op_cvt::run<To>(value);
+	}
+	template<typename T, typename S, size_t N>
+	T vcast(const SIMD_Vector<S, N>& value)
+	{
+		T ret;
+		memcpy(&ret, &value, std::min(sizeof(ret), sizeof(value)));
+		return ret;
+	}
+	template<typename T, typename S, size_t N>
+	T vreinterpret(const SIMD_Vector<S, N>& value)
+	{
+		T ret;
+		memcpy(&ret, &value, std::min(sizeof(ret), sizeof(value)));
+		return ret;
+	}
 }
