@@ -120,5 +120,28 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 		};
+		struct op_mul : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = a[i] * b[i];
+				return ret;
+			}
+		};
+		struct op_not : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				using T = meta::ScalarTraits<S>::UintT;
+				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(~std::bit_cast<T>(a[i]));
+				return ret;
+			}
+		};
 	}
 }
