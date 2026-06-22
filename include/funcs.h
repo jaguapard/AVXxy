@@ -1,6 +1,8 @@
 #pragma once
 #include "SIMD_Vector.h"
-#include "SIMD_BitMask.h"
+#include "SIMD_Mask.h"
+
+//template <typename S, size_t N> class SIMD_Mask;
 namespace AVXXY_NAMESPACE
 {
 	//Performs element-wise addition of vectors and returns the result
@@ -53,16 +55,23 @@ namespace AVXXY_NAMESPACE
 	template<typename To, size_t N, typename From> SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value);
 	//Appends vector `what` to vector `to` and returns the result
 	template<typename S, size_t N> SIMD_Vector<S, N * 2> concat(const SIMD_Vector<S, N>& to, const SIMD_Vector<S, N>& what);
-	//template<size_t N> SIMD_BitMask<N * 2> concat_masks(const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& to, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& what);
 
 	//Reinterprets value as vector of other type and returns the result.
 	//If returned vector's size is smaller than input, input's upper bits are discarded
 	//If returned vector's size is bigger than input, upper bits of returned value are undefined.
-	template<typename T, typename S, size_t N> requires (T::IsSimdVector) T vcast(const SIMD_Vector<S, N>& value);
+	//Unlike vreinterpret, this function is limited to only allow casting to other SIMD_Vectors
+	//@tparam T vector type to be casted to (return type)
+	//@tparam S scalar type of input vector
+	//@tparam N lane count of both vectors (conversion doesn't change lane count)
+	template<typename T, typename S, size_t N> requires (meta::IsSimdVector<T>) T vcast(const SIMD_Vector<S, N>& value);
 
 	//Reinterprets value as any other type and returns the result.
 	//If returned value's size is smaller than input, input's upper bits are discarded
 	//If returned value's size is bigger than input, upper bits of returned value are undefined.
+	//Unlike vcast, this function allows to reinterpret to any type of any size
+	//@tparam T type to be casted to (return type)
+	//@tparam S scalar type of input vector
+	//@tparam N lane count of input vector
 	template<typename T, typename S, size_t N> T vreinterpret(const SIMD_Vector<S, N>& value);
 
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
@@ -70,34 +79,34 @@ namespace AVXXY_NAMESPACE
 	//If the mask bit is 1, the corresponding element of `ifBitSet` is chosen
 	//This function differs from blend only by the order of it's arguments
 	//ret[i] = mask[i] ? ifBitSet[i] : ifBitClear[i]
-	template <typename S, size_t N> SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& ifBitSet);
+	template <typename S, size_t N> SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet);
 	//Selects elements from input vector by corresponding mask bits and returns the result.
 	//If the mask bit is 0, the corresponding element of the returned vector is set to zero
 	//If the mask bit is 1, the corresponding element of `ifBitSet` is chosen
 	//ret[i] = mask[i] ? ifBitSet[i] : S(0)
-	template <typename S, size_t N> SIMD_Vector<S, N> maskz_mov(const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& ifBitSet);
+	template <typename S, size_t N> SIMD_Vector<S, N> maskz_mov(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet);
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
 	//If the mask bit is 0, the corresponding element of `ifBitClear` is chosen
 	//If the mask bit is 1, the corresponding element of `ifBitSet` is chosen
 	//This function differs from mask_mov only by the order of it's arguments
 	//ret[i] = mask[i] ? ifBitSet[i] : ifBitClear[i]
-	template <typename S, size_t N> SIMD_Vector<S, N> blend(const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& ifBitClear, const SIMD_Vector<S, N>& ifBitSet);
+	template <typename S, size_t N> SIMD_Vector<S, N> blend(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitClear, const SIMD_Vector<S, N>& ifBitSet);
 
 	//Loads the vector from memory location pointed to by `p` and returns the result.
 	//If the corresponding mask bit is set, the corresponding element in memory is read and stored into the returned vector
 	//If the corresponding mask bit is cleared, the corresponding element in memory is not read and the corresponding element from src is stored into the retuned vector
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : src[i]
-	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask = SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>::AllOnes, const SIMD_Vector<S, N>& src = 0);
+	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint, const SIMD_Vector<S, N>& src = 0);
 	//Loads the vector from memory location pointed to by `p` and returns the result.
 	//If the corresponding mask bit is set, the corresponding element in memory is read and stored into the returned vector
 	//If the corresponding mask bit is cleared, the corresponding element in memory is not read and the corresponding element from src is stored into the retuned vector
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : src[i]
-	template<typename T> requires (T::IsSimdVector)
-		__forceinline T load(const void* p, const SIMD_BitMask<T::LaneCount>& mask = SIMD_BitMask<T::LaneCount>::AllOnes, const T& src = 0)
+	template<typename T> requires meta::IsSimdVector<T>
+	__forceinline T load(const void* p, const typename T::MaskT& mask = T::MaskT::AllOnesUint, const T& src = 0)
 	{
-		return load<typename T::ScalarType, T::LaneCount>(p, mask, src);
+		return load<typename T::ScalarT, T::LaneCount>(p, mask, src);
 	}
 
 	//Conditionally stores vector `v` to memory location pointed by `p` using mask `mask`.
@@ -105,7 +114,7 @@ namespace AVXXY_NAMESPACE
 	//Else, no action is performed
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//if (mask[i]) reinterpret_cast<S*>(p)[i] = v[i]
-	template<typename S, size_t N> void store(const SIMD_Vector<S, N>& v, void* p, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask = SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>::AllOnes);
+	template<typename S, size_t N> void store(const SIMD_Vector<S, N>& v, void* p, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint);
 
 	//Conditionally gathers elements from memory, stores them into a vector and returns the result.
 	//If the corresponding mask bit is set, the corresponding element in memory is read and stored into the returned vector
@@ -113,8 +122,8 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//By default, scale is set to the size of vector's scalar type
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
-	template<typename S, size_t N, size_t Scale = sizeof(S), typename I> requires (std::is_integral_v<I> && sizeof(I) <= 8 && concepts::IsScalarType<S>)
-	__forceinline SIMD_Vector<S, N> gather(const void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask = SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>::AllOnes, const SIMD_Vector<S, N>& src = 0)
+	template<typename S, size_t N, size_t Scale = sizeof(S), typename I> requires (std::is_integral_v<I> && sizeof(I) <= 8 && meta::IsScalarType<S>)
+		__forceinline SIMD_Vector<S, N> gather(const void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint, const SIMD_Vector<S, N>& src = 0)
 	{
 		return __gather_impl<S, N, Scale>(base, ind, mask, src);
 	}
@@ -125,11 +134,11 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//By default, scale is set to the size of vector's scalar type
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
-	template <typename T, size_t Scale = sizeof(typename T::ScalarType), typename I>
-		requires (T::IsSimdVector)
-	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const SIMD_BitMask<T::LaneCount>& mask = SIMD_BitMask<T::LaneCount>::AllOnes, const T& src = 0)
+	template <typename T, size_t Scale = sizeof(typename T::ScalarT), typename I>
+		requires meta::IsSimdVector<T>
+	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskT& mask = T::MaskT::AllOnesUint, const T& src = 0)
 	{
-		return __gather_impl<typename T::ScalarType, T::LaneCount, Scale>(base, ind, mask, src);
+		return __gather_impl<typename T::ScalarT, T::LaneCount, Scale>(base, ind, mask, src);
 	}
 
 	//Conditionally scatters vector `v` to memory location pointed by `base` using mask `mask`.
@@ -138,46 +147,46 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//By default, scale is set to the size of vector's scalar type
 	//if (mask[i]) *reinterpret_cast<S*>(size_t(base) + Scale*ind[i]) = v[i]
-	template<typename S, size_t N, size_t Scale = sizeof(S), typename I> void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask = SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>::AllOnes);
+	template<typename S, size_t N, size_t Scale = sizeof(S), typename I> void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint);
 
 	//Performs the element-wise comparsion and returns the resultant mask.
 	//If elements are equal, the corresponding mask bit is set to 1
 	//Otherwise, the corresponding mask bit is set to 0
 	//ret[i] = a[i] == b[i]
-	template<typename S, size_t N> SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+	template<typename S, size_t N> mask_t<S, N> cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 	//Performs the element-wise comparsion and returns the resultant mask.
 	//If elements are not equal, the corresponding mask bit is set to 1
 	//Otherwise, the corresponding mask bit is set to 0
 	//ret[i] = a[i] != b[i]
-	template<typename S, size_t N> SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_not_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+	template<typename S, size_t N> mask_t<S, N> cmp_not_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 	//Performs the element-wise comparsion and returns the resultant mask.
 	//If element of vector `a` is less than element of vector `b`, the corresponding mask bit is set to 1
 	//Otherwise, the corresponding mask bit is set to 0
 	//ret[i] = a[i] < b[i]
-	template<typename S, size_t N> SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_less(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+	template<typename S, size_t N> mask_t<S, N> cmp_less(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 	//Performs the element-wise comparsion and returns the resultant mask.
 	//If element of vector `a` is less than or equal to element of vector `b`, the corresponding mask bit is set to 1
 	//Otherwise, the corresponding mask bit is set to 0
 	//ret[i] = a[i] <= b[i]
-	template<typename S, size_t N> SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_less_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+	template<typename S, size_t N> mask_t<S, N> cmp_less_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 	//Performs the element-wise comparsion and returns the resultant mask.
 	//If element of vector `a` is greater than element of vector `b`, the corresponding mask bit is set to 1
 	//Otherwise, the corresponding mask bit is set to 0
 	//ret[i] = a[i] > b[i]
-	template<typename S, size_t N> SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+	template<typename S, size_t N> mask_t<S, N> cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 	//Performs the element-wise comparsion and returns the resultant mask.
 	//If element of vector `a` is greater than or equal to element of vector `b`, the corresponding mask bit is set to 1
 	//Otherwise, the corresponding mask bit is set to 0
 	//ret[i] = a[i] >= b[i]
-	template<typename S, size_t N> SIMD_BitMask<SIMD_Vector<S, N>::LaneCount> cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+	template<typename S, size_t N> mask_t<S, N> cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 
 	//Returns absolute value of the input vector
 	//The returned values are undefined for signed elements equal to their minimum value
 	template<typename S, size_t N> SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a);
 	//Rounds each element of input vector towards negative infinity (floor) and returns the result.
-	template<typename S, size_t N> requires (std::is_floating_point_v<S>) SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a);
+	template<typename S, size_t N> requires (meta::any_float<S>) SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a);
 	//Rounds each element of input vector towards positive infinity (ceil) and returns the result.
-	template<typename S, size_t N> requires (std::is_floating_point_v<S>) SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a);
+	template<typename S, size_t N> requires (meta::any_float<S>) SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a);
 	//Compares two vectors together element-wise and returns the lower ones.
 	//ret[i] = a[i] < b[i] ? a[i] : b[i]
 	template<typename S, size_t N> SIMD_Vector<S, N> min(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
@@ -203,35 +212,38 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N> SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 
 	//Converts vector of half-precision floating point numbers (FP16) to single precision (FP32)
-	template <size_t N> SIMD_Vector<float, N> vcvt_fp16_fp32(const SIMD_Vector<uint16_t, N>& a);
+	//template <size_t N> SIMD_Vector<float, N> vcvt_fp16_fp32(const SIMD_Vector<uint16_t, N>& a);
 	//Converts vector of single precision floating point numbers (FP32) to half-precision (FP16)
-	template <size_t N> SIMD_Vector<uint16_t, N> vcvt_fp32_fp16(const SIMD_Vector<float, N>& a);
+	//template <size_t N> SIMD_Vector<uint16_t, N> vcvt_fp32_fp16(const SIMD_Vector<float, N>& a);
 
 	//Copies vector `src` and conditionally overwrites it with elements of vector `a`
 	//Mask is iterated from lower bits to higher ones. 
 	//If the mask bit is set, the corresponding element is read from `a` and is written to return vector at pivot point, 
 	//advancing pivot point is by one element. Otherwise, no action is performed.
 	//ret = src; pivot = 0
-	//if (mask[i]) ret[pivot++] = a[i];
-	template <typename S, size_t N> SIMD_Vector<S, N> compress(const SIMD_BitMask<SIMD_Vector<S, N>::LaneCount>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0);
+	//for (size_t i = 0; i < N; ++i)
+	//    if (mask[i]) ret[pivot++] = a[i];
+	template <typename S, size_t N> SIMD_Vector<S, N> compress(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0);
 
-	//Extracts sign bits of each element and returns them as mask. 
-	//The mask bits are set to 1 if sign bits are 1 (negative), or 0 otherwise.
-	template <typename S, size_t N> SIMD_BitMask<N> vec2mask(const SIMD_Vector<S, N>& v);
-	//Sets all bits of each element to 0 if corresponding mask bit is 0, or 1 otherwise
-	template <typename S, size_t N> SIMD_Vector<S,N> mask2vec(const SIMD_BitMask<N>& mask);
+	//Iterates input vector from lowest elements to highest
+	//For each element, checks elements below it, and sets corresponding output element's bit to 1 if it's equal to the tested element, or 0 otherwise
+	//This function is only available for vectors in which elements have number of bits greater or equal to vector's lane count
+	//ret = 0;
+	//for (size_t i = 0; i < N; ++i)
+	//    for (size_t j = 0; j < i; ++j)
+	//        if (a[i] == a[j]) ret[i] |= 1 << j; 
+	template <typename S, size_t N> requires (sizeof(S) * 8 >= N)
+		SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a);
 
-	template <typename S, size_t N> requires (sizeof(S)*8 >= N) 
-	SIMD_Vector<typename concepts::same_size_uint_t<S>::type, N> conflict(const SIMD_Vector<S, N>& a);
-	/**
-	@brief performs a lookup from lookup table using indices. The indices wrap around (-1 becomes LutElementCount-1, LutElementCount becomes 0, etc)
-	//TODO: update the tooltip when implementing it
-	Requires a power of two LutElementCount.
-	@tparam S scalar type of the lookup elements
-	@tparam LutElementCount count of elements inside the LUT
-	@tparam GatherThresholdBytes if table size is greater than this parameter (in bytes), gather will be used instead of a permute network.
-	@tparam N count of elements to look up 
-	@tparam I type of index vector. If this type is larger than scalar type to be looked up (S), a gather is used unconditionally
-	*/
-	//template<typename S, size_t LutElementCount, size_t GatherThresholdBytes = 256, size_t N, typename I> SIMD_Vector<S,N> lookup(const S* lut, const SIMD_Vector<I, N>& ind);
+	//For each element in `a`, computes the number of set bits and stores the computed value into corresponding element of returned vector
+	//for (size_t i = 0; i < N; ++i) ret[i] = popcnt(a[i])
+	template<typename S, size_t N> SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> vpopcnt(const SIMD_Vector<S, N>& a);
+
+	//Extracts uppermost bit of each element and returns them as mask.
+	template <typename S, size_t N> mask_t<S,N> movemask(const SIMD_Vector<S, N>& v);
+	//Sets all bits of each element to 0 if corresponding mask bit is 0, or 1 otherwise.
+	//@tparam S scalar type of the returned vector
+	//@tparam N number of lanes in returned vector, same as bit count of input mask
+	//@tparam C size class of the input mask
+	template <typename S, size_t N, meta::ScalarSizeClassEnum C> SIMD_Vector<S, N> movm(const SIMD_Mask<C, N>& mask);
 }

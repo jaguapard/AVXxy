@@ -1,5 +1,6 @@
 #include <iostream>
 #include "include/avxxy.h"
+#include "include/operations/add.h"
 
 using namespace AVXXY_NAMESPACE;
 using namespace internals;
@@ -32,14 +33,21 @@ int main()
 
 	std::cout << "Read as f32x16: " << read << "\n";
 
+	f32x16 read_x2 = add(read, read);
+	std::cout << "Read + read as f32x16: " << read_x2 << "\n";
+#if 0
+	
+
+	
+
 	//This is not how users will use it, but they can if they want to be really specific. This will be dressed in much nicer calls, Dispatcher and tags should be basically invisible to users
-	f32x16 read_x2 = Dispatcher<FS_current>::run(op_add{}, read, read);
+	f32x16 read_x2 = Dispatcher::run(op_add{}, read, read);
 	std::cout << "Read + read as f32x16: " << read_x2 << "\n";
 
 	f32x16 read_x3_add_func = add(read, read_x2);
 	std::cout << "Read * 3 through add func: " << read_x3_add_func << "\n";
 
-	i32x16 cvt = Dispatcher<FS_current>::run(op_cvt<int>{}, read_x2);
+	i32x16 cvt = Dispatcher::run(op_cvt<int>{}, read_x2);
 	std::cout << "Read * 2 as ints: " << cvt << "\n";
 
 	auto div = read / read;
@@ -50,6 +58,7 @@ int main()
 	f32x8 readLo = vcast<f32x8>(read);
 	f32x8 readLo_x2 = readLo + readLo;
 	std::cout << "Read low half x2:" << readLo_x2 << "\n";
+#endif
 	system("pause");
 	return 0;
 }

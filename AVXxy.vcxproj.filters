@@ -22,6 +22,12 @@
     <Filter Include="Resource Files\docs">
       <UniqueIdentifier>{c9810155-769c-4dc7-9d15-1b4e4ac39dc6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\include\meta">
+      <UniqueIdentifier>{4138a3e0-fc63-4e6f-8027-19b4f9860d73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\operations">
+      <UniqueIdentifier>{bcded1c0-22c1-4d4f-8e4a-ef33465c0df2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -29,77 +35,44 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\avxxy.h">
+    <ClInclude Include="include\namespace.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\namespace.h">
+    <ClInclude Include="include\tables.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\op_tags.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\avxxy.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="include\SIMD_Vector.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\utils.h">
+    <ClInclude Include="include\meta\enums.h">
+      <Filter>Header Files\include\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="include\small_fp.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\concepts.h">
+    <ClInclude Include="include\meta\type_factories.h">
+      <Filter>Header Files\include\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="include\meta\meta.h">
+      <Filter>Header Files\include\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SIMD_Mask.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\SIMD_BitMask.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\SIMD_BitMask_impl.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\FeatureSet.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Dispatcher.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tags.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\funcs.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\funcs_impl.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\operators.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_BW.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_F.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_VL.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\Scalar.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_VBMI.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_DQ.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_VBMI2.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tables.h">
+    <ClInclude Include="include\SIMD_Mask_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ISAs\AVX2.h">
-      <Filter>Header Files\include\ISAs</Filter>
+    <ClInclude Include="include\operations\shared.h">
+      <Filter>Header Files\operations</Filter>
     </ClInclude>
-    <ClInclude Include="include\ISAs\F16C.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_CD.h">
-      <Filter>Header Files\include\ISAs</Filter>
+    <ClInclude Include="include\operations\add.h">
+      <Filter>Header Files\operations</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
