@@ -161,6 +161,19 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N>
+		requires (meta::any_float<S>)
+	SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a)
+	{
+		return internals::op_floor(a);
+	}
+	template<typename S, size_t N>
+		requires (meta::any_float<S>)
+	SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a)
+	{
+		return internals::op_ceil(a);
+	}
+
+	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> min(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		return internals::op_min::run(a, b);

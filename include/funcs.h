@@ -184,9 +184,9 @@ namespace AVXXY_NAMESPACE
 	//The returned values are undefined for signed elements equal to their minimum value
 	template<typename S, size_t N> SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a);
 	//Rounds each element of input vector towards negative infinity (floor) and returns the result.
-	template<typename S, size_t N> requires (std::is_floating_point_v<S>) SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a);
+	template<typename S, size_t N> requires (meta::any_float<S>) SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a);
 	//Rounds each element of input vector towards positive infinity (ceil) and returns the result.
-	template<typename S, size_t N> requires (std::is_floating_point_v<S>) SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a);
+	template<typename S, size_t N> requires (meta::any_float<S>) SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a);
 	//Compares two vectors together element-wise and returns the lower ones.
 	//ret[i] = a[i] < b[i] ? a[i] : b[i]
 	template<typename S, size_t N> SIMD_Vector<S, N> min(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
