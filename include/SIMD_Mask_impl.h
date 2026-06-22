@@ -88,6 +88,28 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator&(const SIMD_Mask<LS, N>& other) const
+	{
+		return underlying & other.underlying;
+	}
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator|(const SIMD_Mask<LS, N>& other) const
+	{
+		return underlying | other.underlying;
+	}
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator^(const SIMD_Mask<LS, N>& other) const
+	{
+		return underlying ^ other.underlying;
+	}
+
+	template<meta::ScalarSizeClassEnum LS, size_t N>  requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator~() const
+	{
+		return ~underlying;
+	}
+
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	template<meta::ScalarSizeClassEnum LS2, size_t N2> requires (N >= N2)
 	inline SIMD_Mask<LS, N>::SIMD_Mask(const SIMD_Mask<LS2, N2>& other)
 	{
