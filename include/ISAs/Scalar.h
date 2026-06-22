@@ -258,6 +258,7 @@ namespace AVXXY_NAMESPACE
 
 
 			template<typename Op, typename S, size_t N>
+			requires (std::same_as<Op,op_compress>)
 			static SIMD_Vector<S, N> eval(op_compress, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
 			{
 				scream();
@@ -269,6 +270,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_mask_mov>)
 			static SIMD_Vector<S, N> eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& ifBitSet)
 			{
 				scream();
@@ -278,12 +280,14 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_unpacklo>)
 			static SIMD_Vector<S, N> eval(op_unpacklo, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
 				return unpack_base<S, N, true>(a, b);
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_unpackhi>)
 			static SIMD_Vector<S, N> eval(op_unpackhi, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -291,6 +295,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_cmpeq>)
 			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -299,6 +304,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_cmpneq>)
 			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpneq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -307,6 +313,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_cmplt>)
 			static typename SIMD_Vector<S, N>::MaskT eval(op_cmplt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -315,6 +322,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_cmple>)
 			static typename SIMD_Vector<S, N>::MaskT eval(op_cmple, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -323,6 +331,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_cmpgt>)
 			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpgt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -331,6 +340,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_cmpge>)
 			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpge, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -341,6 +351,7 @@ namespace AVXXY_NAMESPACE
 
 
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_abs>)
 			static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
 			{
 				scream();
@@ -350,6 +361,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_min>)
 			static SIMD_Vector<S, N> eval(op_min, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -358,6 +370,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op, op_max>)
 			static SIMD_Vector<S, N> eval(op_max, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
@@ -409,7 +422,7 @@ namespace AVXXY_NAMESPACE
 				}
 				return ret;
 			}
-			*/
+			
 				//scream your lungs out if scalar fallback is reached and this function is enabled via AVXXY_NOISY_SCALAR define
 				static void scream(std::source_location loc = std::source_location::current())
 			{
