@@ -113,4 +113,15 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::op_load::run<S, N>(p, mask, src);
 	}
+	template<typename S, size_t N>
+	void store(const SIMD_Vector<S, N>& v, void* p, const mask_t<S, N>& mask)
+	{
+		return internals::op_store::run(v, p, mask);
+	}
+
+	template<typename S, size_t N, size_t Scale, typename I>
+	void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask)
+	{
+		return internals::op_scatter::run(vec, base, ind, mask);
+	}
 }
