@@ -17,7 +17,7 @@ namespace AVXXY_NAMESPACE
 		struct op_cmpneq {};
 		struct op_compress {};
 		struct op_conflict {};
-		template <typename To> struct op_cvt {};
+		template <typename To> struct op_cvt { using cvt_to_t = typename To; };
 		struct op_div {};
 		struct op_floor {};
 		struct op_fp16_to_fp32 {};

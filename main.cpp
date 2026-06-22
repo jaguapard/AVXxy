@@ -34,6 +34,9 @@ int main()
 
 	f32x16 read_x2 = add(read, read);
 	std::cout << "Read + read as f32x16: " << read_x2 << "\n";
+
+	f64x16 bb = vcvt<double>(read);
+	std::cout << bb << "\n";
 #if 0
 	
 

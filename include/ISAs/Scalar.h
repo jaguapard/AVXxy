@@ -26,10 +26,12 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 
-			template<typename To, size_t N, typename From>
-			static SIMD_Vector<To, N> eval(op_cvt<To>, const SIMD_Vector<From, N>& a)
+			template<typename Op, size_t N, typename From>
+			requires (meta::IsCvtOp<Op>)
+			static SIMD_Vector<typename Op::cvt_to_t, N> eval(const SIMD_Vector<From, N>& a)
 			{
 				scream();
+				using To = Op::cvt_to_t;
 				SIMD_Vector<To, N> ret;
 				for (size_t i = 0; i < N; ++i) ret[i] = a[i];
 				return ret;

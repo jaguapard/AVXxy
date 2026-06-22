@@ -75,12 +75,15 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a)
 	{
 		return internals::op_sqrtd::eval(a);
-	}
+	}*/
+
+
 	template<typename To, size_t N, typename From>
 	__forceinline SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value)
 	{
-		return internals::op_cvt::eval<To>(value);
+		return internals::Dispatcher::run<internals::op_cvt<To>>(value);
 	}
+	/*
 	template<typename T, typename S, size_t N>
 		requires (meta::IsSimdVector<T>)
 	__forceinline T vcast(const SIMD_Vector<S, N>& value)

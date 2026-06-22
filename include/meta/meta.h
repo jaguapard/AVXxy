@@ -151,5 +151,8 @@ namespace AVXXY_NAMESPACE
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool any_int = std::is_integral_v<T>;
 		//indicates whether this type is not integralmore
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool not_int = !std::is_integral_v<T>;
+
+		template <typename T>
+		concept IsCvtOp = requires {typename T::cvt_to_t; };
 	}
 }
