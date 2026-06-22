@@ -34,7 +34,7 @@ int main()
 
 	u8x64 smoll;
 	memcpy(&smoll, buf, 64);
-	u8x64 smoll_x2 = smoll + smoll;
+	u8x64 smoll_x2 = ISA_Scalar::eval<op_permx>(smoll, smoll);
 	std::cout << smoll_x2;
 	//f32x16 read_x2 = add(read, read);
 	//std::cout << "Read + read as f32x16: " << read_x2 << "\n";

@@ -134,7 +134,7 @@ namespace AVXXY_NAMESPACE
 
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (std::same_as<Op, op_shl>, meta::any_int<S>&& meta::any_int<I>)
+				requires (std::same_as<Op, op_shl> && meta::any_int<S>&& meta::any_int<I>)
 			static SIMD_Vector<S, N> eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				scream();
@@ -144,7 +144,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (std::same_as<Op, op_shr>&& meta::any_int<S>&& meta::any_int<I>)
+				requires (std::same_as<Op, op_shr> && meta::any_int<S>&& meta::any_int<I>)
 			static SIMD_Vector<S, N> eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				scream();
@@ -217,7 +217,7 @@ namespace AVXXY_NAMESPACE
 
 
 			template<typename Op>
-				requires meta::IsLoadOp<Op>
+				requires (meta::IsLoadOp<Op>)
 			static SIMD_Vector<typename Op::S, Op::N> eval(const void* p, const typename SIMD_Vector<typename Op::S, Op::N>::MaskT& mask, const SIMD_Vector<typename Op::S, Op::N>& src)
 			{
 				scream();
@@ -379,7 +379,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 
-			template<typename Op, size_t N, meta::ScalarSizeClassEnum C>
+			template<typename Op, meta::ScalarSizeClassEnum C, size_t N>
 				requires (meta::IsMovmOp<Op>)
 			static SIMD_Vector<typename Op::S, N> eval(const SIMD_Mask<C, N>& mask)
 			{
