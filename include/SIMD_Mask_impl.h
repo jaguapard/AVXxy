@@ -13,7 +13,7 @@ namespace AVXXY_NAMESPACE
 		//scalar movm
 		for (size_t i = 0; i < N; ++i)
 		{
-			ret.underlying[i] = bits & (UintT(1) << i) ? T::AllOnesUint : 0;
+			ret[i] = bits & (UintT(1) << i) ? T::AllOnesUint : 0;
 		}
 		return ret;
 		
