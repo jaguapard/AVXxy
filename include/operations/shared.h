@@ -13,6 +13,9 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		struct OperationBase
 		{
+		private:
+			struct null_t {};
+		public:
 			static inline constexpr internals::FeatureSet FS = internals::FS_current;
 			//Maximum vector size of bytes, or 0 if no vector operations are supported
 			//Value of 0 can be here only if scalar operations supported
