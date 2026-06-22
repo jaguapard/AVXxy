@@ -27,7 +27,7 @@ namespace AVXXY_NAMESPACE
 	{
 	public:
 		template <meta::ScalarSizeClassEnum FriendLS, size_t FriendN>
-			requires IsValid_SIMD_Mask<N>
+			requires IsValid_SIMD_Mask<FriendN>
 		friend class SIMD_Mask;
 
 		//Smallest unsigned integer type is able to hold of this mask's bits

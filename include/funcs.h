@@ -97,14 +97,14 @@ namespace AVXXY_NAMESPACE
 	//If the corresponding mask bit is cleared, the corresponding element in memory is not read and the corresponding element from src is stored into the retuned vector
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : src[i]
-	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask = mask_t<S, N>::AllOnes(), const SIMD_Vector<S, N>& src = 0);
+	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint, const SIMD_Vector<S, N>& src = 0);
 	//Loads the vector from memory location pointed to by `p` and returns the result.
 	//If the corresponding mask bit is set, the corresponding element in memory is read and stored into the returned vector
 	//If the corresponding mask bit is cleared, the corresponding element in memory is not read and the corresponding element from src is stored into the retuned vector
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : src[i]
 	template<typename T> requires meta::IsSimdVector<T>
-		__forceinline T load(const void* p, const typename T::MaskT& mask = T::MaskT::AllOnes(), const T& src = 0)
+	__forceinline T load(const void* p, const typename T::MaskT& mask = T::MaskT::AllOnesUint, const T& src = 0)
 	{
 		return load<typename T::ScalarType, T::LaneCount>(p, mask, src);
 	}
@@ -114,7 +114,7 @@ namespace AVXXY_NAMESPACE
 	//Else, no action is performed
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//if (mask[i]) reinterpret_cast<S*>(p)[i] = v[i]
-	template<typename S, size_t N> void store(const SIMD_Vector<S, N>& v, void* p, const mask_t<S, N>& mask = mask_t<S, N>::AllOnes());
+	template<typename S, size_t N> void store(const SIMD_Vector<S, N>& v, void* p, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint);
 
 	//Conditionally gathers elements from memory, stores them into a vector and returns the result.
 	//If the corresponding mask bit is set, the corresponding element in memory is read and stored into the returned vector
@@ -123,7 +123,7 @@ namespace AVXXY_NAMESPACE
 	//By default, scale is set to the size of vector's scalar type
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
 	template<typename S, size_t N, size_t Scale = sizeof(S), typename I> requires (std::is_integral_v<I> && sizeof(I) <= 8 && meta::IsScalarType<S>)
-		__forceinline SIMD_Vector<S, N> gather(const void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask = mask_t<S, N>::AllOnes(), const SIMD_Vector<S, N>& src = 0)
+		__forceinline SIMD_Vector<S, N> gather(const void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint, const SIMD_Vector<S, N>& src = 0)
 	{
 		return __gather_impl<S, N, Scale>(base, ind, mask, src);
 	}
@@ -136,7 +136,7 @@ namespace AVXXY_NAMESPACE
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
 	template <typename T, size_t Scale = sizeof(typename T::ScalarType), typename I>
 		requires meta::IsSimdVector<T>
-	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskType& mask = T::MaskType::AllOnes(), const T& src = 0)
+	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskType& mask = T::MaskType::AllOnesUint, const T& src = 0)
 	{
 		return __gather_impl<typename T::ScalarType, T::LaneCount, Scale>(base, ind, mask, src);
 	}
@@ -147,7 +147,7 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//By default, scale is set to the size of vector's scalar type
 	//if (mask[i]) *reinterpret_cast<S*>(size_t(base) + Scale*ind[i]) = v[i]
-	template<typename S, size_t N, size_t Scale = sizeof(S), typename I> void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask = mask_t<S, N>::AllOnes());
+	template<typename S, size_t N, size_t Scale = sizeof(S), typename I> void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint);
 
 	//Performs the element-wise comparsion and returns the resultant mask.
 	//If elements are equal, the corresponding mask bit is set to 1
@@ -233,7 +233,7 @@ namespace AVXXY_NAMESPACE
 	//    for (size_t j = 0; j < i; ++j)
 	//        if (a[i] == a[j]) ret[i] |= 1 << j; 
 	template <typename S, size_t N> requires (sizeof(S) * 8 >= N)
-	SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a);
+		SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a);
 
 	//For each element in `a`, computes the number of set bits and stores the computed value into corresponding element of returned vector
 	//for (size_t i = 0; i < N; ++i) ret[i] = popcnt(a[i])
