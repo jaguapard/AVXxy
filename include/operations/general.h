@@ -13,6 +13,7 @@ namespace AVXXY_NAMESPACE
 				using U = ScalarTraits<S>::UintT;
 				using T = SIMD_Vector<U, N>;
 				T ret;
+				scream();
 				for (size_t i = 0; i < N; ++i)
 				{
 					U acc = 0;
@@ -22,6 +23,30 @@ namespace AVXXY_NAMESPACE
 					}
 					ret[i] = acc;
 				}
+				return ret;
+			}
+		};
+
+		struct op_div : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = a[i] / b[i];
+				return ret;
+			}
+		};
+
+		struct op_mask_mov : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& ifBitClear, const mask_t<S,N>& mask, const SIMD_Vector<S, N>& ifBitSet)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? ifBitSet[i] : ifBitClear[i];
 				return ret;
 			}
 		};
