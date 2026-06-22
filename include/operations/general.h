@@ -84,5 +84,41 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 		};
+
+		struct op_load : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const void* p, const mask_t<S, N>& mask, const SIMD_Vector<S, N>& src)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				const S* sp = static_cast<const S*>(p);
+				for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? sp[i] : src[i];
+				return ret;
+			}
+		};
+
+		struct op_max : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = std::max(a[i], b[i]);
+				return ret;
+			}
+		};
+		struct op_min : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = std::min(a[i], b[i]);
+				return ret;
+			}
+		};
 	}
 }
