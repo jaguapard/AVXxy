@@ -124,4 +124,34 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::op_scatter::run(vec, base, ind, mask);
 	}
+	template<typename S, size_t N>
+	mask_t<S, N> cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_cmpeq::run(a, b);
+	}
+	template<typename S, size_t N>
+	mask_t<S, N> cmp_not_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_cmpneq::run(a, b);
+	}
+	template<typename S, size_t N>
+	mask_t<S, N> cmp_less(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_cmplt::run(a, b);
+	}
+	template<typename S, size_t N>
+	mask_t<S, N> cmp_less_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_cmple::run(a, b);
+	}
+	template<typename S, size_t N>
+	mask_t<S, N> cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_cmpgt::run(a, b);
+	}
+	template<typename S, size_t N>
+	mask_t<S, N> cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_cmpge::run(a, b);
+	}
 }
