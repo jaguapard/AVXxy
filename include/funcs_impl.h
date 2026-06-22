@@ -202,4 +202,14 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::op_unpackhi::run(a, b);
 	}
+	template<typename S, size_t N>
+	SIMD_Vector<S, N> compress(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src)
+	{
+		return internals::op_compress::run(mask, a, src);
+	}
+	template<typename S, size_t N>
+	SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a)
+	{
+		return internals::op_conflict::run(a);
+	}
 }
