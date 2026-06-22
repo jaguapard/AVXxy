@@ -90,23 +90,50 @@ namespace AVXXY_NAMESPACE
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator&(const SIMD_Mask<LS, N>& other) const
 	{
-		return underlying & other.underlying;
+		SIMD_Mask<LS, N> ret;
+		ret.underlying = underlying & other.underlying;
+		return ret;
 	}
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator|(const SIMD_Mask<LS, N>& other) const
 	{
-		return underlying | other.underlying;
+		SIMD_Mask<LS, N> ret;
+		ret.underlying = underlying | other.underlying;
+		return ret;
 	}
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator^(const SIMD_Mask<LS, N>& other) const
 	{
-		return underlying ^ other.underlying;
+		SIMD_Mask<LS, N> ret;
+		ret.underlying = underlying ^ other.underlying;
+		return ret;
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N>  requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N> SIMD_Mask<LS, N>::operator~() const
 	{
-		return ~underlying;
+		SIMD_Mask<LS, N> ret;
+		ret.underlying = ~underlying;
+		return ret;
+	}
+
+	template<meta::ScalarSizeClassEnum LS, size_t N>  requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N>& SIMD_Mask<LS, N>::operator&=(const SIMD_Mask<LS, N>& other)
+	{
+		*this = *this & other;
+		return *this;
+	}
+	template<meta::ScalarSizeClassEnum LS, size_t N>  requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N>& SIMD_Mask<LS, N>::operator|=(const SIMD_Mask<LS, N>& other)
+	{
+		*this = *this | other;
+		return *this;
+	}
+	template<meta::ScalarSizeClassEnum LS, size_t N>  requires IsValid_SIMD_Mask<N>
+	inline SIMD_Mask<LS, N>& SIMD_Mask<LS, N>::operator^=(const SIMD_Mask<LS, N>& other)
+	{
+		*this = *this ^ other;
+		return *this;
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
