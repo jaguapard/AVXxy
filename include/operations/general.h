@@ -70,5 +70,19 @@ namespace AVXXY_NAMESPACE
 				return scalar_unpack_base<S, N, false>(a, b);
 			}
 		};
+
+		struct op_gather : OperationBase
+		{
+			template<typename S, size_t N, size_t Scale, typename I>
+				requires (meta::any_int<I>)
+			static SIMD_Vector<S, N> run(const void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src = 0)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				size_t addr = size_t(base);
+				for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? *(const S*)(addr + Scale * ind[i]) : src[i];
+				return ret;
+			}
+		};
 	}
 }
