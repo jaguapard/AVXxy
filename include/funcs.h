@@ -136,7 +136,7 @@ namespace AVXXY_NAMESPACE
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
 	template <typename T, size_t Scale = sizeof(typename T::ScalarT), typename I>
 		requires meta::IsSimdVector<T>
-	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskType& mask = T::MaskType::AllOnesUint, const T& src = 0)
+	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskT& mask = T::MaskT::AllOnesUint, const T& src = 0)
 	{
 		return __gather_impl<typename T::ScalarT, T::LaneCount, Scale>(base, ind, mask, src);
 	}
