@@ -33,9 +33,9 @@ namespace AVXXY_NAMESPACE
 			//TODO: can make return type bigger for larger N!
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op, op_conflict> && sizeof(S) * 8 >= N)
-			static SIMD_Vector<typename ScalarTraits<S>::UintT, N> eval(const SIMD_Vector<S, N>& a)
+			static SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> eval(const SIMD_Vector<S, N>& a)
 			{
-				using U = same_size_uint_t<S>::type;
+				using U = meta::ScalarTraits<S>::UintT;
 				using T = SIMD_Vector<U, N>;
 				T ret;
 				for (size_t i = 0; i < N; ++i)
@@ -84,7 +84,7 @@ namespace AVXXY_NAMESPACE
 				scream();
 				SIMD_Vector<S, N> ret;
 				for (size_t i = 0; i < N; ++i)
-					if constexpr (concepts::any_int<S>) ret[i] = a[i] % b[i];
+					if constexpr (meta::any_int<S>) ret[i] = a[i] % b[i];
 					else ret[i] = std::fmod(a[i], b[i]); //TODO: should this even exist?
 				return ret;
 			}
@@ -97,7 +97,7 @@ namespace AVXXY_NAMESPACE
 			{
 				scream();
 				SIMD_Vector<S, N> ret;
-				using T = typename concepts::same_size_uint_t<S>::type;
+				using T = typename meta::ScalarTraits<S>::UintT;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(std::bit_cast<T>(a[i]) | std::bit_cast<T>(b[i]));
 				return ret;
 			}
@@ -107,7 +107,7 @@ namespace AVXXY_NAMESPACE
 			{
 				scream();
 				SIMD_Vector<S, N> ret;
-				using T = typename concepts::same_size_uint_t<S>::type;
+				using T = typename meta::ScalarTraits<S>::UintT;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(std::bit_cast<T>(a[i]) & std::bit_cast<T>(b[i]));
 				return ret;
 			}
@@ -117,7 +117,7 @@ namespace AVXXY_NAMESPACE
 			{
 				scream();
 				SIMD_Vector<S, N> ret;
-				using T = typename concepts::same_size_uint_t<S>::type;
+				using T = typename meta::ScalarTraits<S>::UintT;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(S(std::bit_cast<T>(a[i]) ^ std::bit_cast<T>(b[i])));
 				return ret;
 			}
@@ -127,7 +127,7 @@ namespace AVXXY_NAMESPACE
 			{
 				scream();
 				SIMD_Vector<S, N> ret;
-				using T = typename concepts::same_size_uint_t<S>::type;
+				using T = typename meta::ScalarTraits<S>::UintT;
 				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(~std::bit_cast<T>(a[i]));
 				return ret;
 			}
@@ -217,12 +217,12 @@ namespace AVXXY_NAMESPACE
 
 
 			template<typename Op>
-			requires IsLoadOp<Op>
-			static SIMD_Vector<Op::ScalarT, Op::LaneCount> eval(const void* p, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
+			requires meta::IsLoadOp<Op>
+			static SIMD_Vector<Op::S, Op::N> eval(const void* p, const typename SIMD_Vector<Op::S, Op::N>::MaskT& mask, const SIMD_Vector<Op::S, Op::N>& src)
 			{
 				scream();
-				using S = Op::ScalarT;
-				constexpr auto N = Op::LaneCount;
+				using S = Op::S;
+				constexpr auto N = Op::N;
 
 				SIMD_Vector<S, N> ret;
 				const S* sp = static_cast<const S*>(p);
@@ -238,7 +238,7 @@ namespace AVXXY_NAMESPACE
 				for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = vec[i];
 			}
 			template<typename Op, size_t N, typename I>
-				requires (meta::any_int<I> && IsGatherOp<Op>)
+				requires (meta::any_int<I> && meta::IsGatherOp<Op>)
 			static SIMD_Vector<Op::S, N> eval(const void* base, const SIMD_Vector<I, Op::N>& ind, const typename SIMD_Vector<Op::S, Op::N>::MaskT& mask, const SIMD_Vector<Op::S, Op::N>& src = 0)
 			{
 				scream();
@@ -248,7 +248,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (any_int<I> && IsScatterOp<Op>)
+				requires (meta::any_int<I> && meta::IsScatterOp<Op>)
 			static void eval(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
 				scream();
@@ -385,7 +385,7 @@ namespace AVXXY_NAMESPACE
 			{
 				scream();
 				SIMD_Vector<Op::S, N> ret;
-				using Tr = ScalarTraits<Op::S>;
+				using Tr = meta::ScalarTraits<Op::S>;
 				for (size_t i = 0; i < N; ++i)
 				{
 					typename Tr::UintT u = mask[i] ? Tr::AllOnesUint : 0;
@@ -399,7 +399,7 @@ namespace AVXXY_NAMESPACE
 			static mask_t<S, N> eval(const SIMD_Vector<S, N>& vec)
 			{
 				mask_t<S, N> ret;
-				using Tr = ScalarTraits<S>;
+				using Tr = meta::ScalarTraits<S>;
 				using U = Tr::UintT;
 				for (size_t i = 0; i < N; ++i)
 				{

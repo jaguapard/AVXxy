@@ -27,9 +27,9 @@ namespace AVXXY_NAMESPACE
 			//static constexpr size_t N = _N;
 			static constexpr bool _avxxy_is_gather_tag = true;
 		};
-		template <typename S, size_t N> struct op_load {
-			using ScalarT = S;
-			static constexpr size_t LaneCount = N;
+		template <typename _S, size_t _N> struct op_load {
+			using S = _S;
+			static constexpr size_t N = _N;
 			static constexpr bool _avxxy_is_load_tag = true; 
 		};
 		struct op_mask_mov {};
