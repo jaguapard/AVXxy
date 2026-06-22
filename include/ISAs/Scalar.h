@@ -1,12 +1,5 @@
 #pragma once
-#include "../SIMD_Vector.h"
-#include "../Dispatcher.h"
-#include "../op_tags.h"
-#include <source_location>
-
-#include "../SIMD_Mask.h"
-#include "../SIMD_Vector.h"
-#include "../FeatureSet.h"
+#include "shared.h"
 #include <iostream>
 
 namespace AVXXY_NAMESPACE

@@ -83,6 +83,12 @@
     <ClInclude Include="include\Dispatcher.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\ISAs\shared.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512_F.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">

@@ -2,6 +2,7 @@
 #include "FeatureSet.h"
 #include <tuple>
 #include "ISAs/Scalar.h"
+#include "ISAs/AVX512_F.h"
 #include "meta/meta.h"
 namespace AVXXY_NAMESPACE
 {
@@ -10,10 +11,12 @@ namespace AVXXY_NAMESPACE
 		class Dispatcher
 		{
 		public:
-			static inline constexpr FeatureSet FS = FS_current;
+			//static inline constexpr FeatureSet FS = FS_current;
 			struct null_t {};
 
-			using order = std::tuple<ISA_Scalar>;
+			using order = std::tuple<
+				std::conditional_t<FS.has(Feature::AVX512_F), ISA_AVX512_F, null_t>,
+				ISA_Scalar>;
 
 			//Dispatches operation through this dispatcher. Attempts to pick best available implementation for target operation respecting template argument feature set limitations
 			template<typename Op, typename... Args>
