@@ -25,9 +25,6 @@
     <Filter Include="Header Files\include\meta">
       <UniqueIdentifier>{4138a3e0-fc63-4e6f-8027-19b4f9860d73}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\operations">
-      <UniqueIdentifier>{bcded1c0-22c1-4d4f-8e4a-ef33465c0df2}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -68,11 +65,29 @@
     <ClInclude Include="include\SIMD_Mask_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\operations\shared.h">
-      <Filter>Header Files\operations</Filter>
+    <ClInclude Include="include\funcs.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\operations\add.h">
-      <Filter>Header Files\operations</Filter>
+    <ClInclude Include="include\funcs_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\operations\sub.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\operators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\Scalar.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Dispatcher.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\shared.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512_F.h">
+      <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
