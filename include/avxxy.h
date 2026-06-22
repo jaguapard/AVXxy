@@ -7,6 +7,7 @@
 #include "funcs.h"
 #include "funcs_impl.h"
 #include "SIMD_Mask_impl.h"
+#include "operators.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -169,19 +170,3 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Mask<meta::ScalarSizeClassEnum::dword, 64> mask64d;
 	typedef SIMD_Mask<meta::ScalarSizeClassEnum::qword, 64> mask64q;
 }
-#if 0
-#include "Dispatcher.h" //TODO: remove this from releases?
-
-#include "operators.h"
-
-#include "concepts.h"
-
-namespace AVXXY_NAMESPACE
-{
-
-
-
-
-	
-}
-#endif
