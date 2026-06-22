@@ -237,12 +237,12 @@ namespace AVXXY_NAMESPACE
 				S* sp = static_cast<S*>(p);
 				for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = vec[i];
 			}
-			template<typename Op, size_t N, typename I>
+			template<typename Op, typename I>
 				requires (meta::any_int<I>&& meta::IsGatherOp<Op>)
-			static SIMD_Vector<typename Op::S, N> eval(const void* base, const SIMD_Vector<I, Op::N>& ind, const typename SIMD_Vector<typename Op::S, Op::N>::MaskT& mask, const SIMD_Vector<typename Op::S, Op::N>& src = 0)
+			static SIMD_Vector<typename Op::S, Op::N> eval(const void* base, const SIMD_Vector<I, Op::N>& ind, const typename SIMD_Vector<typename Op::S, Op::N>::MaskT& mask, const SIMD_Vector<typename Op::S, Op::N>& src = 0)
 			{
 				scream();
-				SIMD_Vector<typename Op::S, N> ret;
+				SIMD_Vector<typename Op::S, Op::N> ret;
 				size_t addr = size_t(base);
 				for (size_t i = 0; i < Op::N; ++i) ret[i] = mask[i] ? *(const typename Op::S*)(addr + Op::Scale * ind[i]) : src[i];
 				return ret;

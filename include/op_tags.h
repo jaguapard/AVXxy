@@ -24,7 +24,8 @@ namespace AVXXY_NAMESPACE
 		struct op_fp32_to_fp16 {};
 		template <typename _S, size_t _N, size_t _Scale = sizeof(_S)> struct op_gather {
 			using S = _S;
-			//static constexpr size_t N = _N;
+			static constexpr size_t N = _N;
+			static constexpr size_t Scale = _Scale;
 			static constexpr bool _avxxy_is_gather_tag = true;
 		};
 		template <typename _S, size_t _N> struct op_load {
