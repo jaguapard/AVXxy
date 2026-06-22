@@ -32,11 +32,15 @@ int main()
 
 	std::cout << "Read as f32x16: " << read << "\n";
 
-	f32x16 read_x2 = add(read, read);
-	std::cout << "Read + read as f32x16: " << read_x2 << "\n";
+	u8x64 smoll;
+	memcpy(&smoll, buf, 64);
+	u8x64 smoll_x2 = smoll + smoll;
+	std::cout << smoll_x2;
+	//f32x16 read_x2 = add(read, read);
+	//std::cout << "Read + read as f32x16: " << read_x2 << "\n";
 
-	f64x16 bb = vcvt<double>(read);
-	std::cout << bb << "\n";
+	//f64x16 bb = vcvt<double>(read);
+	//std::cout << bb << "\n";
 #if 0
 	
 

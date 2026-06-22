@@ -12,7 +12,7 @@ namespace AVXXY_NAMESPACE
 		{
 		public:
 			//static inline constexpr FeatureSet FS = FS_current;
-			struct null_t {};
+			//struct null_t {};
 
 			using order = std::tuple<
 				std::conditional_t<FS.has(Feature::AVX512_F), ISA_AVX512_F, null_t>,

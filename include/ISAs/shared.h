@@ -4,3 +4,11 @@
 #include "../Dispatcher.h"
 #include "../op_tags.h"
 #include <source_location>
+
+namespace AVXXY_NAMESPACE
+{
+	namespace internals
+	{
+		struct null_t {};
+	}
+}

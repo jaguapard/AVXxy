@@ -8,7 +8,7 @@ namespace AVXXY_NAMESPACE
 	{
 		struct ISA_Scalar
 		{
-			static inline constexpr FeatureSet FS = internals::FS_current;
+			//static inline constexpr FeatureSet FS = internals::FS_current;
 			template<typename Op, typename S, size_t N>
 			requires (std::same_as<Op,op_add>)
 			static SIMD_Vector<S, N> eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
