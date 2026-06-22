@@ -244,7 +244,7 @@ namespace AVXXY_NAMESPACE
 				scream();
 				SIMD_Vector<typename Op::S, N> ret;
 				size_t addr = size_t(base);
-				for (size_t i = 0; i < Op::N; ++i) ret[i] = mask[i] ? *(const Op::S*)(addr + Op::Scale * ind[i]) : src[i];
+				for (size_t i = 0; i < Op::N; ++i) ret[i] = mask[i] ? *(const typename Op::S*)(addr + Op::Scale * ind[i]) : src[i];
 				return ret;
 			}
 			template<typename Op, typename S, size_t N, typename I>
@@ -409,7 +409,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 		private:
-			template<typename Op, typename S, size_t N, bool Lo>
+			template<typename S, size_t N, bool Lo>
 			static SIMD_Vector<S, N> unpack_base(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				SIMD_Vector<S, N> ret;
