@@ -234,9 +234,9 @@ namespace AVXXY_NAMESPACE
 	//    for (size_t j = 0; j < i; ++j)
 	//        if (a[i] == a[j]) ret[i] |= 1 << j; 
 	template <typename S, size_t N> requires (sizeof(S) * 8 >= N)
-	SIMD_Vector<meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a);
+	SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a);
 
 	//For each element in `a`, computes the number of set bits and stores the computed value into corresponding element of returned vector
 	//for (size_t i = 0; i < N; ++i) ret[i] = popcnt(a[i])
-	template<typename S, size_t N> SIMD_Vector<meta::ScalarTraits<S>::UintT, N> vpopcnt(const SIMD_Vector<S, N>& a);
+	template<typename S, size_t N> SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> vpopcnt(const SIMD_Vector<S, N>& a);
 }
