@@ -12,6 +12,20 @@ namespace AVXXY_NAMESPACE
 				using T = SIMD_Vector<S, N>;
 				if constexpr (FS.has(AVX512_BW))
 				{
+					if constexpr (is_i8<S>)
+					{
+						if constexpr (zmm_sized<S>) return _mm512_cmpeq_epi8_mask(a, b);
+						else if constexpr (FS.has(AVX512_VL) && ymm_sized<S>) return _mm256_cmpeq_epi8_mask(a, b);
+						else if constexpr (FS.has(AVX512_VL) && xmm_sized<S>) return _mm_cmpeq_epi8_mask(a, b);
+						else if constexpr (sizeof(T) > 64) return { run(a.lo(), b.lo()), run(a.hi(),b.hi()) };
+					}
+					else if constexpr (is_u8<S>)
+					{
+						if constexpr (zmm_sized<S>) return _mm512_cmpeq_epu8_mask(a, b);
+						else if constexpr (FS.has(AVX512_VL) && ymm_sized<S>) return _mm256_cmpeq_epu8_mask(a, b);
+						else if constexpr (FS.has(AVX512_VL) && xmm_sized<S>) return _mm_cmpeq_epu8_mask(a, b);
+						else if constexpr (sizeof(T) > 64) return { run(a.lo(), b.lo()), run(a.hi(),b.hi()) };
+					}
 					if constexpr (zmm_sized<T>)
 					{
 						if constexpr (is_i8<S>) return _mm512_cmpeq_epi8_mask(a, b);
