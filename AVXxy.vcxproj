@@ -281,6 +281,7 @@
     <ClInclude Include="include\operations\compress.h" />
     <ClInclude Include="include\operations\cvt.h" />
     <ClInclude Include="include\operations\floor.h" />
+    <ClInclude Include="include\operations\general.h" />
     <ClInclude Include="include\operations\shared.h" />
     <ClInclude Include="include\operations\sub.h" />
     <ClInclude Include="include\op_tags.h" />
