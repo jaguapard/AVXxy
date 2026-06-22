@@ -224,5 +224,52 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 		};
+
+		struct op_sqrtf : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<float, N> run(const SIMD_Vector<S, N>& a)
+			{
+				scream();
+				SIMD_Vector<float, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(float(a[i]));
+				return ret;
+			}
+		};
+		struct op_sqrtd : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<float, N> run(const SIMD_Vector<S, N>& a)
+			{
+				scream();
+				SIMD_Vector<float, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(double(a[i]));
+				return ret;
+			}
+		};
+
+		struct op_store : OperationBase
+		{
+			template<typename S, size_t N>
+			static void run(SIMD_Vector<S, N> vec, void* p, const mask_t<S,N>& mask)
+			{
+				scream();
+				S* sp = static_cast<S*>(p);
+				for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = vec[i];
+			}
+		};
+
+		struct op_xor : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				using T = typename meta::ScalarTraits<S>::UintT;
+				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(S(std::bit_cast<T>(a[i]) ^ std::bit_cast<T>(b[i])));
+				return ret;
+			}
+		};
 	}
 }
