@@ -1,6 +1,28 @@
 #include <iostream>
 #include "include/avxxy.h"
 
+using namespace avxxy;
+using namespace internals;
+//TODO: verify that it works
+void scatterToFrameBuffer(const std::array<f32x16, 4>& colors, i32x16 x, i32x16 y, mask16d mask, void* frameBuf, int framebufW)
+{
+	i32x16 scatterInd = y * framebufW + x;
+	fp16x16 fp16_r = colors[0];
+	fp16x16 fp16_g = colors[1];
+	fp16x16 fp16_b = colors[2];
+	fp16x16 fp16_a = colors[3]; //TODO: can be forced to 1 and moved later
+
+	fp16x32 fp16_rg = { fp16_r, fp16_g };
+	fp16x32 fp16_ba = { fp16_b, fp16_a };
+
+	u64x8 rgba0_7 = vcast<u64x8>(permx2(fp16_rg, fp16_ba, u16x32(0, 16, 32, 48, 1, 17, 33, 49, 2, 18, 34, 50, 3, 19, 35, 51, 4, 20, 36, 52, 5, 21, 37, 53, 6, 22, 38, 54, 7, 23, 39, 55)));
+	u64x8 rgba8_15 = vcast<u64x8>(permx2(fp16_rg, fp16_ba, u16x32(8, 24, 40, 56, 9, 25, 41, 57, 10, 26, 42, 58, 11, 27, 43, 59, 12, 28, 44, 60, 13, 29, 45, 61, 14, 30, 46, 62, 15, 31, 47, 63)));
+	//ISA_Scalar::eval<op_scatter<8>>(rgba0_7, frameBuf, scatterInd.lo(), mask.lo());
+	scatter(rgba0_7, frameBuf, scatterInd.lo(), mask.lo());
+	//scatter(rgba8_15, frameBuf, scatterInd.hi(), mask.hi());
+}
+
+
 using namespace AVXXY_NAMESPACE;
 using namespace internals;
 int main()
@@ -34,11 +56,17 @@ int main()
 
 	u8x64 smoll;
 	memcpy(&smoll, buf, 64);
-	u8x64 smoll_x2 = ISA_Scalar::eval<op_gather<uint8_t, 64>>(&read, smoll, mask_t<uint8_t,64>(0x32451234), smoll);
+	//scatter()
+	u8x64 smoll_x2 = 2;
+	ISA_Scalar::eval<op_store>(smoll, &read, mask64b(0x2313));
 	std::cout << smoll_x2;
-	//f32x16 read_x2 = add(read, read);
+
+	f32x16 read_x2 = add(read, read);
+	ISA_Scalar::eval<op_store>(read_x2, &read, mask16d(3123));
 	//std::cout << "Read + read as f32x16: " << read_x2 << "\n";
 
+	std::array<f32x16, 4> aaa = { read,read,read,read };
+	scatterToFrameBuffer(aaa, 0, 0, 0, &read, 30);
 	//f64x16 bb = vcvt<double>(read);
 	//std::cout << bb << "\n";
 #if 0

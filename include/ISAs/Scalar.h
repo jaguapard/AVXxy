@@ -231,11 +231,12 @@ namespace AVXXY_NAMESPACE
 			}
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op, op_store>)
-			static void eval(SIMD_Vector<S, N> vec, void* p, const typename SIMD_Vector<S, N>::MaskT& mask)
+			static auto eval(SIMD_Vector<S, N> vec, void* p, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
 				scream();
 				S* sp = static_cast<S*>(p);
 				for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = vec[i];
+				return alive_sentinel_t{};
 			}
 			template<typename Op, typename I>
 				requires (meta::any_int<I>&& meta::IsGatherOp<Op>)
@@ -249,11 +250,12 @@ namespace AVXXY_NAMESPACE
 			}
 			template<typename Op, typename S, size_t N, typename I>
 				requires (meta::any_int<I>&& meta::IsScatterOp<Op>)
-			static void eval(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask)
+			static auto eval(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
 				scream();
 				size_t addr = size_t(base);
 				for (size_t i = 0; i < N; ++i) if (mask[i]) *(S*)(addr + Op::Scale * ind[i]) = v[i];
+				return alive_sentinel_t{};
 			}
 
 
