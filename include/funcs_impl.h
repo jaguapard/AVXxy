@@ -154,4 +154,20 @@ namespace AVXXY_NAMESPACE
 	{
 		return internals::op_cmpge::run(a, b);
 	}
+	template<typename S, size_t N>
+	SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a)
+	{
+		return internals::op_abs::run(a);
+	}
+
+	template<typename S, size_t N>
+	__forceinline SIMD_Vector<S, N> unpacklo(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_unpacklo::run(a, b);
+	}
+	template<typename S, size_t N>
+	__forceinline SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_unpackhi::run(a, b);
+	}
 }
