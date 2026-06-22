@@ -22,8 +22,16 @@ namespace AVXXY_NAMESPACE
 		struct op_floor {};
 		struct op_fp16_to_fp32 {};
 		struct op_fp32_to_fp16 {};
-		template <typename S, size_t N, size_t Scale = sizeof(S)> struct op_gather {};
-		template <typename S, size_t N> struct op_load {};
+		template <typename _S, size_t _N, size_t _Scale = sizeof(_S)> struct op_gather {
+			using S = _S;
+			//static constexpr size_t N = _N;
+			static constexpr bool _avxxy_is_gather_tag = true;
+		};
+		template <typename S, size_t N> struct op_load {
+			using ScalarT = S;
+			static constexpr size_t LaneCount = N;
+			static constexpr bool _avxxy_is_load_tag = true; 
+		};
 		struct op_mask_mov {};
 		struct op_maskz_mov {};
 		struct op_max {};
@@ -36,7 +44,10 @@ namespace AVXXY_NAMESPACE
 		struct op_or {};
 		struct op_permx {};
 		struct op_permx2 {};
-		template <size_t Scale> struct op_scatter {};
+		template <size_t _Scale> struct op_scatter {
+			static constexpr size_t Scale = _Scale;
+			static constexpr bool _avxxy_is_scatter_tag = true;
+		};
 		struct op_shl {};
 		struct op_shr {};
 		struct op_sqrtd {};
