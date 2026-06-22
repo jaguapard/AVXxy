@@ -164,13 +164,13 @@ namespace AVXXY_NAMESPACE
 		requires (meta::any_float<S>)
 	__forceinline SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a)
 	{
-		return internals::op_floor(a);
+		return internals::op_floor::run(a);
 	}
 	template<typename S, size_t N>
 		requires (meta::any_float<S>)
 	__forceinline SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a)
 	{
-		return internals::op_ceil(a);
+		return internals::op_ceil::run(a);
 	}
 
 	template<typename S, size_t N>
@@ -211,5 +211,11 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a)
 	{
 		return internals::op_conflict::run(a);
+	}
+
+	template<typename S, size_t N, size_t Scale, typename I>
+	__forceinline SIMD_Vector<S, N> __gather_impl(const void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
+	{
+		return internals::op_gather::run<S, N, Scale>(base, ind, mask, src);
 	}
 }
