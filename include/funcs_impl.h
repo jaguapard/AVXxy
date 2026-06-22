@@ -226,7 +226,7 @@ namespace AVXXY_NAMESPACE
 		return internals::Dispatcher::run<internals::op_movemask>(v);
 	}
 
-	template<typename S, size_t N, meta::ScalarSizeClassEnum C>
+	template<typename S, meta::ScalarSizeClassEnum C, size_t N>
 	SIMD_Vector<S, N> movm(const SIMD_Mask<C, N>& mask)
 	{
 		return internals::Dispatcher::run<internals::op_movm<S>>(mask);
