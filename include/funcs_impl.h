@@ -161,6 +161,25 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N>
+	__forceinline SIMD_Vector<S, N> min(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_min::run(a, b);
+	}
+
+	template<typename S, size_t N>
+	__forceinline SIMD_Vector<S, N> max(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	{
+		return internals::op_max::run(a, b);
+	}
+
+	template<typename S, size_t N>
+	__forceinline SIMD_Vector<S, N> clamp(const SIMD_Vector<S, N>& val, const SIMD_Vector<S, N>& min, const SIMD_Vector<S, N>& max)
+	{
+		return AVXXY_NAMESPACE::max(min, AVXXY_NAMESPACE::min(val, max));
+	}
+
+
+	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> unpacklo(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		return internals::op_unpacklo::run(a, b);
