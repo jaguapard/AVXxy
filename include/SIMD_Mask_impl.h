@@ -39,6 +39,13 @@ namespace AVXXY_NAMESPACE
 		else underlying = SIMD_Mask<LS, N>::_movm(bits);
 	}
 
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	template<typename T>
+	inline SIMD_Mask<LS, N>::SIMD_Mask(const SIMD_Vector<T, N>& vec)
+	{
+		*this = movemask(vec);
+	}
+
 	template<meta::ScalarSizeClassEnum LS, size_t N>  requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N>::SIMD_Mask(const SIMD_Mask<LS, N / 2>& lo, const SIMD_Mask<LS, N / 2>& hi)
 	{
