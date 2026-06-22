@@ -214,6 +214,18 @@ namespace AVXXY_NAMESPACE
 		return internals::op_conflict::run(a);
 	}
 
+	template<typename S, size_t N>
+	mask_t<S, N> movemask(const SIMD_Vector<S, N>& v)
+	{
+		return internals::op_movemask::run(v);
+	}
+
+	template<typename S, size_t N, meta::ScalarSizeClassEnum C>
+	SIMD_Vector<S, N> movm(const SIMD_Mask<C, N>& mask)
+	{
+		return internals::op_movm::run<S, N>(mask);
+	}
+
 	template<typename S, size_t N, size_t Scale, typename I>
 	__forceinline SIMD_Vector<S, N> __gather_impl(const void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
 	{
