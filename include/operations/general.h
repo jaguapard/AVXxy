@@ -143,5 +143,47 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 		};
+		struct op_or : OperationBase
+		{
+			template<typename S, size_t N>
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				using T = meta::ScalarTraits<S>::UintT;
+				for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(std::bit_cast<T>(a[i]) | std::bit_cast<T>(b[i]));
+				return ret;
+			}
+		};
+
+		struct op_permx : OperationBase
+		{
+			template<typename S, size_t N, typename I>
+				requires (meta::any_int<I>)
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = a[ind[i] & (N - 1)];
+				return ret;
+			}
+		};
+
+		struct op_permx2 : OperationBase
+		{
+			template<typename S, size_t N, typename I>
+				requires (meta::any_int<I>)
+			static SIMD_Vector<S, N> run(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
+			{
+				scream();
+				SIMD_Vector<S, N> ret;
+				for (size_t i = 0; i < N; ++i)
+				{
+					auto j = ind[i] & (2 * N - 1);
+					ret[i] = j < N ? a[j] : b[j - N];
+				}
+				return ret;
+			}
+		};
 	}
 }
