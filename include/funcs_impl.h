@@ -1,6 +1,5 @@
 #pragma once
 #include "funcs.h"
-#include "operations/all.h"
 #include "SIMD_Vector.h"
 #include "Dispatcher.h"
 
@@ -9,8 +8,9 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> add(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
-		return Dispatcher::run<op_add>(a, b);
+		return internals::Dispatcher::run<internals::op_add>(a, b);
 	}
+	/*
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> sub(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
@@ -233,5 +233,5 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> __gather_impl(const void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
 	{
 		return internals::op_gather::eval<S, N, Scale>(base, ind, mask, src);
-	}
+	}*/
 }
