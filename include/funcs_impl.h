@@ -1,6 +1,7 @@
 #pragma once
 #include "funcs.h"
 #include "operations/all.h"
+#include "SIMD_Vector.h"
 
 namespace AVXXY_NAMESPACE
 {

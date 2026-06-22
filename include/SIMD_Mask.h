@@ -85,7 +85,4 @@ namespace AVXXY_NAMESPACE
 		//extracts uppermost bits out of each lane of this mask and puts them into returned bits
 		UintT _movemask() const;
 	};
-
-	template<typename S, size_t N>
-	using mask_t = SIMD_Mask<meta::ScalarTraits<S>::size_class, N>;
 }
