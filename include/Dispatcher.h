@@ -45,7 +45,7 @@ namespace AVXXY_NAMESPACE
 					}
 					else return run_private<Op, I + 1>(std::forward<Args>(args)...);
 				}
-				else static_assert(meta::always_false_v<Args...>, "AVXxy routing: no implementation exists for operation");
+				else static_assert(meta::always_false_v<Op, Args...>, "AVXxy routing: no implementation exists for operation");
 			}
 
 		};
