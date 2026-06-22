@@ -29,10 +29,11 @@ namespace AVXXY_NAMESPACE
 				for (size_t i = 0; i < N; ++i) ret[i] = a[i];
 				return ret;
 			}
-			/*
-			template<typename S, size_t N>
-				requires (sizeof(S) * 8 >= N)
-			static SIMD_Vector<typename same_size_uint_t<S>::type, N> eval(op_conflict, const SIMD_Vector<S, N>& a)
+			
+			//TODO: can make return type bigger for larger N!
+			template<typename Op, typename S, size_t N>
+				requires (std::same_as<Op,op_conflict> && sizeof(S) * 8 >= N)
+			static SIMD_Vector<typename ScalarTraits<S>::UintT, N> eval(op_conflict, const SIMD_Vector<S, N>& a)
 			{
 				using U = same_size_uint_t<S>::type;
 				using T = SIMD_Vector<U, N>;
@@ -49,7 +50,8 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 
-			template<typename S, size_t N>
+			template<typename Op, typename S, size_t N>
+			requires (std::same_as<Op,op_sub>)
 			static SIMD_Vector<S, N> eval(op_sub, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				scream();
