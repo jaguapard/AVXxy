@@ -30,7 +30,7 @@ namespace AVXXY_NAMESPACE
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				requires (std::same_as<Op, op_sub>)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
 				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_sub_pd(a, b);
@@ -47,7 +47,7 @@ namespace AVXXY_NAMESPACE
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				requires (std::same_as<Op, op_mul>)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
 				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_mul_pd(a, b);
@@ -64,7 +64,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_div>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { div(a.lo(), b.lo()), div(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_div_pd(a, b);
@@ -78,7 +78,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_abs>)
 			static auto eval(const SIMD_Vector<S, N>& a)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { abs(a.lo()), abs(a.hi()) };
 				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_abs_pd(a);
@@ -128,7 +128,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_int<S> && meta::any_int<I> && std::same_as<Op,op_shl>)
+				requires (meta::any_int<S>&& meta::any_int<I>&& std::same_as<Op, op_shl>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				using canon_t = same_size_uint_t<S>::type;
@@ -163,10 +163,10 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (std::same_as<Op,op_min>)
+				requires (std::same_as<Op, op_min>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { min(a.lo(), b.lo()), min(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_min_pd(a, b);
@@ -185,7 +185,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_max>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { max(a.lo(), b.lo()), max(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_max_pd(a, b);
@@ -205,7 +205,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_mask_mov>)
 			static auto eval(const SIMD_Vector<S, N>& ifBitClear, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& ifBitSet)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { mask_mov(ifBitClear.lo(), mask.lo(), ifBitSet.lo()), mask_mov(ifBitClear.hi(), mask.hi(), ifBitSet.hi()) };
 				else if constexpr (zmm_sized<T>)
@@ -236,7 +236,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_cmpeq>)
 			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
@@ -279,7 +279,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_cmpneq>)
 			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { cmp_not_equal(a.lo(),b.lo()), cmp_not_equal(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
@@ -322,7 +322,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_cmpgt>)
 			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
@@ -365,7 +365,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_cmpge>)
 			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { cmp_greater_or_equal(a.lo(),b.lo()), cmp_greater_or_equal(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
@@ -408,7 +408,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_cmplt>)
 			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { cmp_less(a.lo(),b.lo()), cmp_less(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
@@ -451,7 +451,7 @@ namespace AVXXY_NAMESPACE
 				requires (std::same_as<Op, op_cmple>)
 			static typename SIMD_Vector<S, N>::MaskT eval(op_cmple, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
@@ -492,10 +492,10 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_int<I> && std::same_as<Op, op_permx>)
+				requires (meta::any_int<I>&& std::same_as<Op, op_permx>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using canon_t = typename ScalarTrais<S>::UintT;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(I) != sizeof(S)) return permx(a, vcvt<canon_t>(ind));
@@ -516,10 +516,10 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_int<I> && std::same_as<Op, op_permx2>)
+				requires (meta::any_int<I>&& std::same_as<Op, op_permx2>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using canon_t = typename same_size_uint_t<S>::type;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(I) != sizeof(S)) return permx2(a, vcvt<canon_t>(ind));
@@ -545,7 +545,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (std::is_floating_point_v<S> && std::same_as<Op,op_floor>)
+				requires (std::is_floating_point_v<S>&& std::same_as<Op, op_floor>)
 			static auto eval(const SIMD_Vector<S, N>& a)
 			{
 				using T = SIMD_Vector<S, N>;
@@ -555,7 +555,7 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (std::is_floating_point_v<S> && std::same_as<Op,op_ceil>)
+				requires (std::is_floating_point_v<S>&& std::same_as<Op, op_ceil>)
 			static auto eval(const SIMD_Vector<S, N>& a)
 			{
 				using T = SIMD_Vector<S, N>;
@@ -584,7 +584,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, size_t N, typename From>
-			requires (meta::IsCvtOp<Op>)
+				requires (meta::IsCvtOp<Op>)
 			static SIMD_Vector<typename Op::cvt_to_t, N> eval(const SIMD_Vector<From, N>& a)
 			{
 				using namespace meta;
@@ -678,7 +678,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename I>
-				requires (meta::any_int<I> && IsGatherOp<Op>)
+				requires (meta::any_int<I>&& IsGatherOp<Op>)
 			static auto eval(const void* base, const SIMD_Vector<I, Op::N>& ind, const typename SIMD_Vector<Op::S, Op::N>::MaskT& mask, const SIMD_Vector<Op::S, Op::N>& src)
 			{
 				//put everything up here to prevent else if chain breaks (since compilation gives useless errors by thinking unsanitized inputs surviving to native gathers
@@ -753,7 +753,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_int<I> && meta::IsScatterOp<Op>)
+				requires (meta::any_int<I>&& meta::IsScatterOp<Op>)
 			static auto eval(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
 				//put everything up here to prevent else if chain breaks (since compilation gives useless errors by thinking unsanitized inputs surviving to native gathers
@@ -854,10 +854,10 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (std::same_as<Op,op_store>)
+				requires (std::same_as<Op, op_store>)
 			static void eval(SIMD_Vector<S, N> vec, void* p, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
-				using namespace concepts;
+				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				SIMD_Vector<S, N> ret;
 				const S* sp = (const S*)p;
