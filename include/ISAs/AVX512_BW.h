@@ -8,43 +8,44 @@ namespace AVXXY_NAMESPACE
 		struct ISA_AVX512_BW
 		{
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) < 4 && sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_abs, const SIMD_Vector<S, N>& a)
+				requires (std::same_as<Op, op_add>)
+			static auto eval(const SIMD_Vector<S, N>& a)
 			{
 				using namespace meta;
-				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { abs(a.lo()), abs(a.hi()) };
-				else if constexpr (is_i16<S>) return _mm512_abs_epi16(a);
-				else if constexpr (is_i8<S>) return _mm512_abs_epi8(a);
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { abs(a.lo()), abs(a.hi()) };
+				else if constexpr (zmm_sized<T> && is_i16<S>) return _mm512_abs_epi16(a);
+				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_abs_epi8(a);
 				else fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
-			static auto eval(op_sub, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
-				requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) < 4)
+				requires (std::same_as<Op, op_sub>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
-				else if constexpr (any_i16<S>) return _mm512_sub_epi16(a, b);
-				else if constexpr (any_i8<S>) return _mm512_sub_epi8(a, b);
+				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_sub_epi16(a, b);
+				else if constexpr (zmm_sized<T> && any_i8<S>) return _mm512_sub_epi8(a, b);
 				else fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
-			static auto eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
-				requires (sizeof(SIMD_Vector<S, N>) > 32 && any_small_int<S>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_mul>)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				using canon_t = std::conditional_t<(std::is_signed_v<S>), int16_t, uint16_t>;
 				if constexpr (sizeof(T) > 64) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
-				else if constexpr (any_i16<S>) return _mm512_mullo_epi16(a, b);
-				else return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
+				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_mullo_epi16(a, b);
+				else if constexpr (zmm_sized<T> && any_i8<S>) return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_small_int<S>&& meta::any_int<I> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static auto eval(op_shl, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+				requires (meta::any_int<I> && std::same_as<Op,op_shl>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				using T = SIMD_Vector<S, N>;
 				if constexpr (!std::is_same_v<I, uint16_t>) return shift_left(a, vcvt<uint16_t>(b));
@@ -56,8 +57,8 @@ namespace AVXXY_NAMESPACE
 				else fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_small_int<S>&& meta::any_int<I> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static auto eval(op_shr, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+				requires (meta::any_int<I>&& std::same_as<Op, op_shr>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				using T = SIMD_Vector<S, N>;
 				if constexpr (!std::is_same_v<I, uint16_t>) return shift_right(a, vcvt<uint16_t>(b));
