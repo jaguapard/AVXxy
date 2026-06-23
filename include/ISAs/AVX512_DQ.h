@@ -7,36 +7,36 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		struct ISA_AVX512_DQ
 		{
-			template<typename S, size_t N>
+			template<typename Op, typename S, size_t N>
 				requires (sizeof(SIMD_Vector<S, N>) > 32 && (is_f32<S> || is_f64<S>))
-			static SIMD_Vector<S, N> eval(op_and, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			static auto eval(op_and, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_and(a.lo(),b.lo()), logic_and(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<SIMD_Vector<S, N>> && is_f64<S>) return _mm512_and_pd(a, b);
 				else if constexpr (zmm_sized<SIMD_Vector<S, N>> && is_f32<S>) return _mm512_and_ps(a, b);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
-			template<typename S, size_t N>
+			template<typename Op, typename S, size_t N>
 				requires (sizeof(SIMD_Vector<S, N>) > 32 && (is_f32<S> || is_f64<S>))
-			static SIMD_Vector<S, N> eval(op_or, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			static auto eval(op_or, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_or(a.lo(),b.lo()), logic_or(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<SIMD_Vector<S, N>> && is_f64<S>) return _mm512_or_pd(a, b);
 				else if constexpr (zmm_sized<SIMD_Vector<S, N>> && is_f32<S>) return _mm512_or_ps(a, b);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
-			template<typename S, size_t N>
+			template<typename Op, typename S, size_t N>
 				requires (sizeof(SIMD_Vector<S, N>) > 32 && (is_f32<S> || is_f64<S>))
-			static SIMD_Vector<S, N> eval(op_xor, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			static auto eval(op_xor, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_xor(a.lo(),b.lo()), logic_xor(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<SIMD_Vector<S, N>> && is_f64<S>) return _mm512_xor_pd(a, b);
 				else if constexpr (zmm_sized<SIMD_Vector<S, N>> && is_f32<S>) return _mm512_xor_ps(a, b);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
-			template<typename S, size_t N>
+			template<typename Op, typename S, size_t N>
 				requires (sizeof(SIMD_Vector<S, N>) > 32)
-			static SIMD_Vector<S, N> eval(op_not, const SIMD_Vector<S, N>& a)
+			static auto eval(op_not, const SIMD_Vector<S, N>& a)
 			{
 				using U = same_size_uint_t<S>::type;
 				S val = std::bit_cast<S>(~U(0));
@@ -85,8 +85,8 @@ namespace AVXXY_NAMESPACE
 
 			//TODO: add movm, movmask
 
-			template<typename S, size_t N>
-			static SIMD_Vector<S, N> eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			template<typename Op, typename S, size_t N>
+			static auto eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 				requires (sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33) && any_i64<S>)
 			{
 				using namespace concepts;
@@ -95,7 +95,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_mullo_epi64(a, b);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_mullo_epi64(a, b);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mullo_epi64(a, b);
-				else static_assert(always_false_v<T>);
+				else return fail_ack_t{};
 			}
 		};
 	}
