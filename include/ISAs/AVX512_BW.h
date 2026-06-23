@@ -70,8 +70,8 @@ namespace AVXXY_NAMESPACE
 				else fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmpeq>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
@@ -107,8 +107,8 @@ namespace AVXXY_NAMESPACE
 				else fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpneq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmpneq>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
@@ -145,8 +145,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmplt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmplt>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
@@ -183,8 +183,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmple, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmple>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
@@ -221,8 +221,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpgt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmpgt>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
@@ -259,8 +259,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpge, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmpge>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
