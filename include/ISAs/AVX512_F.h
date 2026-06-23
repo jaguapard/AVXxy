@@ -128,29 +128,37 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (any_int<S> && !meta::any_small_int<S>&& meta::any_int<I> && sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_shl, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+				requires (meta::any_int<S> && meta::any_int<I> && std::same_as<Op,op_shl>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				using canon_t = same_size_uint_t<S>::type;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { shift_left(a.lo(),b.lo()), shift_left(a.hi(),b.hi()) };
-				else if constexpr (!std::is_same_v<I, canon_t>) return shift_left(a, vcvt<canon_t>(b));
-				else if constexpr (any_i64<S>) return _mm512_sllv_epi64(a, b);
-				else if constexpr (any_i32<S>) return _mm512_sllv_epi32(a, b);
-				else static_assert(always_false_v<T>);
+				else if constexpr (zmm_sized<T>)
+				{
+					if constexpr (!std::is_same_v<I, canon_t>) return shift_left(a, vcvt<canon_t>(b));
+					else if constexpr (any_i64<S>) return _mm512_sllv_epi64(a, b);
+					else if constexpr (any_i32<S>) return _mm512_sllv_epi32(a, b);
+					else return fail_ack_t{};
+				}
+				else return fail_ack_t{};
 				//else return vcvt<S>(shift_left(vcvt<uint32_t>(a), vcvt<uint32_t>(b))); //emulate shift by 32 bit shift for small types
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (any_int<S> && !meta::any_small_int<S>&& meta::any_int<I> && sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_shr, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+				requires (meta::any_int<S>&& meta::any_int<I>&& std::same_as<Op, op_shr>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				using canon_t = same_size_uint_t<S>::type;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { shift_right(a.lo(),b.lo()), shift_right(a.hi(),b.hi()) };
-				else if constexpr (!std::is_same_v<I, canon_t>) return shift_right(a, vcvt<canon_t>(b));
-				else if constexpr (any_i64<S>) return _mm512_srlv_epi64(a, b);
-				else if constexpr (any_i32<S>) return _mm512_srlv_epi32(a, b);
-				else static_assert(always_false_v<T>);
+				else if constexpr (zmm_sized<T>)
+				{
+					if constexpr (!std::is_same_v<I, canon_t>) return shift_left(a, vcvt<canon_t>(b));
+					else if constexpr (any_i64<S>) return _mm512_srlv_epi64(a, b);
+					else if constexpr (any_i32<S>) return _mm512_srlv_epi32(a, b);
+					else return fail_ack_t{};
+				}
+				else return fail_ack_t{};
 				//else return vcvt<S>(shift_right(vcvt<uint32_t>(a), vcvt<uint32_t>(b))); //emulate shift by 32 bit shift for small types
 			}
 
