@@ -44,7 +44,7 @@ namespace AVXXY_NAMESPACE
 						auto ret = instr_set_t::template eval<Op>(std::forward<Args>(args)...);
 						//if fail_ack_t is returned, it means that implementation exists, but it all fell through to the fail_ack_t return,
 						//This is considered invalid, so continue searching
-						if constexpr (std::is_same_v<decltype(ret), fail_ack_t>) return run_private<Op, I + 1>(std::forward<Args>(args)...);
+						if constexpr (std::same_as<decltype(ret), fail_ack_t>) return run_private<Op, I + 1>(std::forward<Args>(args)...);
 						else return ret;
 					}
 					else return run_private<Op, I + 1>(std::forward<Args>(args)...);
