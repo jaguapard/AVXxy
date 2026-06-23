@@ -269,6 +269,7 @@
     <ClInclude Include="include\ISAs\AVX512_DQ.h" />
     <ClInclude Include="include\ISAs\AVX512_F.h" />
     <ClInclude Include="include\ISAs\AVX512_VBMI.h" />
+    <ClInclude Include="include\ISAs\AVX512_VBMI2.h" />
     <ClInclude Include="include\ISAs\F16C.h" />
     <ClInclude Include="include\ISAs\Scalar.h" />
     <ClInclude Include="include\ISAs\shared.h" />
@@ -276,7 +277,6 @@
     <ClInclude Include="include\meta\meta.h" />
     <ClInclude Include="include\meta\type_factories.h" />
     <ClInclude Include="include\namespace.h" />
-    <ClInclude Include="include\operations\sub.h" />
     <ClInclude Include="include\operators.h" />
     <ClInclude Include="include\op_tags.h" />
     <ClInclude Include="include\SIMD_Mask.h" />
