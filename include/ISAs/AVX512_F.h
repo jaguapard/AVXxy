@@ -156,7 +156,7 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(T) > 64) return T{ shift_right(a.lo(),b.lo()), shift_right(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
 				{
-					if constexpr (!std::is_same_v<I, canon_t>) return shift_left(a, vcvt<canon_t>(b));
+					if constexpr (!std::is_same_v<I, canon_t>) return shift_right(a, vcvt<canon_t>(b));
 					else if constexpr (any_i64<S>) return _mm512_srlv_epi64(a, b);
 					else if constexpr (any_i32<S>) return _mm512_srlv_epi32(a, b);
 					else return fail_ack_t{};
