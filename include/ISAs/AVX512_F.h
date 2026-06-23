@@ -27,8 +27,8 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-			static SIMD_Vector<S, N> eval(op_sub, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
-				requires (sizeof(SIMD_Vector<S, N>) > 32 && (sizeof(S) >= 4 || (sizeof(S) < 4 && !FS.has(Feature::AVX2))))
+			static SIMD_Vector<S, N> eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_sub>)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -44,8 +44,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-			static SIMD_Vector<S, N> eval(op_mul, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
-				requires (sizeof(SIMD_Vector<S, N>) > 32 && (sizeof(S) >= 4 || (sizeof(S) < 4 && !FS.has(Feature::AVX2))))
+			static SIMD_Vector<S, N> eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_mul>)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -55,14 +55,14 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (any_i64<S>) return _mm512_mullox_epi64(a, b);
 				else if constexpr (any_i32<S>) return _mm512_mullo_epi32(a, b);
 				//TODO: check these!
-				else if constexpr (!FS.has(Feature::AVX2) && std::is_signed_v<S>) return vcvt<S>(mul(vcvt<int32_t>(a), vcvt<int32_t>(b)));
-				else if constexpr (!FS.has(Feature::AVX2) && std::is_unsigned_v<S>) return vcvt<S>(mul(vcvt<uint32_t>(a), vcvt<uint32_t>(b)));
+				//else if constexpr (!FS.has(Feature::AVX2) && std::is_signed_v<S>) return vcvt<S>(mul(vcvt<int32_t>(a), vcvt<int32_t>(b)));
+				//else if constexpr (!FS.has(Feature::AVX2) && std::is_unsigned_v<S>) return vcvt<S>(mul(vcvt<uint32_t>(a), vcvt<uint32_t>(b)));
 				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S, N>) > 32)
-			static SIMD_Vector<S, N> eval(op_div, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_div>)
+			static SIMD_Vector<S, N> eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -75,8 +75,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires ((is_i64<S>&& FS.has(AVX512_VL)) || (sizeof(SIMD_Vector<S, N>) > 32 && !any_small_int<S>))
-			static SIMD_Vector<S, N> eval(op_abs, const SIMD_Vector<S, N>& a)
+				requires (std::same_as<Op, op_abs>)
+			static SIMD_Vector<S, N> eval(const SIMD_Vector<S, N>& a)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -91,14 +91,15 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S, N>) > 32)
-			static SIMD_Vector<S, N> eval(op_or, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_or>)
+			static SIMD_Vector<S, N> eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_or(a.lo(),b.lo()), logic_or(a.hi(),b.hi()) };
-				else return _mm512_or_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
+				else if constexpr (zmm_sized<SIMD_Vector<S, N>>) return _mm512_or_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S, N>) > 32)
+				requires (std::same_as<Op, op_and>)
 			static SIMD_Vector<S, N> eval(op_and, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_and(a.lo(),b.lo()), logic_and(a.hi(),b.hi()) };
