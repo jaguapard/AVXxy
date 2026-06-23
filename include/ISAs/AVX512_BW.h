@@ -309,12 +309,12 @@ namespace AVXXY_NAMESPACE
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return T{ mask_mov(ifBitClear.lo(), mask.lo(), ifBitSet.lo()), mask_mov(ifBitClear.hi(), mask.hi(), ifBitSet.hi()) };
-				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_mask_mov_epi16(ifBitClear, mask, ifBitSet);
-				else if constexpr (zmm_sized<T> && any_i8<S>) return _mm512_mask_mov_epi8(ifBitClear, mask, ifBitSet);
-				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) && any_i16<S>) return _mm256_mask_mov_epi16(ifBitClear, mask, ifBitSet);
-				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) && any_i8<S>) return _mm256_mask_mov_epi8(ifBitClear, mask, ifBitSet);
-				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) && any_i16<S>) return _mm_mask_mov_epi16(ifBitClear, mask, ifBitSet);
-				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) && any_i8<S>) return _mm_mask_mov_epi8(ifBitClear, mask, ifBitSet);
+				else if constexpr (zmm_sized<T> && sizeof(S) == 2) return _mm512_mask_mov_epi16(vreinterpret<__m512i>(ifBitClear), mask, vreinterpret<__m512i>(ifBitSet));
+				else if constexpr (zmm_sized<T> && sizeof(S) == 1) return _mm512_mask_mov_epi8(vreinterpret<__m512i>(ifBitClear), mask, vreinterpret<__m512i>(ifBitSet));
+				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) sizeof(S) == 2) return _mm256_mask_mov_epi16(vreinterpret<__m256i>(ifBitClear), mask, vreinterpret<__m256i>(ifBitSet));
+				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) sizeof(S) == 1) return _mm256_mask_mov_epi8(vreinterpret<__m256i>(ifBitClear), mask, vreinterpret<__m256i>(ifBitSet));
+				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) sizeof(S) == 2) return _mm_mask_mov_epi16(vreinterpret<__m128i>(ifBitClear), mask, vreinterpret<__m128i>(ifBitSet));
+				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) sizeof(S) == 1) return _mm_mask_mov_epi8(vreinterpret<__m128i>(ifBitClear), mask, vreinterpret<__m128i>(ifBitSet));
 				else return fail_ack_t{};
 			}
 
