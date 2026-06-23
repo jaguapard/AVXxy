@@ -298,7 +298,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N, size_t Scale, typename I>
-	__forceinline void scatter(const SIMD_Vector<S, N>& vec, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask)
+	__forceinline void scatter(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask)
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
@@ -306,8 +306,8 @@ namespace AVXXY_NAMESPACE
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) scatter<S, N, Scale, I>(vcast<U>(vec), base, ind, mask);
 		//else internals::Dispatcher::run<internals::op_scatter<Scale>>(vec, base, ind, mask);
 		scream();
-		S* sp = static_cast<S*>(base);
-		for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = vec[i];
+		size_t addr = size_t(base);
+		for (size_t i = 0; i < N; ++i) if (mask[i]) *(S*)(addr + Scale * ind[i]) = v[i];
 	}
 	template<typename S, size_t N>
 	__forceinline mask_t<S, N> cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
