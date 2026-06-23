@@ -408,7 +408,7 @@ namespace AVXXY_NAMESPACE
 
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op,op_store>)
-			static void eval(op_store, SIMD_Vector<S, N> vec, void* p, const typename SIMD_Vector<S, N>::MaskT& mask)
+			static auto eval(SIMD_Vector<S, N> vec, void* p, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
