@@ -492,11 +492,11 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (sizeof(S) >= 4 && meta::any_int<I> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 17 : 33))
-			static auto eval(op_permx, const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
+				requires (meta::any_int<I> && std::same_as<Op, op_permx>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
 			{
 				using namespace concepts;
-				using canon_t = typename same_size_uint_t<S>::type;
+				using canon_t = typename ScalarTrais<S>::UintT;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(I) != sizeof(S)) return permx(a, vcvt<canon_t>(ind));
 				else if constexpr (sizeof(T) > 64)
@@ -516,8 +516,8 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (sizeof(S) >= 4 && meta::any_int<I> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static auto eval(op_permx2, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
+				requires (meta::any_int<I> && std::same_as<Op, op_permx2>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
 			{
 				using namespace concepts;
 				using canon_t = typename same_size_uint_t<S>::type;
