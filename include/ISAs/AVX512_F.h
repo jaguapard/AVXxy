@@ -40,7 +40,7 @@ namespace AVXXY_NAMESPACE
 				//TODO: check these!
 				else if constexpr (!FS.has(Feature::AVX2) && std::is_signed_v<S>) return vcvt<S>(sub(vcvt<int32_t>(a), vcvt<int32_t>(b)));
 				else if constexpr (!FS.has(Feature::AVX2) && std::is_unsigned_v<S>) return vcvt<S>(sub(vcvt<uint32_t>(a), vcvt<uint32_t>(b)));
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -57,7 +57,7 @@ namespace AVXXY_NAMESPACE
 				//TODO: check these!
 				else if constexpr (!FS.has(Feature::AVX2) && std::is_signed_v<S>) return vcvt<S>(mul(vcvt<int32_t>(a), vcvt<int32_t>(b)));
 				else if constexpr (!FS.has(Feature::AVX2) && std::is_unsigned_v<S>) return vcvt<S>(mul(vcvt<uint32_t>(a), vcvt<uint32_t>(b)));
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -71,7 +71,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (is_f32<S>) return _mm512_div_ps(a, b);
 				else if constexpr (any_i32<S>) return vcvt<S>(div(vcvt<double>(a), vcvt<double>(b))); //emulate 32 bit integer division via double precision division
 				else if constexpr (any_i16<S> || any_i8<S>) return vcvt<S>(div(vcvt<float>(a), vcvt<float>(b))); //emulate small integer division via single precision division
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -87,7 +87,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (zmm_sized<T> && is_i32<S>) return _mm512_abs_epi32(a);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_i64<S>) return _mm256_abs_epi64(a);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_i64<S>) return _mm_abs_epi64(a);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -164,7 +164,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_u64<S>) return _mm_min_epu64(a, b);
 				else if constexpr (is_i32<S>) return _mm512_min_epi32(a, b);
 				else if constexpr (is_u32<S>) return _mm512_min_epu32(a, b);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N>
 				requires ((sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) > 32) || (FS.has(AVX512_VL) && any_i64<S>))
@@ -183,7 +183,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_u64<S>) return _mm_max_epu64(a, b);
 				else if constexpr (is_i32<S>) return _mm512_max_epi32(a, b);
 				else if constexpr (is_u32<S>) return _mm512_max_epu32(a, b);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -199,7 +199,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_f32<S>) return _mm512_mask_mov_ps(ifBitClear, mask, ifBitSet);
 					else if constexpr (any_i64<S>) return _mm512_mask_mov_epi64(ifBitClear, mask, ifBitSet);
 					else if constexpr (any_i32<S>) return _mm512_mask_mov_epi32(ifBitClear, mask, ifBitSet);
-					else static_assert(always_false_v<S>);
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -212,9 +212,9 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (xmm_sized<T> && is_f32<S>) return _mm_mask_mov_ps(ifBitClear, mask, ifBitSet);
 					else if constexpr (xmm_sized<T> && any_i64<S>) return _mm_mask_mov_epi64(ifBitClear, mask, ifBitSet);
 					else if constexpr (xmm_sized<T> && any_i32<S>) return _mm_mask_mov_epi32(ifBitClear, mask, ifBitSet);
-					else static_assert(always_false_v<S>);
+					else return fail_ack_t{};
 				}
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -232,7 +232,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u64<S>) return _mm512_cmpeq_epu64_mask(a, b);
 					else if constexpr (is_i32<S>) return _mm512_cmpeq_epi32_mask(a, b);
 					else if constexpr (is_u32<S>) return _mm512_cmpeq_epu32_mask(a, b);
-					else static_assert(always_false_v<S>);
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -244,7 +244,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm256_cmpeq_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm256_cmpeq_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm256_cmpeq_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -254,10 +254,10 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm_cmpeq_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm_cmpeq_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm_cmpeq_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 				}
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N>
 				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
@@ -274,7 +274,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u64<S>) return _mm512_cmpneq_epu64_mask(a, b);
 					else if constexpr (is_i32<S>) return _mm512_cmpneq_epi32_mask(a, b);
 					else if constexpr (is_u32<S>) return _mm512_cmpneq_epu32_mask(a, b);
-					else static_assert(always_false_v<S>);
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -286,7 +286,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm256_cmpneq_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm256_cmpneq_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm256_cmpneq_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -296,10 +296,10 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm_cmpneq_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm_cmpneq_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm_cmpneq_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 				}
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N>
 				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
@@ -316,7 +316,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u64<S>) return _mm512_cmpgt_epu64_mask(a, b);
 					else if constexpr (is_i32<S>) return _mm512_cmpgt_epi32_mask(a, b);
 					else if constexpr (is_u32<S>) return _mm512_cmpgt_epu32_mask(a, b);
-					else static_assert(always_false_v<S>);
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -328,7 +328,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm256_cmpgt_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm256_cmpgt_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm256_cmpgt_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -338,10 +338,10 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm_cmpgt_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm_cmpgt_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm_cmpgt_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 				}
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N>
 				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
@@ -358,7 +358,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u64<S>) return _mm512_cmpge_epu64_mask(a, b);
 					else if constexpr (is_i32<S>) return _mm512_cmpge_epi32_mask(a, b);
 					else if constexpr (is_u32<S>) return _mm512_cmpge_epu32_mask(a, b);
-					else static_assert(always_false_v<S>);
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -370,7 +370,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm256_cmpge_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm256_cmpge_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm256_cmpge_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -380,10 +380,10 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm_cmpge_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm_cmpge_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm_cmpge_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 				}
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N>
 				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
@@ -400,7 +400,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u64<S>) return _mm512_cmplt_epu64_mask(a, b);
 					else if constexpr (is_i32<S>) return _mm512_cmplt_epi32_mask(a, b);
 					else if constexpr (is_u32<S>) return _mm512_cmplt_epu32_mask(a, b);
-					else static_assert(always_false_v<S>);
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -412,7 +412,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm256_cmplt_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm256_cmplt_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm256_cmplt_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -422,10 +422,10 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm_cmplt_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm_cmplt_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm_cmplt_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 				}
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N>
 				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
@@ -442,7 +442,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u64<S>) return _mm512_cmple_epu64_mask(a, b);
 					else if constexpr (is_i32<S>) return _mm512_cmple_epi32_mask(a, b);
 					else if constexpr (is_u32<S>) return _mm512_cmple_epu32_mask(a, b);
-					else static_assert(always_false_v<S>);
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -454,7 +454,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm256_cmple_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm256_cmple_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm256_cmple_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -464,10 +464,10 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u64<S>) return _mm_cmple_epu64_mask(a, b);
 						else if constexpr (is_i32<S>) return _mm_cmple_epi32_mask(a, b);
 						else if constexpr (is_u32<S>) return _mm_cmple_epu32_mask(a, b);
-						else static_assert(always_false_v<S>);
+						else return fail_ack_t{};
 					}
 				}
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N, typename I>
@@ -492,7 +492,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && is_f32<S>) return _mm256_permutexvar_ps(ind, a);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_permutexvar_epi64(ind, a);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_permutexvar_epi32(ind, a);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N, typename I>
 				requires (sizeof(S) >= 4 && concepts::any_int<I> && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
@@ -520,7 +520,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_permutex2var_ps(a, ind, b);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_permutex2var_epi64(a, ind, b);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_permutex2var_epi32(a, ind, b);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -530,7 +530,7 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { floor(a.lo()), floor(a.hi()) };
 				else if constexpr (is_f64<S>) return _mm512_floor_pd(a);
 				else if constexpr (is_f32<S>) return _mm512_floor_ps(a);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N>
 				requires (std::is_floating_point_v<S> && sizeof(SIMD_Vector<S, N>) > 32)
@@ -539,7 +539,7 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { ceil(a.lo()), ceil(a.hi()) };
 				else if constexpr (is_f64<S>) return _mm512_ceil_pd(a);
 				else if constexpr (is_f32<S>) return _mm512_ceil_ps(a);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<size_t N>
 				requires (sizeof(SIMD_Vector<float, N>) > 32)
@@ -836,7 +836,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_loadu_ps(src, mask, p);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_loadu_epi64(src, mask, p);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_loadu_epi32(src, mask, p);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -863,7 +863,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_storeu_ps(p, mask, vec);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_storeu_epi64(p, mask, vec);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_storeu_epi32(p, mask, vec);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template <size_t N>
@@ -901,7 +901,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_compress_ps(src, mask, a);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_compress_epi64(src, mask, a);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_compress_epi32(src, mask, a);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename S, size_t N>
@@ -913,7 +913,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (is_f32<S>) return _mm512_unpacklo_ps(a, b);
 				else if constexpr (any_i64<S>) return _mm512_unpacklo_epi64(a, b);
 				else if constexpr (any_i32<S>) return _mm512_unpacklo_epi32(a, b);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 			template<typename S, size_t N>
 				requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) >= 4)
@@ -924,7 +924,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (is_f32<S>) return _mm512_unpackhi_ps(a, b);
 				else if constexpr (any_i64<S>) return _mm512_unpackhi_epi64(a, b);
 				else if constexpr (any_i32<S>) return _mm512_unpackhi_epi32(a, b);
-				else static_assert(always_false_v<S>);
+				else return fail_ack_t{};
 			}
 		private:
 
