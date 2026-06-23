@@ -100,25 +100,31 @@ namespace AVXXY_NAMESPACE
 			}
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op, op_and>)
-			static auto eval(op_and, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_and(a.lo(),b.lo()), logic_and(a.hi(),b.hi()) };
-				else return _mm512_and_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
+				else if constexpr (zmm_sized<SIMD_Vector<S, N>>) return _mm512_and_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_xor, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_xor>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { logic_xor(a.lo(),b.lo()), logic_xor(a.hi(),b.hi()) };
-				else return _mm512_xor_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
+				else if constexpr (zmm_sized<SIMD_Vector<S, N>>) return _mm512_xor_si512(vreinterpret<__m512i>(a), vreinterpret<__m512i>(b));
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_not, const SIMD_Vector<S, N>& a)
+				requires (std::same_as<Op, op_not>)
+			static auto eval(const SIMD_Vector<S, N>& a)
 			{
-				using U = same_size_uint_t<S>::type;
-				S val = std::bit_cast<S>(~U(0));
-				return logic_xor(a, val);
+				if constexpr (sizeof(SIMD_Vector<S, N>) > 32)
+				{
+					using U = typename ScalarTraits<S>::UintT;
+					S val = std::bit_cast<S>(~U(0));
+					return logic_xor(a, val);
+				}
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
