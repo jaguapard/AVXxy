@@ -51,25 +51,6 @@ int main()
 		for (size_t i = 0; i < 64; ++i) ff[i] = i;
 		read = f32x16(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
 	}
-
-	std::cout << "Read as f32x16: " << read << "\n";
-
-	i32x16 ex = ISA_AVX512_CD::eval<op_conflict>(vcast<int>(read));
-	u8x64 smoll;
-	memcpy(&smoll, buf, 64);
-	//scatter()
-	u8x64 smoll_x2 = 2;
-	ISA_Scalar::eval<op_store>(smoll, &read, mask64b(0x2313));
-	std::cout << smoll_x2;
-
-	f32x16 read_x2 = add(read, read);
-	ISA_Scalar::eval<op_store>(read_x2, &read, mask16d(3123));
-	//std::cout << "Read + read as f32x16: " << read_x2 << "\n";
-
-	std::array<f32x16, 4> aaa = { read,read,read,read };
-	scatterToFrameBuffer(aaa, 0, 0, 0, &read, 30);
-	//f64x16 bb = vcvt<double>(read);
-	//std::cout << bb << "\n";
 #if 0
 	
 

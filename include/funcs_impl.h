@@ -290,8 +290,11 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) store(vcast<U>(v), p, mask);
-		else internals::Dispatcher::run<internals::op_store>(v, p, mask);
+		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) store(vcast<U>(v), p, mask);
+		
+		scream();
+		S* sp = static_cast<S*>(p);
+		for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = v[i];
 	}
 
 	template<typename S, size_t N, size_t Scale, typename I>
