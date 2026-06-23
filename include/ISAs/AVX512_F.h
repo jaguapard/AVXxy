@@ -881,21 +881,6 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 
-			template <size_t N>
-				requires (sizeof(SIMD_Vector<float, N>) > 32)
-			static SIMD_Vector<uint16_t, N> eval(op_fp32_to_fp16, const SIMD_Vector<float, N>& a)
-			{
-				if constexpr (sizeof(SIMD_Vector<float, N>) > 64) return { vcvt_fp32_fp16(a.lo()), vcvt_fp32_fp16(a.hi()) };
-				else return _mm512_cvtps_ph(a, _MM_FROUND_TO_NEAREST_INT);
-			}
-			template <size_t N>
-				requires (sizeof(SIMD_Vector<float, N>) > 32)
-			static SIMD_Vector<float, N> eval(op_fp16_to_fp32, const SIMD_Vector<uint16_t, N>& a)
-			{
-				if constexpr (sizeof(SIMD_Vector<float, N>) > 64) return { vcvt_fp16_fp32(a.lo()), vcvt_fp16_fp32(a.hi()) };
-				else return _mm512_cvtph_ps(a);
-			}
-
 			template<typename Op, typename S, size_t N>
 				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 			static auto eval(op_compress, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
