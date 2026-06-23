@@ -545,36 +545,42 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (std::is_floating_point_v<S> && sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_floor, const SIMD_Vector<S, N>& a)
+				requires (std::is_floating_point_v<S> && std::same_as<Op,op_floor>)
+			static auto eval(const SIMD_Vector<S, N>& a)
 			{
-				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { floor(a.lo()), floor(a.hi()) };
-				else if constexpr (is_f64<S>) return _mm512_floor_pd(a);
-				else if constexpr (is_f32<S>) return _mm512_floor_ps(a);
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { floor(a.lo()), floor(a.hi()) };
+				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_floor_pd(a);
+				else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_floor_ps(a);
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (std::is_floating_point_v<S> && sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_ceil, const SIMD_Vector<S, N>& a)
+				requires (std::is_floating_point_v<S> && std::same_as<Op,op_ceil>)
+			static auto eval(const SIMD_Vector<S, N>& a)
 			{
-				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { ceil(a.lo()), ceil(a.hi()) };
-				else if constexpr (is_f64<S>) return _mm512_ceil_pd(a);
-				else if constexpr (is_f32<S>) return _mm512_ceil_ps(a);
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { ceil(a.lo()), ceil(a.hi()) };
+				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_ceil_pd(a);
+				else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_ceil_ps(a);
 				else return fail_ack_t{};
 			}
-			template<size_t N>
-				requires (sizeof(SIMD_Vector<float, N>) > 32)
-			static SIMD_Vector<float, N> eval(op_sqrtf, const SIMD_Vector<float, N>& a)
+			template<typename Op, size_t N>
+				requires (std::same_as<Op, op_sqrtf>)
+			static SIMD_Vector<float, N> eval(const SIMD_Vector<float, N>& a)
 			{
-				if constexpr (sizeof(SIMD_Vector<float, N>) > 64) return { sqrtf(a.lo()), sqrtf(a.hi()) };
-				else return _mm512_sqrt_ps(a);
+				using T = SIMD_Vector<float, N>;
+				if constexpr (sizeof(T) > 64) return { sqrtf(a.lo()), sqrtf(a.hi()) };
+				else if constexpr (zmm_sized<T>) return _mm512_sqrt_ps(a);
+				else return fail_ack_t{};
 			}
-			template<size_t N>
-				requires (sizeof(SIMD_Vector<double, N>) > 32)
-			static SIMD_Vector<double, N> eval(op_sqrtd, const SIMD_Vector<double, N>& a)
+			template<typename Op, size_t N>
+				requires (std::same_as<Op, op_sqrtd>)
+			static SIMD_Vector<double, N> eval(const SIMD_Vector<double, N>& a)
 			{
-				if constexpr (sizeof(SIMD_Vector<double, N>) > 64) return { sqrtd(a.lo()), sqrtd(a.hi()) };
-				else return _mm512_sqrt_pd(a);
+				using T = SIMD_Vector<double, N>;
+				if constexpr (sizeof(T) > 64) return { sqrtd(a.lo()), sqrtd(a.hi()) };
+				else if constexpr (zmm_sized<T>) return _mm512_sqrt_pd(a);
+				else return fail_ack_t{};
 			}
 
 			//TODO: verify requirements
