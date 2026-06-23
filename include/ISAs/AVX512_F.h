@@ -583,39 +583,17 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 
-			//TODO: verify requirements
-			template<typename To, size_t N, typename From>
-				requires ((std::max(sizeof(SIMD_Vector<To, N>), sizeof(SIMD_Vector<From, N>)) > 32 &&
-			//ZMM path	
-			(
-				(any_small_int<From> && !any_int<To>) || (!any_int<From> && any_small_int<To>) ||
-				//from double
-				(is_f64<From> && is_i32<To>) || (is_f64<From> && is_u32<To>) || (is_f64<From> && is_f32<To>) ||
-				//from float
-				(is_f32<From> && is_i32<To>) || (is_f32<From> && is_u32<To>) || (is_f32<From> && is_f64<To>) ||
-				//from any_i64
-				(any_i64<From> && any_i32<To>) || (any_i64<From> && any_i16<To>) || (any_i64<From> && any_i8<To>) ||
-				//from i32
-				(is_i32<From> && is_f64<To>) || (is_i32<From> && is_f32<To>) || (is_i32<From> && any_i64<To>) || (is_i32<From> && any_i16<To>) || (is_i32<From> && any_i8<To>) ||
-				//from u32
-				(is_u32<From> && is_f64<To>) || (is_u32<From> && is_f32<To>) || (is_u32<From> && any_i64<To>) ||
-				//from any_i16
-				(is_i16<From> && any_i64<To>) || (is_i16<From> && any_i32<To>) || (is_u16<From> && any_i64<To>) || (is_u16<From> && any_i32<To>) ||
-				//from any_i8
-				(is_i8<From> && any_i64<To>) || (is_i8<From> && any_i32<To>) || (is_u8<From> && any_i64<To>) || (is_u8<From> && any_i32<To>)
-				))
-					||
-					(FS.has(AVX512_VL) && std::max(sizeof(SIMD_Vector<To, N>), sizeof(SIMD_Vector<From, N>)) <= 32 && (
-						(is_f64<From> && is_u32<To>) || (is_f32<From> && is_u32<To>) || (any_i64<From> && any_i32<To>) || (any_i64<From> && any_i16<To>) ||
-						(any_i64<From> && any_i8<To>) || (any_i32<From> && any_i16<To>) || (any_i32<From> && any_i8<To>)
-						)))
-				static SIMD_Vector<To, N> eval(op_cvt<To>, const SIMD_Vector<From, N>& a)
+			template<typename Op, size_t N, typename From>
+			requires (meta::IsCvtOp<Op>)
+			static SIMD_Vector<typename Op::cvt_to_t, N> eval(const SIMD_Vector<From, N>& a)
 			{
-				using namespace concepts;
+				using namespace meta;
+				using To = typename Op::cvt_to_t;
 				using TV = SIMD_Vector<To, N>;
 				using FV = SIMD_Vector<From, N>;
 				constexpr size_t MaxSize = std::max(sizeof(TV), sizeof(FV));
 
+				//TODO: add FP16 and BF16 conversions!
 				//TODO: these allow to rewrite div to not do conversion by itself
 				if constexpr (any_small_int<From> && !any_int<To>)
 				{
@@ -628,10 +606,11 @@ namespace AVXXY_NAMESPACE
 					return vcvt<To>(vcvt<interm_t>(a));
 				}
 				else if constexpr (MaxSize > 64) return { vcvt<To>(a.lo()), vcvt<To>(a.hi()) };
-				else if constexpr (utils::is_zmm_size(MaxSize))
+				else if constexpr (is_zmm_size(MaxSize))
 				{
+					if constexpr (is_fp16<From> && is_f64<To>) return vcvt<To>(vcvt<float>(a));
 					//from double
-					if constexpr (is_f64<From> && is_i32<To>) return _mm512_cvttpd_epi32(a);
+					else if constexpr (is_f64<From> && is_i32<To>) return _mm512_cvttpd_epi32(a);
 					else if constexpr (is_f64<From> && is_u32<To>) return _mm512_cvttpd_epu32(a);
 					else if constexpr (is_f64<From> && is_f32<To>) return _mm512_cvtpd_ps(a);
 
@@ -668,9 +647,12 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_i8<From> && any_i32<To>) return _mm512_cvtepi8_epi32(a);
 					else if constexpr (is_u8<From> && any_i64<To>) return _mm512_cvtepu8_epi64(a);
 					else if constexpr (is_u8<From> && any_i32<To>) return _mm512_cvtepu8_epi32(a);
-					else static_assert(always_false_v<SIMD_Vector<From, N>, SIMD_Vector<To, N>>);
+
+					else if constexpr (is_fp16<From> && is_f32<To>) return _mm512_cvtph_ps(a);
+					else if constexpr (is_f32<From> && is_fp16<To>) return _mm512_cvtps_ph(a, _MM_FROUND_TO_NEAREST_INT);
+					else return fail_ack_t{};
 				}
-				else if constexpr (FS.has(AVX512_VL) && utils::is_ymm_size(MaxSize))
+				else if constexpr (FS.has(AVX512_VL) && is_ymm_size(MaxSize))
 				{
 					if constexpr (is_f64<From> && is_u32<To>) return _mm256_cvttpd_epu32(a);
 					else if constexpr (is_f32<From> && is_u32<To>) return _mm256_cvttps_epu32(a);
@@ -679,9 +661,9 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (any_i64<From> && any_i8<To>) return _mm256_cvtepi64_epi8(a);
 					else if constexpr (any_i32<From> && any_i16<To>) return _mm256_cvtepi32_epi16(a);
 					else if constexpr (any_i32<From> && any_i8<To>) return _mm256_cvtepi32_epi8(a);
-					else static_assert(always_false_v<SIMD_Vector<From, N>, SIMD_Vector<To, N>>);
+					else return fail_ack_t{};
 				}
-				else if constexpr (FS.has(AVX512_VL) && utils::is_xmm_size(MaxSize))
+				else if constexpr (FS.has(AVX512_VL) && is_xmm_size(MaxSize))
 				{
 					if constexpr (is_f64<From> && is_u32<To>) return _mm_cvttpd_epu32(a);
 					else if constexpr (is_f32<From> && is_u32<To>) return _mm_cvttps_epu32(a);
@@ -690,9 +672,9 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (any_i64<From> && any_i8<To>) return _mm_cvtepi64_epi8(a);
 					else if constexpr (any_i32<From> && any_i16<To>) return _mm_cvtepi32_epi16(a);
 					else if constexpr (any_i32<From> && any_i8<To>) return _mm_cvtepi32_epi8(a);
-					else static_assert(always_false_v<SIMD_Vector<From, N>, SIMD_Vector<To, N>>);
+					else return fail_ack_t{};
 				}
-				else static_assert(always_false_v<SIMD_Vector<From, N>, SIMD_Vector<To, N>>);
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N, size_t Scale, typename I>
