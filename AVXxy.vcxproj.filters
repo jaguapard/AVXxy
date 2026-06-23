@@ -62,18 +62,6 @@
     <ClInclude Include="include\SIMD_Mask.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\SIMD_Mask_impl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\funcs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\funcs_impl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\operators.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\ISAs\Scalar.h">
       <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
@@ -103,6 +91,21 @@
     </ClInclude>
     <ClInclude Include="include\ISAs\F16C.h">
       <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX2.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\funcs.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\funcs_impl.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\operators.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SIMD_Mask_impl.h">
+      <Filter>Header Files\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
