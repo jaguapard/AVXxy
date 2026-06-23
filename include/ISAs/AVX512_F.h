@@ -202,8 +202,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-			static auto eval(op_mask_mov, const SIMD_Vector<S, N>& ifBitClear, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& ifBitSet)
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
+				requires (std::same_as<Op, op_mask_mov>)
+			static auto eval(const SIMD_Vector<S, N>& ifBitClear, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& ifBitSet)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -233,8 +233,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpeq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmpeq>)
+			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -271,12 +271,13 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u32<S>) return _mm_cmpeq_epu32_mask(a, b);
 						else return fail_ack_t{};
 					}
+					else return fail_ack_t{};
 				}
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpneq, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmpneq>)
+			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -313,12 +314,13 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u32<S>) return _mm_cmpneq_epu32_mask(a, b);
 						else return fail_ack_t{};
 					}
+					else return fail_ack_t{};
 				}
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpgt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmpgt>)
+			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -355,12 +357,13 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u32<S>) return _mm_cmpgt_epu32_mask(a, b);
 						else return fail_ack_t{};
 					}
+					else return fail_ack_t{};
 				}
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmpge, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmpge>)
+			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -397,12 +400,13 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u32<S>) return _mm_cmpge_epu32_mask(a, b);
 						else return fail_ack_t{};
 					}
+					else return fail_ack_t{};
 				}
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static typename SIMD_Vector<S, N>::MaskT eval(op_cmplt, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_cmplt>)
+			static typename SIMD_Vector<S, N>::MaskT eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
@@ -439,11 +443,12 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u32<S>) return _mm_cmplt_epu32_mask(a, b);
 						else return fail_ack_t{};
 					}
+					else return fail_ack_t{};
 				}
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
+				requires (std::same_as<Op, op_cmple>)
 			static typename SIMD_Vector<S, N>::MaskT eval(op_cmple, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace concepts;
@@ -481,6 +486,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_u32<S>) return _mm_cmple_epu32_mask(a, b);
 						else return fail_ack_t{};
 					}
+					else return fail_ack_t{};
 				}
 				else return fail_ack_t{};
 			}
