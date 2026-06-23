@@ -752,15 +752,17 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 
-			template<typename Op, typename S, size_t N, size_t Scale, typename I>
-				requires (meta::any_int<I> && sizeof(S) >= 4 && (std::max(sizeof(SIMD_Vector<S, N>), sizeof(SIMD_Vector<I, N>)) >= (FS.has(AVX512_VL) ? 0 : 33)))
-			static void eval(op_scatter<Scale>, const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask)
+			template<typename Op, typename S, size_t N, typename I>
+				requires (meta::any_int<I> && meta::IsScatterOp<Op>)
+			static auto eval(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
 				//put everything up here to prevent else if chain breaks (since compilation gives useless errors by thinking unsanitized inputs surviving to native gathers
 				using CanonicalIndex_t = std::conditional_t<(sizeof(I) <= 4), int32_t, int64_t>;
 				using RetVec_t = SIMD_Vector<S, N>;
 				using IndVec_t = SIMD_Vector<I, N>;
 				constexpr size_t MaxSize = std::max(sizeof(RetVec_t), sizeof(IndVec_t));
+				constexpr size_t Scale = Op::Scale;
+				using namespace meta;
 
 				//if scale is not native, emulate it by gathering with scale 1 and manually calculated byte offsets. 
 				//TODO: Can optimize a little by checking if Scale*maxint(I) fits into smaller sizes
@@ -775,55 +777,56 @@ namespace AVXXY_NAMESPACE
 				{
 					scatter<S, N / 2, Scale, I>(v.lo(), base, ind.lo(), mask.lo());
 					scatter<S, N / 2, Scale, I>(v.hi(), base, ind.hi(), mask.hi());
+					return success_ack_t{};
 				}
 				//clang is a cry-baby with inds for some reason, so force convert it. Pay attention to size!
-				else if constexpr (utils::is_zmm_size(MaxSize))
+				else if constexpr (is_zmm_size(MaxSize))
 				{
-					std::conditional_t<(meta::zmm_sized<IndVec_t>), __m512i, __m256i> ni = ind;
-					if constexpr (is_i64<I> && is_f64<S>) return _mm512_mask_i64scatter_pd(base, mask, ni, v, Scale);
-					else if constexpr (is_i64<I> && is_f32<S>) return _mm512_mask_i64scatter_ps(base, mask, ni, v, Scale);
-					else if constexpr (is_i64<I> && any_i64<S>) return _mm512_mask_i64scatter_epi64(base, mask, ni, v, Scale);
-					else if constexpr (is_i64<I> && any_i32<S>) return _mm512_mask_i64scatter_epi32(base, mask, ni, v, Scale);
+					std::conditional_t<(zmm_sized<IndVec_t>), __m512i, __m256i> ni = ind;
+					if constexpr (is_i64<I> && is_f64<S>) { _mm512_mask_i64scatter_pd(base, mask, ni, v, Scale); return success_ack_t{}; }
+					else if constexpr (is_i64<I> && is_f32<S>) { _mm512_mask_i64scatter_ps(base, mask, ni, v, Scale); return success_ack_t{}; }
+					else if constexpr (is_i64<I> && any_i64<S>) { _mm512_mask_i64scatter_epi64(base, mask, ni, v, Scale); return success_ack_t{}; }
+					else if constexpr (is_i64<I> && any_i32<S>) { _mm512_mask_i64scatter_epi32(base, mask, ni, v, Scale); return success_ack_t{}; }
 
-					else if constexpr (is_i32<I> && is_f64<S>) return _mm512_mask_i32scatter_pd(base, mask, ni, v, Scale);
-					else if constexpr (is_i32<I> && is_f32<S>) return _mm512_mask_i32scatter_ps(base, mask, ni, v, Scale);
-					else if constexpr (is_i32<I> && any_i64<S>) return _mm512_mask_i32scatter_epi64(base, mask, ni, v, Scale);
-					else if constexpr (is_i32<I> && any_i32<S>) return _mm512_mask_i32scatter_epi32(base, mask, ni, v, Scale);
-					else static_assert(always_false_v<I, S>);
+					else if constexpr (is_i32<I> && is_f64<S>) { _mm512_mask_i32scatter_pd(base, mask, ni, v, Scale); return success_ack_t{}; }
+					else if constexpr (is_i32<I> && is_f32<S>) { _mm512_mask_i32scatter_ps(base, mask, ni, v, Scale); return success_ack_t{}; }
+					else if constexpr (is_i32<I> && any_i64<S>) { _mm512_mask_i32scatter_epi64(base, mask, ni, v, Scale); return success_ack_t{}; }
+					else if constexpr (is_i32<I> && any_i32<S>) { _mm512_mask_i32scatter_epi32(base, mask, ni, v, Scale); return success_ack_t{}; }
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
-					if constexpr (utils::is_ymm_size(MaxSize))
+					if constexpr (is_ymm_size(MaxSize))
 					{
 						std::conditional_t<(meta::ymm_sized<IndVec_t>), __m256i, __m128i> ni = ind;
-						if constexpr (is_i64<I> && is_f64<S>) return _mm256_mask_i64scatter_pd(base, mask, ni, v, Scale);
-						else if constexpr (is_i64<I> && is_f32<S>) return _mm256_mask_i64scatter_ps(base, mask, ni, v, Scale);
-						else if constexpr (is_i64<I> && any_i64<S>) return _mm256_mask_i64scatter_epi64(base, mask, ni, v, Scale);
-						else if constexpr (is_i64<I> && any_i32<S>) return _mm256_mask_i64scatter_epi32(base, mask, ni, v, Scale);
+						if constexpr (is_i64<I> && is_f64<S>) { _mm256_mask_i64scatter_pd(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i64<I> && is_f32<S>) { _mm256_mask_i64scatter_ps(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i64<I> && any_i64<S>) { _mm256_mask_i64scatter_epi64(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i64<I> && any_i32<S>) { _mm256_mask_i64scatter_epi32(base, mask, ni, v, Scale); return success_ack_t{}; }
 
-						else if constexpr (is_i32<I> && is_f64<S>) return _mm256_mask_i32scatter_pd(base, mask, ni, v, Scale);
-						else if constexpr (is_i32<I> && is_f32<S>) return _mm256_mask_i32scatter_ps(base, mask, ni, v, Scale);
-						else if constexpr (is_i32<I> && any_i64<S>) return _mm256_mask_i32scatter_epi64(base, mask, ni, v, Scale);
-						else if constexpr (is_i32<I> && any_i32<S>) return _mm256_mask_i32scatter_epi32(base, mask, ni, v, Scale);
-						else static_assert(always_false_v<I, S>);
+						else if constexpr (is_i32<I> && is_f64<S>) { _mm256_mask_i32scatter_pd(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i32<I> && is_f32<S>) { _mm256_mask_i32scatter_ps(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i32<I> && any_i64<S>) { _mm256_mask_i32scatter_epi64(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i32<I> && any_i32<S>) { _mm256_mask_i32scatter_epi32(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else return fail_ack_t{};
 					}
-					else if constexpr (utils::is_xmm_size(MaxSize))
+					else if constexpr (is_xmm_size(MaxSize))
 					{
 						__m128i ni = ind;
-						if constexpr (is_i64<I> && is_f64<S>) return _mm_mask_i64scatter_pd(base, mask, ni, v, Scale);
-						else if constexpr (is_i64<I> && is_f32<S>) return _mm_mask_i64scatter_ps(base, mask, ni, v, Scale);
-						else if constexpr (is_i64<I> && any_i64<S>) return _mm_mask_i64scatter_epi64(base, mask, ni, v, Scale);
-						else if constexpr (is_i64<I> && any_i32<S>) return _mm_mask_i64scatter_epi32(base, mask, ni, v, Scale);
+						if constexpr (is_i64<I> && is_f64<S>) { _mm_mask_i64scatter_pd(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i64<I> && is_f32<S>) { _mm_mask_i64scatter_ps(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i64<I> && any_i64<S>) { _mm_mask_i64scatter_epi64(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i64<I> && any_i32<S>) { _mm_mask_i64scatter_epi32(base, mask, ni, v, Scale); return success_ack_t{}; }
 
-						else if constexpr (is_i32<I> && is_f64<S>) return _mm_mask_i32scatter_pd(base, mask, ni, v, Scale);
-						else if constexpr (is_i32<I> && is_f32<S>) return _mm_mask_i32scatter_ps(base, mask, ni, v, Scale);
-						else if constexpr (is_i32<I> && any_i64<S>) return _mm_mask_i32scatter_epi64(base, mask, ni, v, Scale);
-						else if constexpr (is_i32<I> && any_i32<S>) return _mm_mask_i32scatter_epi32(base, mask, ni, v, Scale);
-						else static_assert(always_false_v<I, S>);
+						else if constexpr (is_i32<I> && is_f64<S>) { _mm_mask_i32scatter_pd(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i32<I> && is_f32<S>) { _mm_mask_i32scatter_ps(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i32<I> && any_i64<S>) { _mm_mask_i32scatter_epi64(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else if constexpr (is_i32<I> && any_i32<S>) { _mm_mask_i32scatter_epi32(base, mask, ni, v, Scale); return success_ack_t{}; }
+						else return fail_ack_t{};
 					}
-					else static_assert(always_false_v<I, S>);
+					else return fail_ack_t{};
 				}
-				else static_assert(always_false_v<I, S>);
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
 				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
