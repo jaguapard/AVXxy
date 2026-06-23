@@ -16,7 +16,7 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(T) > 64) return T{ abs(a.lo()), abs(a.hi()) };
 				else if constexpr (zmm_sized<T> && is_i16<S>) return _mm512_abs_epi16(a);
 				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_abs_epi8(a);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
@@ -28,7 +28,7 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(T) > 64) return T{ sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_sub_epi16(a, b);
 				else if constexpr (zmm_sized<T> && any_i8<S>) return _mm512_sub_epi8(a, b);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
@@ -41,10 +41,11 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(T) > 64) return T{ mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_mullo_epi16(a, b);
 				else if constexpr (zmm_sized<T> && any_i8<S>) return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_int<I> && std::same_as<Op,op_shl>)
+				requires (meta::any_int<I>&& std::same_as<Op, op_shl>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				using T = SIMD_Vector<S, N>;
@@ -54,7 +55,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_sllv_epi16(a, b);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_sllv_epi16(a, b);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_sllv_epi16(a, b);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
 				requires (meta::any_int<I>&& std::same_as<Op, op_shr>)
@@ -67,7 +68,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_srlv_epi16(a, b);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_srlv_epi16(a, b);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_srlv_epi16(a, b);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op, op_cmpeq>)
@@ -83,7 +84,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u16<S>) return _mm512_cmpeq_epu16_mask(a, b);
 					else if constexpr (is_i8<S>) return _mm512_cmpeq_epi8_mask(a, b);
 					else if constexpr (is_u8<S>) return _mm512_cmpeq_epu8_mask(a, b);
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -93,7 +94,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm256_cmpeq_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm256_cmpeq_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm256_cmpeq_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -101,11 +102,11 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm_cmpeq_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm_cmpeq_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm_cmpeq_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op, op_cmpneq>)
@@ -121,7 +122,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u16<S>) return _mm512_cmpneq_epu16_mask(a, b);
 					else if constexpr (is_i8<S>) return _mm512_cmpneq_epi8_mask(a, b);
 					else if constexpr (is_u8<S>) return _mm512_cmpneq_epu8_mask(a, b);
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -131,7 +132,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm256_cmpneq_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm256_cmpneq_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm256_cmpneq_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -139,11 +140,11 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm_cmpneq_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm_cmpneq_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm_cmpneq_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
@@ -160,7 +161,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u16<S>) return _mm512_cmplt_epu16_mask(a, b);
 					else if constexpr (is_i8<S>) return _mm512_cmplt_epi8_mask(a, b);
 					else if constexpr (is_u8<S>) return _mm512_cmplt_epu8_mask(a, b);
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -170,7 +171,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm256_cmplt_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm256_cmplt_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm256_cmplt_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -178,11 +179,11 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm_cmplt_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm_cmplt_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm_cmplt_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
@@ -199,7 +200,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u16<S>) return _mm512_cmple_epu16_mask(a, b);
 					else if constexpr (is_i8<S>) return _mm512_cmple_epi8_mask(a, b);
 					else if constexpr (is_u8<S>) return _mm512_cmple_epu8_mask(a, b);
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -209,7 +210,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm256_cmple_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm256_cmple_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm256_cmple_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -217,11 +218,11 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm_cmple_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm_cmple_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm_cmple_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
@@ -238,7 +239,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u16<S>) return _mm512_cmpgt_epu16_mask(a, b);
 					else if constexpr (is_i8<S>) return _mm512_cmpgt_epi8_mask(a, b);
 					else if constexpr (is_u8<S>) return _mm512_cmpgt_epu8_mask(a, b);
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -248,7 +249,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm256_cmpgt_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm256_cmpgt_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm256_cmpgt_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -256,11 +257,11 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm_cmpgt_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm_cmpgt_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm_cmpgt_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
@@ -277,7 +278,7 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_u16<S>) return _mm512_cmpge_epu16_mask(a, b);
 					else if constexpr (is_i8<S>) return _mm512_cmpge_epi8_mask(a, b);
 					else if constexpr (is_u8<S>) return _mm512_cmpge_epu8_mask(a, b);
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
@@ -287,7 +288,7 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm256_cmpge_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm256_cmpge_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm256_cmpge_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
 					else if constexpr (xmm_sized<T>)
 					{
@@ -295,15 +296,15 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (FS.has(AVX512_BW) && is_u16<S>) return _mm_cmpge_epu16_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_i8<S>) return _mm_cmpge_epi8_mask(a, b);
 						else if constexpr (FS.has(AVX512_BW) && is_u8<S>) return _mm_cmpge_epu8_mask(a, b);
-						else fail_ack_t{};
+						else return fail_ack_t{};
 					}
-					else fail_ack_t{};
+					else return fail_ack_t{};
 				}
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
-			requires (std::same_as<Op,op_mask_mov>)
+				requires (std::same_as<Op, op_mask_mov>)
 			static auto eval(const SIMD_Vector<S, N>& ifBitClear, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& ifBitSet)
 			{
 				using namespace meta;
@@ -315,7 +316,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) && any_i8<S>) return _mm256_mask_mov_epi8(ifBitClear, mask, ifBitSet);
 				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) && any_i16<S>) return _mm_mask_mov_epi16(ifBitClear, mask, ifBitSet);
 				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) && any_i8<S>) return _mm_mask_mov_epi8(ifBitClear, mask, ifBitSet);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, size_t N, typename From>
@@ -348,7 +349,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (zmm_sized<T> && is_u16<S>) return _mm512_min_epu16(a, b);
 				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_min_epi8(a, b);
 				else if constexpr (zmm_sized<T> && is_u8<S>) return _mm512_min_epu8(a, b);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op, op_max>)
@@ -361,7 +362,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (zmm_sized<T> && is_u16<S>) return _mm512_max_epu16(a, b);
 				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_max_epi8(a, b);
 				else if constexpr (zmm_sized<T> && is_u8<S>) return _mm512_max_epu8(a, b);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
 				requires (meta::any_int<I>&& std::same_as<Op, op_permx>)
@@ -376,10 +377,10 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_permutexvar_epi16(ind, a);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_permutexvar_epi16(ind, a);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_permutexvar_epi16(ind, a);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (std::same_as<Op,op_permx2> && meta::any_int<I>)
+				requires (std::same_as<Op, op_permx2>&& meta::any_int<I>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
 			{
 				using namespace meta;
@@ -391,7 +392,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_permutex2var_epi16(a, ind, b);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_permutex2var_epi16(a, ind, b);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_permutex2var_epi16(a, ind, b);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op>
@@ -410,11 +411,11 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i8<S>) return _mm256_mask_loadu_epi8(src, mask, p);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_mask_loadu_epi16(src, mask, p);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i8<S>) return _mm_mask_loadu_epi8(src, mask, p);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (std::same_as<Op,op_store>)
+				requires (std::same_as<Op, op_store>)
 			static auto eval(SIMD_Vector<S, N> vec, void* p, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
 				using namespace meta;
@@ -433,18 +434,18 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i8<S>) { _mm256_mask_storeu_epi8(p, mask, vec); return success_ack_t{}; }
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) { _mm_mask_storeu_epi16(p, mask, vec); return success_ack_t{}; }
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i8<S>) { _mm_mask_storeu_epi8(p, mask, vec); return success_ack_t{}; }
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (std::same_as<Op,op_unpacklo>)
+				requires (std::same_as<Op, op_unpacklo>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return T{ unpacklo(a.lo(),b.lo()), unpacklo(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_unpacklo_epi16(a, b);
 				else if constexpr (any_i8<S>) return _mm512_unpacklo_epi8(a, b);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op, op_unpackhi>)
@@ -454,7 +455,7 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(T) > 64) return T{ unpackhi(a.lo(),b.lo()), unpackhi(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_unpackhi_epi16(a, b);
 				else if constexpr (zmm_sized<T> && any_i8<S>) return _mm512_unpackhi_epi8(a, b);
-				else fail_ack_t{};
+				else return fail_ack_t{};
 			}
 		};
 	}
