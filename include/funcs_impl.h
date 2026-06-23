@@ -248,7 +248,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		return internals::Dispatcher::run<internals::op_abs>(a);
+		if constexpr (std::is_unsigned_v<S>) return a;
+		else return internals::Dispatcher::run<internals::op_abs>(a);
 	}
 
 	template<typename S, size_t N>
