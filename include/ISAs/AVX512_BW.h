@@ -13,7 +13,7 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { abs(a.lo()), abs(a.hi()) };
+				if constexpr (sizeof(T) > 64) return T{ abs(a.lo()), abs(a.hi()) };
 				else if constexpr (zmm_sized<T> && is_i16<S>) return _mm512_abs_epi16(a);
 				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_abs_epi8(a);
 				else fail_ack_t{};
@@ -25,7 +25,7 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
+				if constexpr (sizeof(T) > 64) return T{ sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_sub_epi16(a, b);
 				else if constexpr (zmm_sized<T> && any_i8<S>) return _mm512_sub_epi8(a, b);
 				else fail_ack_t{};
@@ -38,7 +38,7 @@ namespace AVXXY_NAMESPACE
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
 				using canon_t = std::conditional_t<(std::is_signed_v<S>), int16_t, uint16_t>;
-				if constexpr (sizeof(T) > 64) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+				if constexpr (sizeof(T) > 64) return T{ mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_mullo_epi16(a, b);
 				else if constexpr (zmm_sized<T> && any_i8<S>) return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
 			}
@@ -50,7 +50,7 @@ namespace AVXXY_NAMESPACE
 				using T = SIMD_Vector<S, N>;
 				if constexpr (!std::is_same_v<I, uint16_t>) return shift_left(a, vcvt<uint16_t>(b));
 				else if constexpr (any_i8<S>) return vcvt<S>(shift_left(vcvt<uint16_t>(a), b));
-				else if constexpr (sizeof(T) > 64) return { shift_left(a.lo(),b.lo()), shift_left(a.hi(),b.hi()) };
+				else if constexpr (sizeof(T) > 64) return T{ shift_left(a.lo(),b.lo()), shift_left(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_sllv_epi16(a, b);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_sllv_epi16(a, b);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_sllv_epi16(a, b);
@@ -63,7 +63,7 @@ namespace AVXXY_NAMESPACE
 				using T = SIMD_Vector<S, N>;
 				if constexpr (!std::is_same_v<I, uint16_t>) return shift_right(a, vcvt<uint16_t>(b));
 				else if constexpr (any_i8<S>) return vcvt<S>(shift_right(vcvt<uint16_t>(a), b));
-				else if constexpr (sizeof(T) > 64) return { shift_right(a.lo(),b.lo()), shift_right(a.hi(),b.hi()) };
+				else if constexpr (sizeof(T) > 64) return T{ shift_right(a.lo(),b.lo()), shift_right(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_srlv_epi16(a, b);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_srlv_epi16(a, b);
 				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_srlv_epi16(a, b);
@@ -75,7 +75,8 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
+				using M = mask_t<S, N>;
+				if constexpr (sizeof(T) > 64) return M{ cmp_equal(a.lo(),b.lo()), cmp_equal(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
 				{
 					if constexpr (is_i16<S>) return _mm512_cmpeq_epi16_mask(a, b);
@@ -112,7 +113,8 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { cmp_not_equal(a.lo(),b.lo()), cmp_not_equal(a.hi(),b.hi()) };
+				using M = mask_t<S, N>;
+				if constexpr (sizeof(T) > 64) return M{ cmp_not_equal(a.lo(),b.lo()), cmp_not_equal(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
 				{
 					if constexpr (is_i16<S>) return _mm512_cmpneq_epi16_mask(a, b);
@@ -150,7 +152,8 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { cmp_less(a.lo(),b.lo()), cmp_less(a.hi(),b.hi()) };
+				using M = mask_t<S, N>;
+				if constexpr (sizeof(T) > 64) return M{ cmp_less(a.lo(),b.lo()), cmp_less(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
 				{
 					if constexpr (is_i16<S>) return _mm512_cmplt_epi16_mask(a, b);
@@ -188,7 +191,8 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { cmp_less_or_equal(a.lo(),b.lo()), cmp_less_or_equal(a.hi(),b.hi()) };
+				using M = mask_t<S, N>;
+				if constexpr (sizeof(T) > 64) return M{ cmp_less_or_equal(a.lo(),b.lo()), cmp_less_or_equal(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
 				{
 					if constexpr (is_i16<S>) return _mm512_cmple_epi16_mask(a, b);
@@ -226,7 +230,8 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
+				using M = mask_t<S, N>;
+				if constexpr (sizeof(T) > 64) return M{ cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
 				{
 					if constexpr (is_i16<S>) return _mm512_cmpgt_epi16_mask(a, b);
@@ -264,7 +269,8 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { cmp_greater_or_equal(a.lo(),b.lo()), cmp_greater_or_equal(a.hi(),b.hi()) };
+				using M = mask_t<S, N>;
+				if constexpr (sizeof(T) > 64) return M{ cmp_greater_or_equal(a.lo(),b.lo()), cmp_greater_or_equal(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T>)
 				{
 					if constexpr (is_i16<S>) return _mm512_cmpge_epi16_mask(a, b);
@@ -302,7 +308,7 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { mask_mov(ifBitClear.lo(), mask.lo(), ifBitSet.lo()), mask_mov(ifBitClear.hi(), mask.hi(), ifBitSet.hi()) };
+				if constexpr (sizeof(T) > 64) return T{ mask_mov(ifBitClear.lo(), mask.lo(), ifBitSet.lo()), mask_mov(ifBitClear.hi(), mask.hi(), ifBitSet.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_mask_mov_epi16(ifBitClear, mask, ifBitSet);
 				else if constexpr (zmm_sized<T> && any_i8<S>) return _mm512_mask_mov_epi8(ifBitClear, mask, ifBitSet);
 				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) && any_i16<S>) return _mm256_mask_mov_epi16(ifBitClear, mask, ifBitSet);
@@ -337,7 +343,7 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { min(a.lo(), b.lo()), min(a.hi(),b.hi()) };
+				if constexpr (sizeof(T) > 64) return T{ min(a.lo(), b.lo()), min(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && is_i16<S>) return _mm512_min_epi16(a, b);
 				else if constexpr (zmm_sized<T> && is_u16<S>) return _mm512_min_epu16(a, b);
 				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_min_epi8(a, b);
@@ -350,7 +356,7 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
-				if constexpr (sizeof(T) > 64) return { max(a.lo(), b.lo()), max(a.hi(),b.hi()) };
+				if constexpr (sizeof(T) > 64) return T{ max(a.lo(), b.lo()), max(a.hi(),b.hi()) };
 				else if constexpr (zmm_sized<T> && is_i16<S>) return _mm512_max_epi16(a, b);
 				else if constexpr (zmm_sized<T> && is_u16<S>) return _mm512_max_epu16(a, b);
 				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_max_epi8(a, b);
@@ -394,9 +400,10 @@ namespace AVXXY_NAMESPACE
 			{
 				using namespace meta;
 				using S = typename Op::S;
+				constexpr size_t N = Op::N;
 				using T = SIMD_Vector<S, N>;
 				const S* sp = (const S*)p;
-				if constexpr (sizeof(T) > 64) return { load<S,N / 2>(sp,mask.lo(), src.lo()), load<S,N / 2>(sp + N / 2, mask.hi(), src.hi()) };
+				if constexpr (sizeof(T) > 64) return T{ load<S,N / 2>(sp,mask.lo(), src.lo()), load<S,N / 2>(sp + N / 2, mask.hi(), src.hi()) };
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_mask_loadu_epi16(src, mask, p);
 				else if constexpr (zmm_sized<T> && any_i8<S>) return _mm512_mask_loadu_epi8(src, mask, p);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_mask_loadu_epi16(src, mask, p);

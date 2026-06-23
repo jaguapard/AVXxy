@@ -11,13 +11,15 @@ namespace AVXXY_NAMESPACE
 	{
 		class Dispatcher
 		{
+		private:
+			struct Dummy {};
 		public:
 			//static inline constexpr FeatureSet FS = FS_current;
 			//struct fail_ack_t {};
 
 			using order = std::tuple<
-				std::conditional_t<FS.has(Feature::AVX512_BW), ISA_AVX512_BW, fail_ack_t>,
-				std::conditional_t<FS.has(Feature::AVX512_F), ISA_AVX512_F, fail_ack_t>,
+				std::conditional_t<FS.has(Feature::AVX512_BW), ISA_AVX512_BW, Dummy>,
+				std::conditional_t<FS.has(Feature::AVX512_F), ISA_AVX512_F, Dummy>,
 				ISA_Scalar>;
 
 			//Dispatches operation through this dispatcher. Attempts to pick best available implementation for target operation respecting template argument feature set limitations
