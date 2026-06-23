@@ -7,6 +7,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		struct ISA_AVX2
 		{
+#if 0
 			template<typename Op, typename S, size_t N>
 				requires (std::same_as<Op,op_abs> && std::is_signed_v<S>&& std::is_integral_v<S> && sizeof(SIMD_Vector<S, N>) > 16)
 			static auto eval(const SIMD_Vector<S, N>& a)
@@ -533,6 +534,7 @@ namespace AVXXY_NAMESPACE
 				}
 				else static_assert(always_false_v<I, S>);
 			}
+#endif
 		};
 	}
 }
