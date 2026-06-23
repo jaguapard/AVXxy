@@ -882,8 +882,8 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static auto eval(op_compress, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
+				requires (std::same_as<Op, op_compress>)
+			static auto eval(const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src = 0)
 			{
 				//TODO: more than 64 bytes!
 				//if constexpr (sizeof(SIMD_Vector<S, N>) > 64) {};
@@ -905,25 +905,27 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) >= 4)
-			static auto eval(op_unpacklo, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_unpacklo>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { unpacklo(a.lo(),b.lo()), unpacklo(a.hi(),b.hi()) };
-				else if constexpr (is_f64<S>) return _mm512_unpacklo_pd(a, b);
-				else if constexpr (is_f32<S>) return _mm512_unpacklo_ps(a, b);
-				else if constexpr (any_i64<S>) return _mm512_unpacklo_epi64(a, b);
-				else if constexpr (any_i32<S>) return _mm512_unpacklo_epi32(a, b);
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { unpacklo(a.lo(),b.lo()), unpacklo(a.hi(),b.hi()) };
+				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_unpacklo_pd(a, b);
+				else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_unpacklo_ps(a, b);
+				else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_unpacklo_epi64(a, b);
+				else if constexpr (zmm_sized<T> && any_i32<S>) return _mm512_unpacklo_epi32(a, b);
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(SIMD_Vector<S, N>) > 32 && sizeof(S) >= 4)
-			static auto eval(op_unpackhi, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_unpackhi>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
-				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { unpackhi(a.lo(),b.lo()), unpackhi(a.hi(),b.hi()) };
-				else if constexpr (is_f64<S>) return _mm512_unpackhi_pd(a, b);
-				else if constexpr (is_f32<S>) return _mm512_unpackhi_ps(a, b);
-				else if constexpr (any_i64<S>) return _mm512_unpackhi_epi64(a, b);
-				else if constexpr (any_i32<S>) return _mm512_unpackhi_epi32(a, b);
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { unpackhi(a.lo(),b.lo()), unpackhi(a.hi(),b.hi()) };
+				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_unpackhi_pd(a, b);
+				else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_unpackhi_ps(a, b);
+				else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_unpackhi_epi64(a, b);
+				else if constexpr (zmm_sized<T> && any_i32<S>) return _mm512_unpackhi_epi32(a, b);
 				else return fail_ack_t{};
 			}
 		private:
