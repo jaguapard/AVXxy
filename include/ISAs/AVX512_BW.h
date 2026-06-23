@@ -57,7 +57,7 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_int<I>&& std::same_as<Op, op_shr> && any_small_int<S>)
+				requires (meta::any_int<I>&& std::same_as<Op, op_shr>&& any_small_int<S>)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 			{
 				using T = SIMD_Vector<S, N>;
@@ -311,10 +311,10 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(T) > 64) return T{ mask_mov(ifBitClear.lo(), mask.lo(), ifBitSet.lo()), mask_mov(ifBitClear.hi(), mask.hi(), ifBitSet.hi()) };
 				else if constexpr (zmm_sized<T> && sizeof(S) == 2) return _mm512_mask_mov_epi16(vreinterpret<__m512i>(ifBitClear), mask, vreinterpret<__m512i>(ifBitSet));
 				else if constexpr (zmm_sized<T> && sizeof(S) == 1) return _mm512_mask_mov_epi8(vreinterpret<__m512i>(ifBitClear), mask, vreinterpret<__m512i>(ifBitSet));
-				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) sizeof(S) == 2) return _mm256_mask_mov_epi16(vreinterpret<__m256i>(ifBitClear), mask, vreinterpret<__m256i>(ifBitSet));
-				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) sizeof(S) == 1) return _mm256_mask_mov_epi8(vreinterpret<__m256i>(ifBitClear), mask, vreinterpret<__m256i>(ifBitSet));
-				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) sizeof(S) == 2) return _mm_mask_mov_epi16(vreinterpret<__m128i>(ifBitClear), mask, vreinterpret<__m128i>(ifBitSet));
-				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) sizeof(S) == 1) return _mm_mask_mov_epi8(vreinterpret<__m128i>(ifBitClear), mask, vreinterpret<__m128i>(ifBitSet));
+				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) && sizeof(S) == 2) return _mm256_mask_mov_epi16(vreinterpret<__m256i>(ifBitClear), mask, vreinterpret<__m256i>(ifBitSet));
+				else if constexpr (ymm_sized<T> && FS.has(AVX512_VL) && sizeof(S) == 1) return _mm256_mask_mov_epi8(vreinterpret<__m256i>(ifBitClear), mask, vreinterpret<__m256i>(ifBitSet));
+				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) && sizeof(S) == 2) return _mm_mask_mov_epi16(vreinterpret<__m128i>(ifBitClear), mask, vreinterpret<__m128i>(ifBitSet));
+				else if constexpr (xmm_sized<T> && FS.has(AVX512_VL) && sizeof(S) == 1) return _mm_mask_mov_epi8(vreinterpret<__m128i>(ifBitClear), mask, vreinterpret<__m128i>(ifBitSet));
 				else return fail_ack_t{};
 			}
 
@@ -364,14 +364,23 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
-				requires (meta::any_int<I>&& std::same_as<Op, op_permx>)
+				requires (meta::any_int<I>&& std::same_as<Op, op_permx> && sizeof(S) < 4)
 			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
 			{
 				using namespace meta;
 				using canon_t = typename ScalarTraits<S>::UintT;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(I) != sizeof(S)) return permx(a, vcvt<canon_t>(ind));
-				else if constexpr (any_i8<S>) return vcvt<S>(permx(vcvt<uint16_t>(a), ind));
+				else if constexpr (sizeof(S) == 1)
+				{
+					//1 byte permute can be emulated by zero-extending the values to 16 bits
+					//permuting as 16 bits, then narrowing back, removing redundant zeros
+					//Note that values of the items must not change, since permute is data-movement operation
+					auto a16 = vcvt<uint16_t>(vcast<SIMD_Vector<uint8_t, N>>(a)); //reinterpret a as 8-bit ints, zero-extend
+					auto p = vcast<SIMD_Vector<uint16_t, N>>(permx(a16, ind)); //permute as 16 bit ints
+					auto ret8 = vcvt<uint8_t>(p); //narrow back to 8 bits
+					return vcast<SIMD_Vector<S, N>>(ret8); //return reinterpreted back to input type
+				}
 				//TODO: add > 64 byte permutex!
 				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_permutexvar_epi16(ind, a);
 				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_permutexvar_epi16(ind, a);
