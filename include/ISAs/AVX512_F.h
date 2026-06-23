@@ -15,10 +15,10 @@ namespace AVXXY_NAMESPACE
 				if constexpr (sizeof(T) > 64) return T{ add(a.lo(), b.lo()), add(a.hi(), b.hi()) };
 				else if constexpr (zmm_sized<T>)
 				{
-					if constexpr (is_f64<S>) return _mm512_add_pd(a, b);
-					else if constexpr (is_f32<S>) return _mm512_add_ps(a, b);
-					else if constexpr (any_i64<S>) return _mm512_add_epi64(a, b);
-					else if constexpr (any_i32<S>) return _mm512_add_epi32(a, b);
+					if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_add_pd(a, b);
+					else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_add_ps(a, b);
+					else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_add_epi64(a, b);
+					else if constexpr (zmm_sized<T> && any_i32<S>) return _mm512_add_epi32(a, b);
 					else return fail_ack_t{};
 				}
 				//TODO: check these!
@@ -33,13 +33,13 @@ namespace AVXXY_NAMESPACE
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
-				else if constexpr (is_f64<S>) return _mm512_sub_pd(a, b);
-				else if constexpr (is_f32<S>) return _mm512_sub_ps(a, b);
-				else if constexpr (any_i64<S>) return _mm512_sub_epi64(a, b);
-				else if constexpr (any_i32<S>) return _mm512_sub_epi32(a, b);
+				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_sub_pd(a, b);
+				else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_sub_ps(a, b);
+				else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_sub_epi64(a, b);
+				else if constexpr (zmm_sized<T> && any_i32<S>) return _mm512_sub_epi32(a, b);
 				//TODO: check these!
-				//else if constexpr (!FS.has(Feature::AVX2) && std::is_signed_v<S>) return vcvt<S>(sub(vcvt<int32_t>(a), vcvt<int32_t>(b)));
-				//else if constexpr (!FS.has(Feature::AVX2) && std::is_unsigned_v<S>) return vcvt<S>(sub(vcvt<uint32_t>(a), vcvt<uint32_t>(b)));
+				//else if constexpr (zmm_sized<T> && !FS.has(Feature::AVX2) && std::is_signed_v<S>) return vcvt<S>(sub(vcvt<int32_t>(a), vcvt<int32_t>(b)));
+				//else if constexpr (zmm_sized<T> && !FS.has(Feature::AVX2) && std::is_unsigned_v<S>) return vcvt<S>(sub(vcvt<uint32_t>(a), vcvt<uint32_t>(b)));
 				else return fail_ack_t{};
 			}
 
@@ -50,10 +50,10 @@ namespace AVXXY_NAMESPACE
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
-				else if constexpr (is_f64<S>) return _mm512_mul_pd(a, b);
-				else if constexpr (is_f32<S>) return _mm512_mul_ps(a, b);
-				else if constexpr (any_i64<S>) return _mm512_mullox_epi64(a, b);
-				else if constexpr (any_i32<S>) return _mm512_mullo_epi32(a, b);
+				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_mul_pd(a, b);
+				else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_mul_ps(a, b);
+				else if constexpr (zmm_sized<T> && any_i64<S>) return _mm512_mullox_epi64(a, b);
+				else if constexpr (zmm_sized<T> && any_i32<S>) return _mm512_mullo_epi32(a, b);
 				//TODO: check these!
 				//else if constexpr (!FS.has(Feature::AVX2) && std::is_signed_v<S>) return vcvt<S>(mul(vcvt<int32_t>(a), vcvt<int32_t>(b)));
 				//else if constexpr (!FS.has(Feature::AVX2) && std::is_unsigned_v<S>) return vcvt<S>(mul(vcvt<uint32_t>(a), vcvt<uint32_t>(b)));
@@ -67,10 +67,10 @@ namespace AVXXY_NAMESPACE
 				using namespace concepts;
 				using T = SIMD_Vector<S, N>;
 				if constexpr (sizeof(T) > 64) return { div(a.lo(), b.lo()), div(a.hi(),b.hi()) };
-				else if constexpr (is_f64<S>) return _mm512_div_pd(a, b);
-				else if constexpr (is_f32<S>) return _mm512_div_ps(a, b);
-				else if constexpr (any_i32<S>) return vcvt<S>(div(vcvt<double>(a), vcvt<double>(b))); //emulate 32 bit integer division via double precision division
-				else if constexpr (any_i16<S> || any_i8<S>) return vcvt<S>(div(vcvt<float>(a), vcvt<float>(b))); //emulate small integer division via single precision division
+				else if constexpr (zmm_sized<T> && is_f64<S>) return _mm512_div_pd(a, b);
+				else if constexpr (zmm_sized<T> && is_f32<S>) return _mm512_div_ps(a, b);
+				else if constexpr (zmm_sized<T> && any_i32<S>) return vcvt<S>(div(vcvt<double>(a), vcvt<double>(b))); //emulate 32 bit integer division via double precision division
+				else if constexpr (zmm_sized<T> && (any_i16<S> || any_i8<S>)) return vcvt<S>(div(vcvt<float>(a), vcvt<float>(b))); //emulate small integer division via single precision division
 				else return fail_ack_t{};
 			}
 
