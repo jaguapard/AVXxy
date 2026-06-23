@@ -299,7 +299,6 @@ namespace AVXXY_NAMESPACE
 			template<typename Op, typename S, size_t N>
 			requires (std::same_as<Op,op_mask_mov>)
 			static auto eval(const SIMD_Vector<S, N>& ifBitClear, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& ifBitSet)
-				requires (sizeof(S) < 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
 			{
 				using namespace meta;
 				using T = SIMD_Vector<S, N>;
@@ -333,27 +332,29 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_min, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_min>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
-				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { min(a.lo(), b.lo()), min(a.hi(),b.hi()) };
-				else if constexpr (is_i16<S>) return _mm512_min_epi16(a, b);
-				else if constexpr (is_u16<S>) return _mm512_min_epu16(a, b);
-				else if constexpr (is_i8<S>) return _mm512_min_epi8(a, b);
-				else if constexpr (is_u8<S>) return _mm512_min_epu8(a, b);
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { min(a.lo(), b.lo()), min(a.hi(),b.hi()) };
+				else if constexpr (zmm_sized<T> && is_i16<S>) return _mm512_min_epi16(a, b);
+				else if constexpr (zmm_sized<T> && is_u16<S>) return _mm512_min_epu16(a, b);
+				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_min_epi8(a, b);
+				else if constexpr (zmm_sized<T> && is_u8<S>) return _mm512_min_epu8(a, b);
 				else fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N>
-				requires (any_small_int<S> && sizeof(SIMD_Vector<S, N>) > 32)
-			static auto eval(op_max, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+				requires (std::same_as<Op, op_max>)
+			static auto eval(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 			{
 				using namespace meta;
-				if constexpr (sizeof(SIMD_Vector<S, N>) > 64) return { max(a.lo(), b.lo()), max(a.hi(),b.hi()) };
-				else if constexpr (is_i16<S>) return _mm512_max_epi16(a, b);
-				else if constexpr (is_u16<S>) return _mm512_max_epu16(a, b);
-				else if constexpr (is_i8<S>) return _mm512_max_epi8(a, b);
-				else if constexpr (is_u8<S>) return _mm512_max_epu8(a, b);
+				using T = SIMD_Vector<S, N>;
+				if constexpr (sizeof(T) > 64) return { max(a.lo(), b.lo()), max(a.hi(),b.hi()) };
+				else if constexpr (zmm_sized<T> && is_i16<S>) return _mm512_max_epi16(a, b);
+				else if constexpr (zmm_sized<T> && is_u16<S>) return _mm512_max_epu16(a, b);
+				else if constexpr (zmm_sized<T> && is_i8<S>) return _mm512_max_epi8(a, b);
+				else if constexpr (zmm_sized<T> && is_u8<S>) return _mm512_max_epu8(a, b);
 				else fail_ack_t{};
 			}
 			template<typename Op, typename S, size_t N, typename I>
