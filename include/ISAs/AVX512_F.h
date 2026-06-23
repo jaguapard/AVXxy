@@ -677,16 +677,17 @@ namespace AVXXY_NAMESPACE
 				else return fail_ack_t{};
 			}
 
-			template<typename Op, typename S, size_t N, size_t Scale, typename I>
-				requires (meta::any_int<I> && sizeof(S) >= 4 &&
-			(std::max(sizeof(SIMD_Vector<S, N>), sizeof(SIMD_Vector<I, N>)) >= (FS.has(AVX512_VL) ? 0 : 33))
-				)
-				static auto eval(op_gather<S, N, Scale>, const void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
+			template<typename Op, typename I>
+				requires (meta::any_int<I> && IsGatherOp<Op>)
+			static auto eval(const void* base, const SIMD_Vector<I, Op::N>& ind, const typename SIMD_Vector<Op::S, Op::N>::MaskT& mask, const SIMD_Vector<Op::S, Op::N>& src)
 			{
 				//put everything up here to prevent else if chain breaks (since compilation gives useless errors by thinking unsanitized inputs surviving to native gathers
+				using namespace meta;
 				using CanonicalIndex_t = std::conditional_t<(sizeof(I) <= 4), int32_t, int64_t>;
+				using S = typename Op::S;
 				using RetVec_t = SIMD_Vector<S, N>;
 				using IndVec_t = SIMD_Vector<I, N>;
+				constexpr size_t Scale = Op::Scale;
 				constexpr size_t MaxSize = std::max(sizeof(RetVec_t), sizeof(IndVec_t));
 
 				//if scale is not native, emulate it by gathering with scale 1 and manually calculated byte offsets. 
@@ -701,7 +702,7 @@ namespace AVXXY_NAMESPACE
 				else if constexpr (MaxSize > 64) return {
 					gather<S, N / 2, Scale, I>(base, ind.lo(), mask.lo(), src.lo()),
 					gather<S, N / 2, Scale, I>(base, ind.hi(), mask.hi(), src.hi()) };
-				else if constexpr (utils::is_zmm_size(MaxSize))
+				else if constexpr (is_zmm_size(MaxSize))
 				{
 					//clang is a cry-baby with ind here for some reason, so force convert it. Pay attention to size!
 					std::conditional_t<(meta::zmm_sized<IndVec_t>), __m512i, __m256i> ni = ind;
@@ -714,11 +715,11 @@ namespace AVXXY_NAMESPACE
 					else if constexpr (is_i32<I> && is_f32<S>) return _mm512_mask_i32gather_ps(src, mask, ni, base, Scale);
 					else if constexpr (is_i32<I> && any_i64<S>) return _mm512_mask_i32gather_epi64(src, mask, ni, base, Scale);
 					else if constexpr (is_i32<I> && any_i32<S>) return _mm512_mask_i32gather_epi32(src, mask, ni, base, Scale);
-					else static_assert(always_false_v<I, S>);
+					else return fail_ack_t{};
 				}
 				else if constexpr (FS.has(AVX512_VL))
 				{
-					if constexpr (utils::is_ymm_size(MaxSize))
+					if constexpr (is_ymm_size(MaxSize))
 					{
 						std::conditional_t<(meta::ymm_sized<IndVec_t>), __m256i, __m128i> ni = ind;
 						if constexpr (is_i64<I> && is_f64<S>) return _mm256_mmask_i64gather_pd(src, mask, ni, base, Scale);
@@ -730,9 +731,9 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_i32<I> && is_f32<S>) return _mm256_mmask_i32gather_ps(src, mask, ni, base, Scale);
 						else if constexpr (is_i32<I> && any_i64<S>) return _mm256_mmask_i32gather_epi64(src, mask, ni, base, Scale);
 						else if constexpr (is_i32<I> && any_i32<S>) return _mm256_mmask_i32gather_epi32(src, mask, ni, base, Scale);
-						else static_assert(always_false_v<I, S>);
+						else return fail_ack_t{};
 					}
-					else if constexpr (utils::is_xmm_size(MaxSize))
+					else if constexpr (is_xmm_size(MaxSize))
 					{
 						__m128i ni = ind;
 						if constexpr (is_i64<I> && is_f64<S>) return _mm_mmask_i64gather_pd(src, mask, ni, base, Scale);
@@ -744,11 +745,11 @@ namespace AVXXY_NAMESPACE
 						else if constexpr (is_i32<I> && is_f32<S>) return _mm_mmask_i32gather_ps(src, mask, ni, base, Scale);
 						else if constexpr (is_i32<I> && any_i64<S>) return _mm_mmask_i32gather_epi64(src, mask, ni, base, Scale);
 						else if constexpr (is_i32<I> && any_i32<S>) return _mm_mmask_i32gather_epi32(src, mask, ni, base, Scale);
-						else static_assert(always_false_v<I, S>);
+						else return fail_ack_t{};
 					}
-					else static_assert(always_false_v<I, S>);
+					else return fail_ack_t{};
 				}
-				else static_assert(always_false_v<I, S>);
+				else return fail_ack_t{};
 			}
 
 			template<typename Op, typename S, size_t N, size_t Scale, typename I>
