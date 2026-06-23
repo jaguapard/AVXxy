@@ -407,7 +407,7 @@ namespace AVXXY_NAMESPACE
 			}
 
 			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) < 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
+				requires (std::same_as<Op,op_store>)
 			static void eval(op_store, SIMD_Vector<S, N> vec, void* p, const typename SIMD_Vector<S, N>::MaskT& mask)
 			{
 				using namespace meta;
@@ -418,13 +418,14 @@ namespace AVXXY_NAMESPACE
 				{
 					store(vec.lo(), p, mask.lo());
 					store(vec.hi(), sp + N / 2, mask.hi());
+					return success_ack_t{};
 				}
-				else if constexpr (zmm_sized<T> && any_i16<S>) return _mm512_mask_storeu_epi16(p, mask, vec);
-				else if constexpr (zmm_sized<T> && any_i8<S>) return _mm512_mask_storeu_epi8(p, mask, vec);
-				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_mask_storeu_epi16(p, mask, vec);
-				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i8<S>) return _mm256_mask_storeu_epi8(p, mask, vec);
-				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_mask_storeu_epi16(p, mask, vec);
-				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i8<S>) return _mm_mask_storeu_epi8(p, mask, vec);
+				else if constexpr (zmm_sized<T> && any_i16<S>) { _mm512_mask_storeu_epi16(p, mask, vec); return success_ack_t{}; }
+				else if constexpr (zmm_sized<T> && any_i8<S>) { _mm512_mask_storeu_epi8(p, mask, vec); return success_ack_t{}; }
+				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) { _mm256_mask_storeu_epi16(p, mask, vec); return success_ack_t{}; }
+				else if constexpr (FS.has(AVX512_VL) && ymm_sized<T> && any_i8<S>) { _mm256_mask_storeu_epi8(p, mask, vec); return success_ack_t{}; }
+				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) { _mm_mask_storeu_epi16(p, mask, vec); return success_ack_t{}; }
+				else if constexpr (FS.has(AVX512_VL) && xmm_sized<T> && any_i8<S>) { _mm_mask_storeu_epi8(p, mask, vec); return success_ack_t{}; }
 				else fail_ack_t{};
 			}
 
