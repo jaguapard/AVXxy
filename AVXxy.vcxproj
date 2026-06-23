@@ -265,6 +265,7 @@
     <ClInclude Include="include\funcs.h" />
     <ClInclude Include="include\funcs_impl.h" />
     <ClInclude Include="include\ISAs\AVX512_BW.h" />
+    <ClInclude Include="include\ISAs\AVX512_DQ.h" />
     <ClInclude Include="include\ISAs\AVX512_F.h" />
     <ClInclude Include="include\ISAs\Scalar.h" />
     <ClInclude Include="include\ISAs\shared.h" />

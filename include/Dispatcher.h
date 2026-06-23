@@ -4,6 +4,7 @@
 #include "ISAs/Scalar.h"
 #include "ISAs/AVX512_F.h"
 #include "ISAs/AVX512_BW.h"
+#include "ISAs/AVX512_DQ.h"
 #include "meta/meta.h"
 namespace AVXXY_NAMESPACE
 {
@@ -18,6 +19,7 @@ namespace AVXXY_NAMESPACE
 			//struct fail_ack_t {};
 
 			using order = std::tuple<
+				std::conditional_t<FS.has(Feature::AVX512_DQ), ISA_AVX512_DQ, Dummy>,
 				std::conditional_t<FS.has(Feature::AVX512_BW), ISA_AVX512_BW, Dummy>,
 				std::conditional_t<FS.has(Feature::AVX512_F), ISA_AVX512_F, Dummy>,
 				ISA_Scalar>;
