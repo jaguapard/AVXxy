@@ -71,9 +71,6 @@
     <ClInclude Include="include\funcs_impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\operations\sub.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\operators.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -90,6 +87,21 @@
       <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
     <ClInclude Include="include\ISAs\AVX512_BW.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512_CD.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512_DQ.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512_VBMI.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\AVX512_VBMI2.h">
+      <Filter>Header Files\include\ISAs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ISAs\F16C.h">
       <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
   </ItemGroup>

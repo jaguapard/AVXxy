@@ -4,6 +4,11 @@
 #include "ISAs/Scalar.h"
 #include "ISAs/AVX512_F.h"
 #include "ISAs/AVX512_BW.h"
+#include "ISAs/AVX512_DQ.h"
+#include "ISAs/AVX512_CD.h"
+#include "ISAs/AVX512_VBMI.h"
+#include "ISAs/AVX512_VBMI2.h"
+#include "ISAs/F16C.h"
 #include "meta/meta.h"
 namespace AVXXY_NAMESPACE
 {
@@ -18,8 +23,13 @@ namespace AVXXY_NAMESPACE
 			//struct fail_ack_t {};
 
 			using order = std::tuple<
+				std::conditional_t<FS.has(Feature::AVX512_VBMI2), ISA_AVX512_VBMI2, Dummy>,
+				std::conditional_t<FS.has(Feature::AVX512_VBMI), ISA_AVX512_VBMI, Dummy>,
+				std::conditional_t<FS.has(Feature::AVX512_DQ), ISA_AVX512_DQ, Dummy>,
 				std::conditional_t<FS.has(Feature::AVX512_BW), ISA_AVX512_BW, Dummy>,
+				std::conditional_t<FS.has(Feature::AVX512_CD), ISA_AVX512_CD, Dummy>,
 				std::conditional_t<FS.has(Feature::AVX512_F), ISA_AVX512_F, Dummy>,
+				std::conditional_t<FS.has(Feature::F16C), ISA_F16C, Dummy>,
 				ISA_Scalar>;
 
 			//Dispatches operation through this dispatcher. Attempts to pick best available implementation for target operation respecting template argument feature set limitations

@@ -54,6 +54,7 @@ int main()
 
 	std::cout << "Read as f32x16: " << read << "\n";
 
+	i32x16 ex = ISA_AVX512_CD::eval<op_conflict>(vcast<int>(read));
 	u8x64 smoll;
 	memcpy(&smoll, buf, 64);
 	//scatter()
