@@ -828,11 +828,12 @@ namespace AVXXY_NAMESPACE
 				}
 				else return fail_ack_t{};
 			}
-			template<typename Op, typename S, size_t N>
-				requires (sizeof(S) >= 4 && sizeof(SIMD_Vector<S, N>) >= (FS.has(AVX512_VL) ? 0 : 33))
-			static auto eval(op_load<S, N>, const void* p, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
+			template<typename Op>
+				requires (meta::IsLoadOp<Op>)
+			static auto eval(const void* p, const typename SIMD_Vector<typename Op::S, Op::N>::MaskT& mask, const SIMD_Vector<typename Op::S, Op::N>& src)
 			{
-				using namespace concepts;
+				using namespace meta;
+				using S = typename Op::S;
 				using T = SIMD_Vector<S, N>;
 				SIMD_Vector<S, N> ret;
 				const S* sp = (const S*)p;
