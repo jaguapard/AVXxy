@@ -68,7 +68,7 @@ namespace AVXXY_NAMESPACE
 			{
 				__m256i broadcasted = _mm256_set1_epi32(mask);
 				broadcasted = _mm256_shuffle_epi8(broadcasted, _mm256_setr_epi64x(0, 0x0101010101010101, 0x0202020202020202, 0x0303030303030303));
-				__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi8(1, 2, 4, 8, 16, 32, 64, 0x7F, 0, 1, 2, 4, 8, 16, 32, 64, 0x7F, 1, 2, 4, 8, 16, 32, 64, 0x7F, 0, 1, 2, 4, 8, 16, 32, 64, 0x7F));
+				__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi8(1, 2, 4, 8, 16, 32, 64, 0x7F, 1, 2, 4, 8, 16, 32, 64, 0x7F, 1, 2, 4, 8, 16, 32, 64, 0x7F, 1, 2, 4, 8, 16, 32, 64, 0x7F));
 				return T::from_bits_us(_mm256_cmpeq_epi8(x, _mm256_setzero_si256()));
 				//https://stackoverflow.com/questions/21622212/how-to-perform-the-inverse-of-mm256-movemask-epi8-vpmovmskb
 				/*__m256i vmask(_mm256_set1_epi32(mask));
@@ -102,8 +102,8 @@ namespace AVXXY_NAMESPACE
 			else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 1) //only 16 elements can fit into register
 			{
 				__m128i broadcasted = _mm_set1_epi16(mask);
-				broadcasted = _mm_shuffle_epi8(broadcasted, _mm_setr_epi64(0, 0x0101010101010101));
-				__m128i x = _mm_andnot_si128(broadcasted, _mm_setr_epi8(1, 2, 4, 8, 16, 32, 64, 0x7F, 0, 1, 2, 4, 8, 16, 32, 64, 0x7F));
+				broadcasted = _mm_shuffle_epi8(broadcasted, _mm_setr_epi32(0, 0, 0x01010101, 0x01010101));
+				__m128i x = _mm_andnot_si128(broadcasted, _mm_setr_epi8(1, 2, 4, 8, 16, 32, 64, 0x7F, 1, 2, 4, 8, 16, 32, 64, 0x7F));
 				return T::from_bits_us(_mm_cmpeq_epi8(x, _mm_setzero_si128()));
 			}
 			else if constexpr (sizeof(T) > 16)
@@ -192,35 +192,10 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
-	inline SIMD_Mask<LS, N>::VecT SIMD_Mask<LS, N>::_movm(BitsUintT bits)
-	{
-		using T = SIMD_Mask<LS, N>::SizeTraits;
-		SIMD_Mask<LS, N>::VecT ret;
-		//scalar movm
-		for (size_t i = 0; i < N; ++i)
-		{
-			ret[i] = bits & (BitsUintT(1) << i) ? T::AllOnesUint : 0;
-		}
-		return ret;
-
-	}
-
-	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
-	inline SIMD_Mask<LS, N>::BitsUintT SIMD_Mask<LS, N>::_movemask() const
-	{
-		if constexpr (IsBitMask) return underlying & AllOnesUint;
-		else
-		{
-			//scalar movemask
-			
-		}
-	}
-
-	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N>::SIMD_Mask(BitsUintT bits)
 	{
 		if constexpr (IsBitMask) underlying = bits & AllOnesUint;
-		else underlying = SIMD_Mask<LS, N>::_movm(bits);
+		else underlying = internals::_movm_raw<VecIntT, N>(bits & AllOnesUint);
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
@@ -277,7 +252,7 @@ namespace AVXXY_NAMESPACE
 	inline SIMD_Mask<LS, N>::operator BitsUintT() const
 	{
 		if constexpr (IsBitMask) return underlying & AllOnesUint;
-		else return this->_movemask();
+		else return internals::_movemask_raw(underlying) & AllOnesUint;
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
@@ -285,7 +260,10 @@ namespace AVXXY_NAMESPACE
 		inline SIMD_Mask<LS, N>::operator T() const
 	{
 		if constexpr (IsBitMask) return vreinterpret<T>(movm<VecIntT>(*this));
-		else return this->_movm(*this);
+		else
+		{
+			return underlying < 0; //TODO: this may infinitely recurse
+		}
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
@@ -341,7 +319,8 @@ namespace AVXXY_NAMESPACE
 	template<meta::ScalarSizeClassEnum LS2, size_t N2> requires (N >= N2)
 		inline SIMD_Mask<LS, N>::SIMD_Mask(const SIMD_Mask<LS2, N2>& other)
 	{
-		*this = other._movemask();
+		if constexpr (IsBitMask) underlying = other;
+		else underlying = other.underlying;
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N>

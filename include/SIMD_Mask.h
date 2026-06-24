@@ -5,6 +5,10 @@
 
 namespace AVXXY_NAMESPACE
 {
+	template<typename S, size_t N>
+		requires meta::IsValid_SIMD_Vector<S, N>
+	class SIMD_Vector;
+
 	namespace internals
 	{
 		template<typename S, size_t N>
@@ -13,9 +17,6 @@ namespace AVXXY_NAMESPACE
 		template<typename S, size_t N>
 		uint64_t _movemask_raw(const SIMD_Vector<S, N>& v);
 	}
-	template<typename S, size_t N>
-		requires meta::IsValid_SIMD_Vector<S, N>
-	class SIMD_Vector;
 
 	template<size_t N>
 	concept IsValid_SIMD_Mask = N >= 2 && N <= 64 && meta::isPowerOf2(N);
@@ -93,11 +94,5 @@ namespace AVXXY_NAMESPACE
 	private:
 		using SizeTraits = meta::ScalarSizeTraits<LS>;
 		std::conditional_t<IsBitMask, BitsUintT, VecT> underlying;
-
-		//deposits uint bits to each lane of the vector.
-		static VecT _movm(BitsUintT value);
-
-		//extracts uppermost bits out of each lane of this mask and puts them into returned bits
-		BitsUintT _movemask() const;
 	};
 }
