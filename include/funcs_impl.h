@@ -425,17 +425,11 @@ namespace AVXXY_NAMESPACE
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
 
-		constexpr auto split_sqrtd = [&]() {
-			return T{ sqrtd(a.lo()), sqrtd(a.hi()) };
-			};
-
 		if constexpr (!is_f32<S>) return sqrtd(vcvt<double>(a));
-		else if constexpr (sizeof(T) > 64) return split_sqrtd();
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_sqrt_pd(a);
-		else if constexpr (sizeof(T) > 32) return split_sqrtd();
 		else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_sqrt_pd(a);
-		else if constexpr (sizeof(T) > 16) return split_sqrtd();
 		else if constexpr (FS.has(SSE2) && xmm_sized<T>) return _mm_sqrt_pd(a);
+		else if constexpr (sizeof(T) > 16) return T{ sqrtd(a.lo()), sqrtd(a.hi()) };
 		else
 		{
 			internals::scream();
