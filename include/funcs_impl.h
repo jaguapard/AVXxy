@@ -213,11 +213,22 @@ namespace AVXXY_NAMESPACE
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
-		if constexpr (sizeof(T) > 64) return T{ logic_and(a.lo(),b.lo()), logic_and(a.hi(),b.hi()) };
-		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && is_f64<S>) return _mm512_and_pd(a, b);
+		
+		//IDK why this is needed, but if intrinsics exist, I guess. Logical operations don't care about type.
+		//Maybe they run on different ports? Anyway, stick to native ones
+		if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && is_f64<S>) return _mm512_and_pd(a, b);
 		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && is_f32<S>) return _mm512_and_ps(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_and_si512(vreinterpret_us<__m512i>(a), vreinterpret_us<__m512i>(b));
 
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_int<S>) return _mm256_and_si256(vreinterpret_us<__m256i>(a), vreinterpret_us<__m256i>(b));
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_and_pd(vreinterpret_us<__m256d>(a), vreinterpret_us<__m256d>(b));
+		else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_and_ps(vreinterpret_us<__m256>(a), vreinterpret_us<__m256>(b));
+
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_and_pd(vreinterpret_us<__m128d>(a), vreinterpret_us<__m128d>(b));
+		else if constexpr (FS.has(SSE2) && xmm_sized<T>) return _mm_and_si128(vreinterpret_us<__m128i>(a), vreinterpret_us<__m128i>(b));
+		else if constexpr (FS.has(SSE) && xmm_sized<T>) return _mm_and_ps(vreinterpret_us<__m128>(a), vreinterpret_us<__m128>(b));
+
+		else if constexpr (sizeof(T) > 16) return T{ logic_and(a.lo(),b.lo()), logic_and(a.hi(),b.hi()) };
 		else
 		{
 			internals::scream();
