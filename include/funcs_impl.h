@@ -1317,15 +1317,42 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> compress(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
-		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(compress(mask, vcast<U>(a), vcast<U>(src)));
+		using T = SIMD_Vector<S, N>;
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		size_t j = 0;
-		for (size_t i = 0; i < N; ++i) if (mask[i]) ret[j++] = a[i];
-		for (; j < N; ++j) ret[j] = src[j];
-		return ret;
+		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(compress(mask, vcast<U>(a), vcast<U>(src)));
+
+		else if constexpr (FS.has(AVX512_VBMI2) && zmm_sized<T> && any_i16<S>) return _mm512_mask_compress_epi16(src, mask, a);
+		else if constexpr (FS.has(AVX512_VBMI2) && zmm_sized<T> && any_i8<S>) return _mm512_mask_compress_epi8(src, mask, a);
+		else if constexpr (FS.has(AVX512_VBMI2) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_mask_compress_epi16(src, mask, a);
+		else if constexpr (FS.has(AVX512_VBMI2) && FS.has(AVX512_VL) && ymm_sized<T> && any_i8<S>) return _mm256_mask_compress_epi8(src, mask, a);
+		else if constexpr (FS.has(AVX512_VBMI2) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_mask_compress_epi16(src, mask, a);
+		else if constexpr (FS.has(AVX512_VBMI2) && FS.has(AVX512_VL) && xmm_sized<T> && any_i8<S>) return _mm_mask_compress_epi8(src, mask, a);
+
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_mask_compress_pd(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_mask_compress_ps(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_mask_compress_epi64(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_mask_compress_epi32(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_f64<S>) return _mm256_mask_compress_pd(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_f32<S>) return _mm256_mask_compress_ps(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_mask_compress_epi64(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_mask_compress_epi32(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f64<S>) return _mm_mask_compress_pd(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_compress_ps(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_compress_epi64(src, mask, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_compress_epi32(src, mask, a);
+		//TODO: compress emulation for bytes and words by extending for AVX512 F
+		//TODO: compress splitting via overlapping stores
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			size_t j = 0;
+			for (size_t i = 0; i < N; ++i) if (mask[i]) ret[j++] = a[i];
+			for (; j < N; ++j) ret[j] = src[j];
+			return ret;
+		}
 	}
 	template<typename S, size_t N>
 		requires (sizeof(S) * 8 >= N)
