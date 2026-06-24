@@ -241,26 +241,57 @@ namespace AVXXY_NAMESPACE
 		for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(T(~std::bit_cast<T>(a[i])));
 		return ret;*/
 	}
-	template<typename S, size_t N, typename I>
+	template<typename S, size_t N, typename I> requires (meta::any_int<S>&& meta::any_int<S>)
 	__forceinline SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		//using T = typename concepts::same_size_uint_t<S>::type;
-		for (size_t i = 0; i < N; ++i) ret[i] = a[i] << b[i];
-		return ret;
+		using namespace internals;
+		using namespace meta;
+		using T = SIMD_Vector<S, N>;
+		using canon_t = typename ScalarTraits<S>::UintT;
+
+		if constexpr (any_i8<S>) return vcvt<S>(shift_left(vcvt<uint16_t>(a), b));
+		else if constexpr (!std::is_same_v<I, canon_t>) return shift_left(a, vcvt<canon_t>(b));
+		else if constexpr (sizeof(T) > 64) return T{ shift_left(a.lo(),b.lo()), shift_left(a.hi(),b.hi()) };
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_sllv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_sllv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_sllv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_sllv_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_sllv_epi32(a, b);
+
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			//using T = typename concepts::same_size_uint_t<S>::type;
+			for (size_t i = 0; i < N; ++i) ret[i] = a[i] << b[i];
+			return ret;
+		}
 	}
-	template<typename S, size_t N, typename I>
+	template<typename S, size_t N, typename I> requires (meta::any_int<S>&& meta::any_int<S>)
 	__forceinline SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
+		using namespace internals;
 		using namespace meta;
-		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
+		using canon_t = typename ScalarTraits<S>::UintT;
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		//using T = typename concepts::same_size_uint_t<S>::type;
-		for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> b[i];
-		return ret;
+		if constexpr (any_i8<S>) return vcvt<S>(shift_right(vcvt<uint16_t>(a), b));
+		else if constexpr (!std::is_same_v<I, canon_t>) return shift_right(a, vcvt<canon_t>(b));
+		else if constexpr (sizeof(T) > 64) return T{ shift_right(a.lo(),b.lo()), shift_right(a.hi(),b.hi()) };
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srlv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_srlv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_srlv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srlv_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srlv_epi32(a, b);
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			//using T = typename concepts::same_size_uint_t<S>::type;
+			for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> b[i];
+			return ret;
+		}
+		
 	}
 	template<typename S, size_t N, typename I>
 	__forceinline SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
