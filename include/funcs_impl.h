@@ -363,14 +363,26 @@ namespace AVXXY_NAMESPACE
 		using T = SIMD_Vector<S, N>;
 		using canon_t = typename ScalarTraits<S>::UintT;
 
-		if constexpr (any_i8<S>) return vcvt<S>(shift_right(vcvt<uint16_t>(a), b));
-		else if constexpr (!std::is_same_v<I, canon_t>) return shift_right(a, vcvt<canon_t>(b));
-		else if constexpr (sizeof(T) > 64) return T{ shift_right(a.lo(),b.lo()), shift_right(a.hi(),b.hi()) };
+		if constexpr (!std::is_same_v<I, canon_t>) return shift_right(a, vcvt<canon_t>(b));
+
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srlv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_srlv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_srlv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_right(vrzext<uint16_t>(a)));
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srlv_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srlv_epi32(a, b);
+
+		else if constexpr (FS.has(AVX2) && sizeof(T) <= 32 && any_small_int<S>) //zero-extend small integers, shift and convert back. TODO: There could be a better way?
+		{
+			auto a32 = vrzext<uint32_t>(a);
+			auto sh = shift_right(a32, b);
+			return vrtrunc<S>(sh);
+		}
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_srlv_epi64(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_srlv_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i64<S>) return _mm_srlv_epi64(a, b); //no shifts in SSE!
+		else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i32<S>) return _mm_srlv_epi32(a, b);
+
 		else
 		{
 			internals::scream();
