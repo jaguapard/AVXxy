@@ -464,10 +464,6 @@ namespace AVXXY_NAMESPACE
 		using FV = SIMD_Vector<From, N>;
 		constexpr size_t MaxSize = std::max(sizeof(TV), sizeof(FV));
 
-		constexpr auto split_vcvt = [&]() {
-			return TV{ vcvt<To>(a.lo()), vcvt<To>(a.hi()) };
-			};
-
 		//Route all FP16 conversions to it's only friend - float
 		if constexpr ((is_fp16<From> && !is_f32<To>) || (!is_f32<From> && is_fp16<To>)) return vcvt<To>(vcvt<float>(a));
 		//Route small int to FP through their 32 bit types of same signedness
@@ -481,7 +477,6 @@ namespace AVXXY_NAMESPACE
 			using interm_t = std::conditional_t<(std::is_signed_v<To>), int32_t, uint32_t>;
 			return vcvt<To>(vcvt<interm_t>(a));
 		}
-		if constexpr (MaxSize > 64) return split_vcvt();
 		else if constexpr (FS.has(AVX512_DQ) && is_zmm_size(MaxSize) && is_i64<From> && is_f64<To>) return _mm512_cvtepi64_pd(a);
 		else if constexpr (FS.has(AVX512_DQ) && is_zmm_size(MaxSize) && is_u64<From> && is_f64<To>) return _mm512_cvtepu64_pd(a);
 		else if constexpr (FS.has(AVX512_DQ) && is_zmm_size(MaxSize) && is_i64<From> && is_f32<To>) return _mm512_cvtepi64_ps(a);
@@ -571,14 +566,13 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && any_i32<From> && any_i16<To>) return _mm_cvtepi32_epi16(a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && any_i32<From> && any_i8<To>) return _mm_cvtepi32_epi8(a);
 
-		else if constexpr (MaxSize > 32) return split_vcvt();
 		else if constexpr (FS.has(F16C) && is_ymm_size(MaxSize) && is_f32<From> && is_fp16<To>) return _mm256_cvtps_ph(a, _MM_FROUND_TO_NEAREST_INT);
 		else if constexpr (FS.has(F16C) && is_xmm_size(MaxSize) && is_f32<From> && is_fp16<To>) return _mm_cvtps_ph(a, _MM_FROUND_TO_NEAREST_INT);
 		else if constexpr (FS.has(F16C) && is_ymm_size(MaxSize) && is_fp16<From> && is_f32<To>) return _mm256_cvtph_ps(a);
 		else if constexpr (FS.has(F16C) && is_xmm_size(MaxSize) && is_fp16<From> && is_f32<To>) return _mm_cvtph_ps(a);
 
 		//TODO: add AVX2, AVX, SSE cvts
-		else if constexpr (MaxSize > 16) return split_vcvt();
+		else if constexpr (MaxSize > 16) return TV{ vcvt<To>(a.lo()), vcvt<To>(a.hi()) };
 		else
 		{
 			internals::scream();
