@@ -51,6 +51,10 @@ int main()
 		for (size_t i = 0; i < 64; ++i) ff[i] = i;
 		read = f32x16(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
 	}
+
+	f32x16 rr = abs(read);
+	int xx = 0;
+	std::cout << rr;
 #if 0
 	
 

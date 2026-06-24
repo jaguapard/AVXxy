@@ -5,33 +5,35 @@
 
 namespace AVXXY_NAMESPACE
 {
-	template<typename S, size_t N, bool Lo>
-	static SIMD_Vector<S, N> unpack_base(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
+	namespace internals
 	{
-		SIMD_Vector<S, N> ret;
-		constexpr size_t pairs_per_xmm = 8 / sizeof(S); //8, since unpack only processes lower/upper half of each input
-		constexpr size_t elements_per_xmm = 16 / sizeof(S); //how much elements of type S fit into one 128 bit lane
-		constexpr size_t xmm_count = sizeof(ret) / 16;
-		for (size_t xmm_i = 0; xmm_i < xmm_count; ++xmm_i) //for each 128-bit lane
+		template<typename S, size_t N, bool Lo>
+		static SIMD_Vector<S, N> unpack_base(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 		{
-			for (size_t i = 0; i < elements_per_xmm; i += 2)
+			SIMD_Vector<S, N> ret;
+			constexpr size_t pairs_per_xmm = 8 / sizeof(S); //8, since unpack only processes lower/upper half of each input
+			constexpr size_t elements_per_xmm = 16 / sizeof(S); //how much elements of type S fit into one 128 bit lane
+			constexpr size_t xmm_count = sizeof(ret) / 16;
+			for (size_t xmm_i = 0; xmm_i < xmm_count; ++xmm_i) //for each 128-bit lane
 			{
-				size_t srcI = xmm_i * elements_per_xmm + i / 2 + (Lo ? 0 : elements_per_xmm / 2);
-				ret[xmm_i * elements_per_xmm + i] = a[srcI];
-				ret[xmm_i * elements_per_xmm + i + 1] = b[srcI];
+				for (size_t i = 0; i < elements_per_xmm; i += 2)
+				{
+					size_t srcI = xmm_i * elements_per_xmm + i / 2 + (Lo ? 0 : elements_per_xmm / 2);
+					ret[xmm_i * elements_per_xmm + i] = a[srcI];
+					ret[xmm_i * elements_per_xmm + i + 1] = b[srcI];
+				}
 			}
+			return ret;
 		}
-		return ret;
-	}
 
-	//scream your lungs out if scalar fallback is reached and this function is enabled via AVXXY_NOISY_SCALAR define
-	static void scream(std::source_location loc = std::source_location::current())
-	{
+		//scream your lungs out if scalar fallback is reached and this function is enabled via AVXXY_NOISY_SCALAR define
+		static void scream(std::source_location loc = std::source_location::current())
+		{
 #ifdef AVXXY_NOISY_SCALAR
-		std::cout << "\nScalar fallback reached:" << loc.function_name() << "\n";
+			std::cout << "\nScalar fallback reached:" << loc.function_name() << "\n";
 #endif
+		}
 	}
-
 	//#define AVXXY_RUN(op) internals::Dispatcher::run<internals::op>
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> add(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
@@ -39,7 +41,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 
-		scream();
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = a[i] + b[i];
 		return ret;
@@ -51,7 +53,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 
-		scream();
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = a[i] - b[i];
 		return ret;
@@ -62,7 +64,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 
-		scream();
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = a[i] * b[i];
 		return ret;
@@ -72,8 +74,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = a[i] / b[i];
 		return ret;
@@ -83,8 +85,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		using T = typename meta::ScalarTraits<S>::UintT;
 
@@ -96,8 +98,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		using T = typename meta::ScalarTraits<S>::UintT;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(T(std::bit_cast<T>(a[i]) | std::bit_cast<T>(b[i])));
@@ -108,8 +110,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		using T = typename meta::ScalarTraits<S>::UintT;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(T(std::bit_cast<T>(a[i]) ^ std::bit_cast<T>(b[i])));
@@ -120,8 +122,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		using T = typename meta::ScalarTraits<S>::UintT;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(T(~std::bit_cast<T>(a[i])));
@@ -130,7 +132,7 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N, typename I>
 	__forceinline SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
-		scream();
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		//using T = typename concepts::same_size_uint_t<S>::type;
 		for (size_t i = 0; i < N; ++i) ret[i] = a[i] << b[i];
@@ -141,8 +143,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		//using T = typename concepts::same_size_uint_t<S>::type;
 		for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> b[i];
@@ -153,8 +155,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = a[ind[i] & (N - 1)];
 		return ret;
@@ -164,8 +166,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i)
 		{
@@ -179,8 +181,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<float, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(float(a[i]));
 		return ret;
@@ -190,8 +192,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<double, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(double(a[i]));
 		return ret;
@@ -205,7 +207,7 @@ namespace AVXXY_NAMESPACE
 		//if constexpr ((meta::is_fp16<From> && !meta::is_f32<To>) || (!meta::is_f32<From> && meta::is_fp16<To>)) return vcvt<To>(vcvt<float>(value));
 		//else return internals::Dispatcher::run<internals::op_cvt<To>>(value);
 
-		scream();
+		internals::scream();
 		//using To = typename Op::cvt_to_t;
 		SIMD_Vector<To, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = a[i];
@@ -253,7 +255,7 @@ namespace AVXXY_NAMESPACE
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(mask_mov(vcast<U>(ifBitClear), mask, vcast<U>(ifBitSet)));
 		//else return internals::Dispatcher::run<internals::op_mask_mov>(ifBitClear, mask, ifBitSet);
 
-		scream();
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? ifBitSet[i] : ifBitClear[i];
 		return ret;
@@ -291,8 +293,8 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) store(vcast<U>(v), p, mask);
-		
-		scream();
+
+		internals::scream();
 		S* sp = static_cast<S*>(p);
 		for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = v[i];
 	}
@@ -305,7 +307,7 @@ namespace AVXXY_NAMESPACE
 
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) scatter<S, N, Scale, I>(vcast<U>(vec), base, ind, mask);
 		//else internals::Dispatcher::run<internals::op_scatter<Scale>>(vec, base, ind, mask);
-		scream();
+		internals::scream();
 		size_t addr = size_t(base);
 		for (size_t i = 0; i < N; ++i) if (mask[i]) *(S*)(addr + Scale * ind[i]) = v[i];
 	}
@@ -316,7 +318,7 @@ namespace AVXXY_NAMESPACE
 		using U = typename ScalarTraits<S>::UintT;
 		//return internals::Dispatcher::run<internals::op_cmpeq>(a, b);
 
-		scream();
+		internals::scream();
 		typename SIMD_Vector<S, N>::MaskT ret = 0;
 		for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] == b[i]);
 		return ret;
@@ -327,7 +329,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 		//return internals::Dispatcher::run<internals::op_cmpneq>(a, b);
-		scream();
+		internals::scream();
 		typename SIMD_Vector<S, N>::MaskT ret = 0;
 		for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] != b[i]);
 		return ret;
@@ -338,7 +340,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 
-		scream();
+		internals::scream();
 		typename SIMD_Vector<S, N>::MaskT ret = 0;
 		for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] < b[i]);
 		return ret;
@@ -349,7 +351,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 
-		scream();
+		internals::scream();
 		typename SIMD_Vector<S, N>::MaskT ret = 0;
 		for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] <= b[i]);
 		return ret;
@@ -359,8 +361,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		typename SIMD_Vector<S, N>::MaskT ret = 0;
 		for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] > b[i]);
 		return ret;
@@ -370,7 +372,7 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
+
 		typename SIMD_Vector<S, N>::MaskT ret = 0;
 		for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] >= b[i]);
 		return ret;
@@ -383,7 +385,7 @@ namespace AVXXY_NAMESPACE
 		if constexpr (std::is_unsigned_v<S>) return a;
 		else
 		{
-			scream();
+			internals::scream();
 			SIMD_Vector<S, N> ret;
 			for (size_t i = 0; i < N; ++i) ret[i] = std::abs(a[i]);
 			return ret;
@@ -396,8 +398,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::floor(a[i]);
 		return ret;
@@ -408,8 +410,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::ceil(a[i]);
 		return ret;
@@ -420,8 +422,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::min(a[i], b[i]);
 		return ret;
@@ -432,8 +434,8 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i) ret[i] = std::max(a[i], b[i]);
 		return ret;
@@ -456,8 +458,8 @@ namespace AVXXY_NAMESPACE
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(unpacklo(vcast<U>(a), vcast<U>(b)));
 		//else return internals::Dispatcher::run<internals::op_unpacklo>(a, b);
 
-		scream();
-		return unpack_base<S, N, true>(a, b);
+		internals::scream();
+		return internals::unpack_base<S, N, true>(a, b);
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
@@ -466,8 +468,8 @@ namespace AVXXY_NAMESPACE
 		using U = typename ScalarTraits<S>::UintT;
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(unpackhi(vcast<U>(a), vcast<U>(b)));
 		//else return internals::Dispatcher::run<internals::op_unpackhi>(a, b);
-		scream();
-		return unpack_base<S, N, false>(a, b);
+		internals::scream();
+		return internals::unpack_base<S, N, false>(a, b);
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> compress(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src)
@@ -475,8 +477,8 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(compress(mask, vcast<U>(a), vcast<U>(src)));
-		
-		scream();
+
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		size_t j = 0;
 		for (size_t i = 0; i < N; ++i) if (mask[i]) ret[j++] = a[i];
@@ -490,7 +492,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 		//TODO: allow bigger CD?
-		
+
 		using UV = SIMD_Vector<U, N>;
 		UV ret;
 		for (size_t i = 0; i < N; ++i)
@@ -511,7 +513,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return movemask(vcast<U>(v));
-		
+
 		mask_t<S, N> ret;
 		using Tr = meta::ScalarTraits<S>;
 		using U = Tr::UintT;
@@ -531,7 +533,7 @@ namespace AVXXY_NAMESPACE
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(movm<U>(mask));
 		//return internals::Dispatcher::run<internals::op_movm<S>>(mask);
 
-		scream();
+		internals::scream();
 		SIMD_Vector<S, N> ret;
 		using Tr = meta::ScalarTraits<S>;
 		for (size_t i = 0; i < N; ++i)
@@ -660,11 +662,11 @@ namespace AVXXY_NAMESPACE
 					}
 				}
 
-				//scream();
+				//internals::scream();
 #endif
 				SIMD_Vector<S, N> ret;
 				size_t addr = size_t(base);
 				for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? *(const S*)(addr + Scale * ind[i]) : src[i];
 				return ret;
-	}
-}
+			}
+		}
