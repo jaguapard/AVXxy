@@ -124,6 +124,71 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 		}
+
+		template<typename S, size_t N>
+		uint64_t _movemask_raw(const SIMD_Vector<S, N>& a)
+		{
+			static_assert(N <= 64);
+			using namespace meta;
+			constexpr bool zmm_eligible = (FS.has(AVX512_F) && sizeof(S) >= 4) || (FS.has(AVX512_BW));
+			constexpr bool xmm_ymm_eligible = zmm_eligible && FS.has(AVX512_VL);
+			using T = SIMD_Vector<S, N>;
+			using I = typename ScalarTraits<S>::IntT;
+			constexpr bool bmask = mask_t<S, N>::IsBitMask;
+			//no movemask, but comparison with 0 already acts like it. bmask to prevent recursion loops, since comparison will try to return mask vector and crush it to uint
+			if constexpr (bmask && ((sizeof(T) > 32 && zmm_eligible) || (sizeof(T) <= 32 && xmm_ymm_eligible))) return (vcast<I>(a) < 0);
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 1) return _mm256_movemask_epi8(vreinterpret_us<__m256i>(a));
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return _mm256_movemask_ps(vreinterpret_us<__m256>(a));
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 2)
+			{
+				//AVX2 has no movemask_epi16 intrinsic
+				// low bits -> upper bits go to the right, opposite to shifts
+				//Post-shuffle layout: |012345678xxxxxxxx|xxxxxxxx9abcdef|, where x are always 0 and 0,1,..f are upper bytes of words
+				//Extracting the mask, shifting and oring (| = byte boundary, 0..f = sign bits of words):
+				//|01234567|xxxxxxxx|xxxxxxxx|89abcdef| OR
+				//|xxxxxxxx|89abcdef|xxxxxxxx|xxxxxxxx|
+				//|========|========|========|========|
+				//|01234567|89abcdef|xxxxxxxx|89abcdef|
+				//upper 16 bits are discarded
+				__m256i shuf = _mm256_shuffle_epi8(vreinterpret_us<__m256i>(a), _mm256_setr_epi8(
+					1, 3, 5, 7, 9, 11, 13, 15, -1, -1, -1, -1, -1, -1, -1, -1,
+					-1, -1, -1, -1, -1, -1, -1, -1, 1, 3, 5, 7, 9, 11, 13, 15));
+				uint32_t msk = _mm256_movemask_epi8(shuf);
+				return uint16_t(msk | (msk >> 16));
+			}
+
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && sizeof(S) == 1) return _mm_movemask_epi8(vreinterpret_us<__m128i>(a));
+			else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 2)
+			{
+				//move upper bytes of each word to lower 64 bits and zero out upper 64 bits
+				__m128i shuf = _mm_shuffle_epi8(vreinterpret_us<__m128i>(a), _mm_setr_epi8(1, 3, 5, 7, 9, 11, 13, 15, -1, -1, -1, -1, -1, -1, -1, -1));
+				return _mm_movemask_epi8(shuf);
+			}
+			else if constexpr (FS.has(SSE) && xmm_sized<T> && sizeof(S) == 4) return _mm_movemask_ps(vreinterpret_us<__m128d>(a));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && sizeof(S) == 8) return _mm_movemask_pd(vreinterpret_us<__m128d>(a));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && sizeof(S) == 2)
+			{
+				__m128i ia = vreinterpret_us<__m128i>(a);
+				__m128i dup_lo = _mm_unpacklo_epi16(ia, ia); //duplicate each 16 bit element in low  half of a, so |abcdefgh| becomes |aabbccdd|
+				__m128i dup_hi = _mm_unpackhi_epi16(ia, ia); //duplicate each 16 bit element in high half of a, so |abcdefgh| becomes |eeffgghh|
+				int32_t interm1 = _mm_movemask_ps(_mm_castsi128_ps(dup_lo));
+				int32_t interm2 = _mm_movemask_ps(_mm_castsi128_ps(dup_hi));
+				return interm1 | (interm2 << 4);
+			}
+
+			else if constexpr (sizeof(T) > 16) return _movemask_raw(a.lo()) | (_movemask_raw(a.hi()) << N / 2);
+
+			else
+			{
+				uint64_t ret = 0;
+				for (size_t i = 0; i < N; ++i)
+				{
+					if (std::bit_cast<I>(a[i]) < 0) ret |= 1ull << i;
+				}
+				return ret;
+			}
+
+		}
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
@@ -147,12 +212,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			//scalar movemask
-			BitsUintT ret = 0;
-			for (size_t i = 0; i < N; ++i)
-			{
-				if (underlying[i] < 0) ret |= BitsUintT(1) << i;
-			}
-			return ret;
+			
 		}
 	}
 
