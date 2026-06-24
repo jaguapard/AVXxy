@@ -190,13 +190,21 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> logic_or(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
+		if constexpr (sizeof(T) > 64) return T{ logic_or(a.lo(),b.lo()), logic_or(a.hi(),b.hi()) };
+		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && is_f64<S>) return _mm512_or_pd(a, b);
+		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && is_f32<S>) return _mm512_or_ps(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_or_si512(vreinterpret_us<__m512i>(a), vreinterpret_us<__m512i>(b));
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		using T = typename meta::ScalarTraits<S>::UintT;
-		for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(T(std::bit_cast<T>(a[i]) | std::bit_cast<T>(b[i])));
-		return ret;
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(U(std::bit_cast<U>(a[i]) | std::bit_cast<U>(b[i])));
+			return ret;
+		}
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> logic_xor(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
