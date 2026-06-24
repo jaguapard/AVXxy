@@ -52,9 +52,9 @@ namespace AVXXY_NAMESPACE
 
 		if constexpr (sizeof(T) > 64) return T{ add(a.lo(), b.lo()), add(a.hi(),a.hi()) };
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_add_pd(a, b);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && is_f32<S>) return _mm512_add_ps(a, b);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && any_i64<S>) return _mm512_add_epi64(a, b);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && any_i32<S>) return _mm512_add_epi32(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_add_ps(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_add_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_add_epi32(a, b);
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_add_epi16(a,b);
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_add_epi8(a,b);
 		else if constexpr (sizeof(T) > 32) return { add(a.lo(), b.lo()), add(a.hi(), b.hi()) };
@@ -89,9 +89,9 @@ namespace AVXXY_NAMESPACE
 
 		if constexpr (sizeof(T) > 64) return T{ sub(a.lo(), b.lo()), sub(a.hi(),a.hi()) };
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_sub_pd(a, b);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && is_f32<S>) return _mm512_sub_ps(a, b);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && any_i64<S>) return _mm512_sub_epi64(a, b);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && any_i32<S>) return _mm512_sub_epi32(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_sub_ps(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_sub_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_sub_epi32(a, b);
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_sub_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_sub_epi8(a, b);
 		else if constexpr (sizeof(T) > 32) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
