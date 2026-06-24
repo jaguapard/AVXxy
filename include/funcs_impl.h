@@ -936,7 +936,6 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N, size_t Scale, typename I>
 	__forceinline SIMD_Vector<S, N> __gather_impl(const void* base, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
 	{
-#if 0
 		using namespace meta;
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
@@ -1051,11 +1050,12 @@ namespace AVXXY_NAMESPACE
 					}
 				}
 
-				//internals::scream();
-#endif
+				internals::scream();
 				SIMD_Vector<S, N> ret;
 				size_t addr = size_t(base);
 				for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? *(const S*)(addr + Scale * ind[i]) : src[i];
 				return ret;
 			}
 		}
+	}
+}
