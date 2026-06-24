@@ -308,6 +308,7 @@ namespace AVXXY_NAMESPACE
 			auto ahi = a.hi();
 			return T{ permx2(alo, ahi, ind.lo()), permx2(alo, ahi, ind.hi()) };
 		};
+
 		if constexpr (!is_f64<S> && !is_f32<S> && !any_int<S>) return vcast<S>(permx(vcast<U>(a), ind));
 		//TODO: some workaround for 127+ 8-bit perms?
 		else if constexpr (sizeof(I) != sizeof(S)) return permx(a, vcvt<canon_t>(ind));
@@ -349,16 +350,54 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using canon_t = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i)
+		constexpr auto split_permx2 = [&]() {
+			T pa = permx(a, ind);
+			T pb = permx(b, ind);
+			return mask_mov(pb, (ind & (2 * N - 1)) < N, pa);
+			};
+
+		if constexpr (!is_f64<S> && !is_f32<S> && !any_int<S>) return vcast<S>(permx2(vcast<U>(a), vcast<U>(b), ind));
+		else if constexpr (sizeof(I) != sizeof(S)) return permx2(a, b, vcvt<canon_t>(ind));
+		else if constexpr (sizeof(T) > 64) return split_permx2();
+
+		else if constexpr (FS.has(AVX512_VBMI) && zmm_sized<T> && any_i8<S>) return _mm512_permutex2var_epi8(a, ind, b);
+		else if constexpr (FS.has(AVX512_VBMI) && FS.has(AVX512_VL) && ymm_sized<T> && any_i8<S>) return _mm256_permutex2var_epi8(a, ind, b);
+		else if constexpr (FS.has(AVX512_VBMI) && FS.has(AVX512_VL) && xmm_sized<T> && any_i8<S>) return _mm_permutex2var_epi8(a, ind, b);
+
+		else if constexpr (any_i8<S>) return vcvt<S>(permx2(vcvt<uint16_t>(a), vcvt<uint16_t>(b), ind));
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_permutex2var_epi16(a, ind, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_permutex2var_epi16(a, ind, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_permutex2var_epi16(a, ind, b);
+
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_permutex2var_pd(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_permutex2var_ps(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_permutex2var_epi64(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_permutex2var_epi32(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_f64<S>) return _mm256_permutex2var_pd(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_f32<S>) return _mm256_permutex2var_ps(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_permutex2var_epi64(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_permutex2var_epi32(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f64<S>) return _mm_permutex2var_pd(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_permutex2var_ps(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_permutex2var_epi64(a, ind, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_permutex2var_epi32(a, ind, b);
+
+		else
 		{
-			auto j = ind[i] & (2 * N - 1);
-			ret[i] = j < N ? a[j] : b[j - N];
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i)
+			{
+				auto j = ind[i] & (2 * N - 1);
+				ret[i] = j < N ? a[j] : b[j - N];
+			}
+			return ret;
 		}
-		return ret;
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a)
