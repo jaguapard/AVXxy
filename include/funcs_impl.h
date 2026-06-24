@@ -776,7 +776,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_BW) && ymm_sized<T> && FS.has(AVX512_VL) && any_i8<S>) return _mm256_mask_mov_epi8(ifBitClear, mask, ifBitSet);
 		else if constexpr (FS.has(AVX512_BW) && xmm_sized<T> && FS.has(AVX512_VL) && any_i16<S>) return _mm_mask_mov_epi16(ifBitClear, mask, ifBitSet);
 		else if constexpr (FS.has(AVX512_BW) && xmm_sized<T> && FS.has(AVX512_VL) && any_i8<S>) return _mm_mask_mov_epi8(ifBitClear, mask, ifBitSet);
-		
+
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_mask_mov_pd(ifBitClear, mask, ifBitSet);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_mask_mov_ps(ifBitClear, mask, ifBitSet);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_mask_mov_epi64(ifBitClear, mask, ifBitSet);
@@ -791,6 +791,17 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_mov_ps(ifBitClear, mask, ifBitSet);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_mov_epi64(ifBitClear, mask, ifBitSet);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_mov_epi32(ifBitClear, mask, ifBitSet);
+
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_int<S>) return _mm256_blendv_epi8(ifBitClear, ifBitSet, mask);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return _mm256_blendv_pd(vreinterpret_us<__m256d>(ifBitClear), vreinterpret_us<__m256d>(ifBitSet), mask);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return _mm256_blendv_ps(vreinterpret_us<__m256>(ifBitClear), vreinterpret_us<__m256>(ifBitSet), mask);
+
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && is_f32<S>) return _mm_blendv_ps(ifBitClear, ifBitSet, mask);
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && is_f64<S>) return _mm_blendv_pd(ifBitClear, ifBitSet, mask);
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && any_int<S>) return _mm_blendv_epi8(ifBitClear, ifBitSet, mask);
+
+		else if constexpr (FS.has(SSE) && xmm_sized<T>) return (ifBitSet & mask) | (ifBitClear & ~mask);
+
 		else if constexpr (sizeof(T) > 16) return T{ mask_mov(ifBitClear.lo(), mask.lo(), ifBitSet.lo()), mask_mov(ifBitClear.hi(), mask.hi(), ifBitSet.hi()) };
 		else
 		{
