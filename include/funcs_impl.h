@@ -1293,11 +1293,25 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
-		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(unpackhi(vcast<U>(a), vcast<U>(b)));
-		//else return internals::Dispatcher::run<internals::op_unpackhi>(a, b);
-		internals::scream();
-		return internals::unpack_base<S, N, false>(a, b);
+		using T = SIMD_Vector<S, N>;
+
+		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(unpackhi(vcast<U>(a), vcast<U>(b)));
+
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_unpackhi_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return _mm512_unpackhi_epi8(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_unpackhi_pd(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_unpackhi_ps(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_unpackhi_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_unpackhi_epi32(a, b);
+
+		else if constexpr (sizeof(T) > 16) return T{ unpackhi(a.lo(),b.lo()), unpackhi(a.hi(),b.hi()) };
+		else
+		{
+			internals::scream();
+			return internals::unpack_base<S, N, false>(a, b);
+		}
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> compress(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& src)
