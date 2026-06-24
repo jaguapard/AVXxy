@@ -1120,8 +1120,24 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 		if constexpr (std::is_unsigned_v<S>) return a;
+		//TODO: can add fallback for FP types by forcing sign bit to zero? Even if they're unsupported (i.e. FP16 on SSE)
+
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_abs_epi16(a);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_abs_epi8(a);
+
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_abs_pd(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_abs_ps(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i64<S>) return _mm512_abs_epi64(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i32<S>) return _mm512_abs_epi32(a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_i64<S>) return _mm256_abs_epi64(a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_i64<S>) return _mm_abs_epi64(a);
+		
+		
+		else if constexpr (sizeof(T) > 16) return T{ abs(a.lo()), abs(a.hi()) };
 		else
 		{
 			internals::scream();
@@ -1136,24 +1152,40 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
-
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = std::floor(a[i]);
-		return ret;
+		using T = SIMD_Vector<S, N>;
+		
+		if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_floor_pd(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_floor_ps(a);
+		else if constexpr (sizeof(T) > 16) return T{ floor(a.lo()), floor(a.hi()) };
+		else 
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = std::floor(a[i]);
+			return ret;
+		}
 	}
 	template<typename S, size_t N>
 		requires (meta::any_float<S>)
 	__forceinline SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = std::ceil(a[i]);
-		return ret;
+		if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_ceil_pd(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_ceil_ps(a);
+		else if constexpr (sizeof(T) > 16) return T{ ceil(a.lo()), ceil(a.hi()) };
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = std::ceil(a[i]);
+			return ret;
+		}
 	}
 
 	template<typename S, size_t N>
