@@ -16,9 +16,6 @@
     <Filter Include="Header Files\include">
       <UniqueIdentifier>{56716084-fb2e-4344-bc44-4e7d59d8d3f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\include\ISAs">
-      <UniqueIdentifier>{9871ab6d-2de4-4e34-9c6b-4d4c1f92a77c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\docs">
       <UniqueIdentifier>{c9810155-769c-4dc7-9d15-1b4e4ac39dc6}</UniqueIdentifier>
     </Filter>
@@ -36,9 +33,6 @@
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="include\tables.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\op_tags.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="include\avxxy.h">
@@ -61,39 +55,6 @@
     </ClInclude>
     <ClInclude Include="include\SIMD_Mask.h">
       <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\Scalar.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Dispatcher.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\shared.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_F.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_BW.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_CD.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_DQ.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_VBMI.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_VBMI2.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\F16C.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX2.h">
-      <Filter>Header Files\include\ISAs</Filter>
     </ClInclude>
     <ClInclude Include="include\funcs.h">
       <Filter>Header Files\include</Filter>
