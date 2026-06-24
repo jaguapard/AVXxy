@@ -740,13 +740,69 @@ namespace AVXXY_NAMESPACE
 	__forceinline void scatter(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		//put everything up here to prevent else if chain breaks (since compilation gives useless errors by thinking unsanitized inputs surviving to native gathers
+		using CanonicalIndex_t = std::conditional_t<(sizeof(I) <= 4), int32_t, int64_t>;
+		using RetVec_t = SIMD_Vector<S, N>;
+		using IndVec_t = SIMD_Vector<I, N>;
+		constexpr size_t MaxSize = std::max(sizeof(RetVec_t), sizeof(IndVec_t));
 
-		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) scatter<S, N, Scale, I>(vcast<U>(vec), base, ind, mask);
-		//else internals::Dispatcher::run<internals::op_scatter<Scale>>(vec, base, ind, mask);
-		internals::scream();
-		size_t addr = size_t(base);
-		for (size_t i = 0; i < N; ++i) if (mask[i]) *(S*)(addr + Scale * ind[i]) = v[i];
+		//convert index to __m128i/__m256i/__m512i to stop Clang from being a cry baby (it doesn't like index being non-intrinsic type and fails to compile)
+		//or make it useless dummy if we need to split
+		using intr_t = typed_intrinsic_storage_t<I, N>;
+		std::conditional_t<MaxSize <= 64, intr_t, int> ni = MaxSize <= 64 ? vreinterpret_us<intr_t>(ind) : 0;
+
+		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) scatter<S, N, Scale, I>(vcast<U>(v), base, ind, mask);
+		//if scale is not native, emulate it by gathering with scale 1 and manually calculated byte offsets. 
+		//TODO: Can optimize a little by checking if Scale*maxint(I) fits into smaller sizes
+		else if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8) return scatter<S, N, 1>(v, base, vcvt<int64_t>(ind) * Scale, mask);
+
+		//TODO: emulation of small int scatter (where elements gathered are small ints)
+		else if constexpr (!std::is_same_v<I, CanonicalIndex_t>) return scatter<S, N, Scale>(v, base, vcvt<CanonicalIndex_t>(ind), mask);
+
+		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_i64<I> && is_f64<S>) return _mm512_mask_i64scatter_pd(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_i64<I> && is_f32<S>) return _mm512_mask_i64scatter_ps(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_i64<I> && any_i64<S>) return _mm512_mask_i64scatter_epi64(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_i64<I> && any_i32<S>) return _mm512_mask_i64scatter_epi32(base, mask, ni, v, Scale);
+
+		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_i32<I> && is_f64<S>) return _mm512_mask_i32scatter_pd(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_i32<I> && is_f32<S>) return _mm512_mask_i32scatter_ps(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_i32<I> && any_i64<S>) return _mm512_mask_i32scatter_epi64(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_i32<I> && any_i32<S>) return _mm512_mask_i32scatter_epi32(base, mask, ni, v, Scale);
+
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_i64<I> && is_f64<S>) return _mm256_mask_i64scatter_pd(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_i64<I> && is_f32<S>) return _mm256_mask_i64scatter_ps(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_i64<I> && any_i64<S>) return _mm256_mask_i64scatter_epi64(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_i64<I> && any_i32<S>) return _mm256_mask_i64scatter_epi32(base, mask, ni, v, Scale);
+
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_i32<I> && is_f64<S>) return _mm256_mask_i32scatter_pd(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_i32<I> && is_f32<S>) return _mm256_mask_i32scatter_ps(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_i32<I> && any_i64<S>) return _mm256_mask_i32scatter_epi64(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_i32<I> && any_i32<S>) return _mm256_mask_i32scatter_epi32(base, mask, ni, v, Scale);
+
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && is_i64<I> && is_f64<S>) return _mm_mask_i64scatter_pd(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && is_i64<I> && is_f32<S>) return _mm_mask_i64scatter_ps(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && is_i64<I> && any_i64<S>) return _mm_mask_i64scatter_epi64(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && is_i64<I> && any_i32<S>) return _mm_mask_i64scatter_epi32(base, mask, ni, v, Scale);
+
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && is_i32<I> && is_f64<S>) return _mm_mask_i32scatter_pd(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && is_i32<I> && is_f32<S>) return _mm_mask_i32scatter_ps(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && is_i32<I> && any_i64<S>) return _mm_mask_i32scatter_epi64(base, mask, ni, v, Scale);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_xmm_size(MaxSize) && is_i32<I> && any_i32<S>) return _mm_mask_i32scatter_epi32(base, mask, ni, v, Scale);
+		else if constexpr (MaxSize > 16) //TODO: can make it 64-large, no scatters available in non-AVX512
+		{
+			scatter<S, N / 2, Scale, I>(v.lo(), base, ind.lo(), mask.lo());
+			scatter<S, N / 2, Scale, I>(v.hi(), base, ind.hi(), mask.hi());
+		}
+
+		else
+		{
+			internals::scream();
+			size_t addr = size_t(base);
+			for (size_t i = 0; i < N; ++i) if (mask[i]) *(S*)(addr + Scale * ind[i]) = v[i];
+		}
+		
 	}
 	template<typename S, size_t N>
 	__forceinline mask_t<S, N> cmp_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
