@@ -50,14 +50,14 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 
-		
+
 		if constexpr (sizeof(T) > 64) return T{ add(a.lo(), b.lo()), add(a.hi(),b.hi()) };
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_add_pd(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_add_ps(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_add_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_add_epi32(a, b);
-		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_add_epi16(a,b);
-		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_add_epi8(a,b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_add_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_add_epi8(a, b);
 		else if constexpr (sizeof(T) > 32) return { add(a.lo(), b.lo()), add(a.hi(), b.hi()) };
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_add_epi64(a, b);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_add_epi32(a, b);
@@ -144,7 +144,7 @@ namespace AVXXY_NAMESPACE
 			for (size_t i = 0; i < N; ++i) ret[i] = a[i] * b[i];
 			return ret;
 		}
-		
+
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> div(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
@@ -243,7 +243,7 @@ namespace AVXXY_NAMESPACE
 		return ret;*/
 	}
 	template<typename S, size_t N, typename I> requires (meta::any_int<S>&& meta::any_int<S>)
-	__forceinline SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+		__forceinline SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
 		using namespace internals;
 		using namespace meta;
@@ -269,7 +269,7 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 	template<typename S, size_t N, typename I> requires (meta::any_int<S>&& meta::any_int<S>)
-	__forceinline SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
+		__forceinline SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
 		using namespace internals;
 		using namespace meta;
@@ -292,7 +292,7 @@ namespace AVXXY_NAMESPACE
 			for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> b[i];
 			return ret;
 		}
-		
+
 	}
 	template<typename S, size_t N, typename I>
 	__forceinline SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
@@ -343,7 +343,7 @@ namespace AVXXY_NAMESPACE
 			for (size_t i = 0; i < N; ++i) ret[i] = a[ind[i] & (N - 1)];
 			return ret;
 		}
-		
+
 	}
 	template<typename S, size_t N, typename I>
 	__forceinline SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
@@ -403,7 +403,7 @@ namespace AVXXY_NAMESPACE
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
-		
+
 		if constexpr (!is_f32<S>) return sqrtf(vcvt<float>(a));
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_sqrt_ps(a);
 		else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_sqrt_ps(a);
@@ -535,7 +535,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_fp16<From> && is_f32<To>) return _mm512_cvtph_ps(a);
 		else if constexpr (FS.has(AVX512_F) && is_zmm_size(MaxSize) && is_f32<From> && is_fp16<To>) return _mm512_cvtps_ph(a, _MM_FROUND_TO_NEAREST_INT);
 
-		if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_f64<From> && is_u32<To>) return _mm256_cvttpd_epu32(a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_f64<From> && is_u32<To>) return _mm256_cvttpd_epu32(a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && is_f32<From> && is_u32<To>) return _mm256_cvttps_epu32(a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && any_i64<From> && any_i32<To>) return _mm256_cvtepi64_epi32(a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_ymm_size(MaxSize) && any_i64<From> && any_i16<To>) return _mm256_cvtepi64_epi16(a);
@@ -767,7 +767,7 @@ namespace AVXXY_NAMESPACE
 			for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] != b[i]);
 			return ret;
 		}
-		
+
 	}
 	template<typename S, size_t N>
 	__forceinline mask_t<S, N> cmp_less(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
