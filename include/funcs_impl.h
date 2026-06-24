@@ -354,15 +354,8 @@ namespace AVXXY_NAMESPACE
 		using canon_t = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
 
-		constexpr auto split_permx2 = [&]() {
-			T pa = permx(a, ind);
-			T pb = permx(b, ind);
-			return mask_mov(pb, (ind & (2 * N - 1)) < N, pa);
-			};
-
 		if constexpr (!is_f64<S> && !is_f32<S> && !any_int<S>) return vcast<S>(permx2(vcast<U>(a), vcast<U>(b), ind));
 		else if constexpr (sizeof(I) != sizeof(S)) return permx2(a, b, vcvt<canon_t>(ind));
-		else if constexpr (sizeof(T) > 64) return split_permx2();
 
 		else if constexpr (FS.has(AVX512_VBMI) && zmm_sized<T> && any_i8<S>) return _mm512_permutex2var_epi8(a, ind, b);
 		else if constexpr (FS.has(AVX512_VBMI) && FS.has(AVX512_VL) && ymm_sized<T> && any_i8<S>) return _mm256_permutex2var_epi8(a, ind, b);
@@ -385,7 +378,12 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_permutex2var_ps(a, ind, b);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_permutex2var_epi64(a, ind, b);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_permutex2var_epi32(a, ind, b);
-
+		else if constexpr (sizeof(T) > 16)
+		{
+			T pa = permx(a, ind);
+			T pb = permx(b, ind);
+			return mask_mov(pb, (ind & (2 * N - 1)) < N, pa);
+		}
 		else
 		{
 			internals::scream();
