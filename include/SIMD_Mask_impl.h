@@ -2,7 +2,7 @@
 #include "SIMD_Mask.h"
 #include <iostream>
 //#include "funcs.h"
-
+#include "SIMD_Vector.h"
 namespace AVXXY_NAMESPACE
 {
 	namespace internals
@@ -84,7 +84,7 @@ namespace AVXXY_NAMESPACE
 			else if constexpr (FS.has(SSE41) && xmm_sized<T> && sizeof(S) == 8)
 			{
 				__m128i broadcasted = _mm_set1_epi64x(mask);
-				__m128i x = _mm_andnot_si128(broadcasted, _mm_setr_epi64(1, 2));
+				__m128i x = _mm_andnot_si128(broadcasted, _mm_set_epi64x(2, 1));
 				return T::from_bits_us(_mm_cmpeq_epi64(x, _mm_setzero_si128()));
 			}
 			else if constexpr (FS.has(SSE2) && xmm_sized<T> && sizeof(S) == 4)
@@ -187,7 +187,34 @@ namespace AVXXY_NAMESPACE
 				}
 				return ret;
 			}
+		}
 
+		template<typename S, size_t N>
+		SIMD_Vector<S, N> clean_mask_vector(const SIMD_Vector<S, N>& a)
+		{
+			using namespace meta;
+			using T = SIMD_Vector<S, N>;
+			if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return T::from_bits_us(_mm256_cmpgt_epi64(_mm256_setzero_si256(), vreinterpret_us<__m256i>(a)));
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return T::from_bits_us(_mm256_cmpgt_epi32(_mm256_setzero_si256(), vreinterpret_us<__m256i>(a)));
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return T::from_bits_us(_mm256_cmpgt_epi16(_mm256_setzero_si256(), vreinterpret_us<__m256i>(a)));
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return T::from_bits_us(_mm256_cmpgt_epi8(_mm256_setzero_si256(), vreinterpret_us<__m256i>(a)));
+			else if constexpr (FS.has(SSE42) && xmm_sized<T> && any_i64<S>) return T::from_bits_us(_mm_cmpgt_epi64(_mm_setzero_si128(), vreinterpret_us<__m128i>(a)));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return T::from_bits_us(_mm_cmpgt_epi32(_mm_setzero_si128(), vreinterpret_us<__m128i>(a)));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return T::from_bits_us(_mm_cmpgt_epi16(_mm_setzero_si128(), vreinterpret_us<__m128i>(a)));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i8<S>) return T::from_bits_us(_mm_cmpgt_epi8(_mm_setzero_si128(), vreinterpret_us<__m128i>(a)));
+			else if constexpr (sizeof(T) > 16) return { clean_mask_vector(a.lo()), clean_mask_vector(a.hi()) };
+			else
+			{
+				T ret;
+				using I = ScalarTraits<S>::IntT;
+				const I* p = (const I*)&a;
+				for (size_t i = 0; i < N; ++i)
+				{
+					if (p[i] < 0) ret[i] = std::bit_cast<S>(ScalarTraits<S>::AllOnesUint);
+					else ret[i] = std::bit_cast<S>(I(0));
+				}
+				return ret;
+			}
 		}
 	}
 
@@ -321,6 +348,15 @@ namespace AVXXY_NAMESPACE
 	{
 		if constexpr (IsBitMask) underlying = other;
 		else underlying = other.underlying;
+	}
+
+	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
+	template<typename T> requires (meta::IsIntrinsicVector<T> && meta::SameSizeClasses<(sizeof(typename SIMD_Mask<LS,N>::VecT)), (sizeof(T))>)
+	inline SIMD_Mask<LS, N>::SIMD_Mask(const T& intrinsicVec)
+	{
+		auto v = VecT::from_bits_us(intrinsicVec);
+		if constexpr (IsBitMask) underlying = internals::_movemask_raw(v);
+		else underlying = internals::clean_mask_vector(v);
 	}
 
 	template<meta::ScalarSizeClassEnum LS, size_t N>

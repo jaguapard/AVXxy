@@ -52,6 +52,12 @@ namespace AVXXY_NAMESPACE
 		
 		SIMD_Mask() {};
 		SIMD_Mask(BitsUintT bits);
+
+		//Constructs this mask from intrinsic vector of same size class by extracting uppermost bits of each of it's elements
+		template<typename T>
+			requires (meta::IsIntrinsicVector<T>&& meta::SameSizeClasses<(sizeof(typename SIMD_Mask<LS, N>::VecT)), (sizeof(T))>)
+		SIMD_Mask(const T& intrinsicVec);
+
 		//Construct this mask by extracting uppermost bits of each lane and storing them the mask
 		template<typename T> SIMD_Mask(const SIMD_Vector<T, N>& vec);
 		//Constructs this mask by concatenating two masks of half it's size.
