@@ -262,6 +262,7 @@
   <ItemGroup>
     <ClInclude Include="include\avxxy.h" />
     <ClInclude Include="include\Dispatcher.h" />
+    <ClInclude Include="include\FeatureSet.h" />
     <ClInclude Include="include\funcs.h" />
     <ClInclude Include="include\funcs_impl.h" />
     <ClInclude Include="include\ISAs\AVX2.h" />
