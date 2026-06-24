@@ -16,11 +16,11 @@
     <Filter Include="Header Files\include">
       <UniqueIdentifier>{56716084-fb2e-4344-bc44-4e7d59d8d3f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\include\ISAs">
-      <UniqueIdentifier>{9871ab6d-2de4-4e34-9c6b-4d4c1f92a77c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\docs">
       <UniqueIdentifier>{c9810155-769c-4dc7-9d15-1b4e4ac39dc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\meta">
+      <UniqueIdentifier>{4138a3e0-fc63-4e6f-8027-19b4f9860d73}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -29,34 +29,31 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\avxxy.h">
+    <ClInclude Include="include\namespace.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\namespace.h">
+    <ClInclude Include="include\tables.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\avxxy.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="include\SIMD_Vector.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\utils.h">
+    <ClInclude Include="include\meta\enums.h">
+      <Filter>Header Files\include\meta</Filter>
+    </ClInclude>
+    <ClInclude Include="include\small_fp.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\concepts.h">
-      <Filter>Header Files\include</Filter>
+    <ClInclude Include="include\meta\type_factories.h">
+      <Filter>Header Files\include\meta</Filter>
     </ClInclude>
-    <ClInclude Include="include\SIMD_BitMask.h">
-      <Filter>Header Files\include</Filter>
+    <ClInclude Include="include\meta\meta.h">
+      <Filter>Header Files\include\meta</Filter>
     </ClInclude>
-    <ClInclude Include="include\SIMD_BitMask_impl.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\FeatureSet.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Dispatcher.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tags.h">
+    <ClInclude Include="include\SIMD_Mask.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="include\funcs.h">
@@ -68,38 +65,11 @@
     <ClInclude Include="include\operators.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_BW.h">
-      <Filter>Header Files\include\ISAs</Filter>
+    <ClInclude Include="include\SIMD_Mask_impl.h">
+      <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_F.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_VL.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\Scalar.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_VBMI.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_DQ.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_VBMI2.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tables.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX2.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\F16C.h">
-      <Filter>Header Files\include\ISAs</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ISAs\AVX512_CD.h">
-      <Filter>Header Files\include\ISAs</Filter>
+    <ClInclude Include="include\FeatureSet.h">
+      <Filter>Header Files\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
