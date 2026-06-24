@@ -50,7 +50,8 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 
-		if constexpr (sizeof(T) > 64) return T{ add(a.lo(), b.lo()), add(a.hi(),a.hi()) };
+		
+		if constexpr (sizeof(T) > 64) return T{ add(a.lo(), b.lo()), add(a.hi(),b.hi()) };
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_add_pd(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_add_ps(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_add_epi64(a, b);
@@ -87,7 +88,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 
-		if constexpr (sizeof(T) > 64) return T{ sub(a.lo(), b.lo()), sub(a.hi(),a.hi()) };
+		if constexpr (sizeof(T) > 64) return T{ sub(a.lo(), b.lo()), sub(a.hi(),b.hi()) };
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_sub_pd(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_sub_ps(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_sub_epi64(a, b);
