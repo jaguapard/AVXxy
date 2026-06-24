@@ -1192,12 +1192,34 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> min(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
+		
+		if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_min_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_u16<S>) return _mm512_min_epu16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_min_epi8(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_u8<S>) return _mm512_min_epu8(a, b);
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = std::min(a[i], b[i]);
-		return ret;
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_min_pd(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_min_ps(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i64<S>) return _mm512_min_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_u64<S>) return _mm512_min_epu64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i32<S>) return _mm512_min_epi32(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_u32<S>) return _mm512_min_epu32(a, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_i64<S>) return _mm256_min_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_u64<S>) return _mm256_min_epu64(a, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_i64<S>) return _mm_min_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_u64<S>) return _mm_min_epu64(a, b);
+
+		else if constexpr (sizeof(T) > 16) return T{ min(a.lo(), b.lo()), min(a.hi(),b.hi()) };
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = std::min(a[i], b[i]);
+			return ret;
+		}
 	}
 
 	template<typename S, size_t N>
