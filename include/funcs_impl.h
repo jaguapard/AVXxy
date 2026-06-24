@@ -698,7 +698,7 @@ namespace AVXXY_NAMESPACE
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
-		const S* sp = (const S*)p;
+		S* sp = (S*)p;
 
 		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) store(vcast<U>(v), p, mask);
 
@@ -1399,6 +1399,7 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return movemask(vcast<U>(v));
+		//TODO: implement this for AVX512 by comparing with zero as integers
 
 		mask_t<S, N> ret;
 		using Tr = meta::ScalarTraits<S>;
@@ -1415,19 +1416,40 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> movm(const SIMD_Mask<C, N>& mask)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
-		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(movm<U>(mask));
-		//return internals::Dispatcher::run<internals::op_movm<S>>(mask);
+		using T = SIMD_Vector<S, N>;
+		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(movm<U>(mask));
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		using Tr = meta::ScalarTraits<S>;
-		for (size_t i = 0; i < N; ++i)
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return _mm512_movm_epi8(mask);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_movm_epi16(mask);
+		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && any_i32<S>) return _mm512_movm_epi32(mask);
+		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && any_i64<S>) return _mm512_movm_epi64(mask);
+
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<T> && any_i8<S>) return _mm256_movm_epi8(mask);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<T> && any_i16<S>) return _mm256_movm_epi16(mask);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_DQ) && ymm_sized<T> && any_i32<S>) return _mm256_movm_epi32(mask);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_DQ) && ymm_sized<T> && any_i64<S>) return _mm256_movm_epi64(mask);
+
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<T> && any_i8<S>) return _mm_movm_epi8(mask);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<T> && any_i16<S>) return _mm_movm_epi16(mask);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_DQ) && xmm_sized<T> && any_i32<S>) return _mm_movm_epi32(mask);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_DQ) && xmm_sized<T> && any_i64<S>) return _mm_movm_epi64(mask);
+
+		else if constexpr (sizeof(T) > 16) return { movm<S>(mask.lo()), movm<S>(mask.hi()) };
+		else
 		{
-			typename Tr::UintT u = mask[i] ? Tr::AllOnesUint : 0;
-			ret[i] = std::bit_cast<S>(u);
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			using Tr = meta::ScalarTraits<S>;
+			for (size_t i = 0; i < N; ++i)
+			{
+				typename Tr::UintT u = mask[i] ? Tr::AllOnesUint : 0;
+				ret[i] = std::bit_cast<S>(u);
+			}
+			return ret;
 		}
-		return ret;
+		
 	}
 
 	template<typename S, size_t N, size_t Scale, typename I>
