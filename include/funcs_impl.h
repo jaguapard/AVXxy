@@ -642,6 +642,32 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
+	template<typename S2, typename S, size_t N> requires (sizeof(S2) >= sizeof(S))
+	SIMD_Vector<S2, N> vrzext(const SIMD_Vector<S, N>& a)
+	{
+		if constexpr (sizeof(S) == sizeof(S2)) return vcast<S2>(a);
+		else
+		{
+			using U = meta::ScalarTraits<S>::UintT;
+			using U2 = meta::ScalarTraits<S2>::UintT;
+			auto ex = vcvt<U2>(vcast<U>(a));
+			return vcast<S2>(ex);
+		}
+	}
+
+	template<typename S2, typename S, size_t N> requires (sizeof(S2) <= sizeof(S))
+	SIMD_Vector<S2, N> vrtrunc(const SIMD_Vector<S, N>& a)
+	{
+		if constexpr (sizeof(S) == sizeof(S2)) return vcast<S2>(a);
+		else
+		{
+			using U = meta::ScalarTraits<S>::UintT;
+			using U2 = meta::ScalarTraits<S2>::UintT;
+			auto ex = vcvt<U2>(vcast<U>(a));
+			return vcast<S2>(ex);
+		}
+	}
+
 	template<typename S2, typename S, size_t N> requires (meta::IsScalarType<S2> && (sizeof(SIMD_Vector<S, N>) % sizeof(S2) == 0))
 		__forceinline SIMD_Vector<S2, sizeof(SIMD_Vector<S, N>) / sizeof(S2)> vcast(const SIMD_Vector<S, N>& a)
 	{
