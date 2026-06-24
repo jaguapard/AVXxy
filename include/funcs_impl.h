@@ -1359,21 +1359,38 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 		//TODO: allow bigger CD?
+		//TODO: can make conflict detection for smaller scalar types too
+		//TODO: update this for new architecture and change return type to bits_to_uint_t<N>
+		//TODO: should it even allow floating point types?
+		//TODO: if yes, then add an integer routing
+		if constexpr (FS.has(AVX512_CD) && zmm_sized<T> && sizeof(S) == 4) return _mm512_conflict_epi32(vcast<SIMD_Vector<int32_t, N>>(a));
+		else if constexpr (FS.has(AVX512_CD) && zmm_sized<T> && sizeof(S) == 8) return _mm512_conflict_epi64(vcast<SIMD_Vector<int64_t, N>>(a));
+		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && ymm_sized<T> && sizeof(S) == 4) return _mm256_conflict_epi32(vcast<SIMD_Vector<int32_t, N>>(a));
+		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && ymm_sized<T> && sizeof(S) == 8) return _mm256_conflict_epi64(vcast<SIMD_Vector<int64_t, N>>(a));
+		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 4) return _mm_conflict_epi32(vcast<SIMD_Vector<int32_t, N>>(a));
+		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 8) return _mm_conflict_epi64(vcast<SIMD_Vector<int64_t, N>>(a));
+		//TODO: >64 byte CD
 
-		using UV = SIMD_Vector<U, N>;
-		UV ret;
-		for (size_t i = 0; i < N; ++i)
+		else
 		{
-			U acc = 0;
-			for (size_t j = 0; j < i; ++j)
+			using UV = SIMD_Vector<U, N>;
+			UV ret;
+			for (size_t i = 0; i < N; ++i)
 			{
-				if (a[i] == a[j]) acc |= U(1) << j;
+				U acc = 0;
+				for (size_t j = 0; j < i; ++j)
+				{
+					if (a[i] == a[j]) acc |= U(1) << j;
+				}
+				ret[i] = acc;
 			}
-			ret[i] = acc;
+			return ret;
 		}
-		return ret;
+		
 	}
 
 	template<typename S, size_t N>
