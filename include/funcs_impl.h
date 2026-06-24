@@ -1274,7 +1274,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_cmpgt_ps(a, b);
 		else if constexpr (std::is_unsigned_v<S>)
 		{
-			using I = ScalarTraits<S>::IntT;
+			using I = typename ScalarTraits<S>::IntT;
 			constexpr I xorv = I(1) << ((sizeof(I) * 8) - 1); //xor with 0x800..000 before comparison
 			return cmp_greater(vcast<I>(a) ^ xorv, vcast<I> ^ xorv);
 		}
