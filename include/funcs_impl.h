@@ -34,6 +34,12 @@ namespace AVXXY_NAMESPACE
 #endif
 		}
 	}
+
+
+
+
+
+
 	//#define AVXXY_RUN(op) internals::Dispatcher::run<internals::op>
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> add(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
