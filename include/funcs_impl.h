@@ -403,23 +403,55 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 
-		internals::scream();
-		SIMD_Vector<float, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(float(a[i]));
-		return ret;
+		constexpr auto split_sqrtf = [&]() {
+			return T{ sqrtf(a.lo()), sqrtf(a.hi()) };
+			};
+		
+		if constexpr (!is_f32<S>) return sqrtf(vcvt<float>(a));
+		else if constexpr (sizeof(T) > 64) return split_sqrtf();
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_sqrt_ps(a);
+		else if constexpr (sizeof(T) > 32) return split_sqrtf();
+		else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_sqrt_ps(a);
+		else if constexpr (sizeof(T) > 16) return split_sqrtf();
+		else if constexpr (FS.has(SSE) && xmm_sized<T>) return _mm_sqrt_ps(a);
+		else
+		{
+			internals::scream();
+			SIMD_Vector<float, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(float(a[i]));
+			return ret;
+		}
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 
-		internals::scream();
-		SIMD_Vector<double, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(double(a[i]));
-		return ret;
+		constexpr auto split_sqrtd = [&]() {
+			return T{ sqrtd(a.lo()), sqrtd(a.hi()) };
+			};
+
+		if constexpr (!is_f32<S>) return sqrtd(vcvt<double>(a));
+		else if constexpr (sizeof(T) > 64) return split_sqrtd();
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_sqrt_pd(a);
+		else if constexpr (sizeof(T) > 32) return split_sqrtd();
+		else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_sqrt_pd(a);
+		else if constexpr (sizeof(T) > 16) return split_sqrtd();
+		else if constexpr (FS.has(SSE2) && xmm_sized<T>) return _mm_sqrt_pd(a);
+		else
+		{
+			internals::scream();
+			SIMD_Vector<double, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(double(a[i]));
+			return ret;
+		}
 	}
 
 
