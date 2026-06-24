@@ -5,6 +5,14 @@
 
 namespace AVXXY_NAMESPACE
 {
+	namespace internals
+	{
+		template<typename S, size_t N>
+		SIMD_Vector<S, N> _movm_raw(uint64_t mask);
+
+		template<typename S, size_t N>
+		uint64_t _movemask_raw(const SIMD_Vector<S, N>& v);
+	}
 	template<typename S, size_t N>
 		requires meta::IsValid_SIMD_Vector<S, N>
 	class SIMD_Vector;

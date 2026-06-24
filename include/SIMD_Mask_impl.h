@@ -5,6 +5,127 @@
 
 namespace AVXXY_NAMESPACE
 {
+	namespace internals
+	{
+		//returns `count` bits of uint64 starting from `start` shifted to lowest bits of output. Upper bits are zeroed-out
+		template<uint64_t start, uint64_t count>
+		constexpr uint64_t extract_u64_bits(uint64_t a)
+		{
+			uint64_t i = (a >> start);
+			if constexpr (count == 64) return i;
+			else
+			{
+				uint64_t m = (1ull << count) - 1;
+				return i & m;
+			}
+		}
+
+		//sets corresponding elements to all ones if corresponding mask bit is 1 or zero otherwise
+		template<typename S, size_t N>
+		SIMD_Vector<S, N> _movm_raw(uint64_t mask)
+		{
+			static_assert(IsValid_SIMD_Mask<N>);
+			//static_assert(N >= 2 && N <= 64 && meta::isPowerOf2(N));
+			using namespace meta;
+			using T = SIMD_Vector<S, N>;
+			using U = typename ScalarTraits<S>::UintT;
+			if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(_movm_raw<U>(mask));
+
+			else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return _mm512_movm_epi8(mask);
+			else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_movm_epi16(mask);
+			else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && any_i32<S>) return _mm512_movm_epi32(mask);
+			else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && any_i64<S>) return _mm512_movm_epi64(mask);
+
+			else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<T> && any_i8<S>) return _mm256_movm_epi8(mask);
+			else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<T> && any_i16<S>) return _mm256_movm_epi16(mask);
+			else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_DQ) && ymm_sized<T> && any_i32<S>) return _mm256_movm_epi32(mask);
+			else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_DQ) && ymm_sized<T> && any_i64<S>) return _mm256_movm_epi64(mask);
+
+			else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<T> && any_i8<S>) return _mm_movm_epi8(mask);
+			else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<T> && any_i16<S>) return _mm_movm_epi16(mask);
+			else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_DQ) && xmm_sized<T> && any_i32<S>) return _mm_movm_epi32(mask);
+			else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_DQ) && xmm_sized<T> && any_i64<S>) return _mm_movm_epi64(mask);
+
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 8)
+			{
+				__m256i broadcasted = _mm256_set1_epi64x(mask);
+				__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi64x(1, 2, 4, 8));
+				return T::from_bits_us(_mm256_cmpeq_epi64(x, _mm256_setzero_si256()));
+			}
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 4)
+			{
+				__m256i broadcasted = _mm256_set1_epi32(mask);
+				__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi32(1, 2, 4, 8, 16, 32, 64, 128));
+				return T::from_bits_us(_mm256_cmpeq_epi32(x, _mm256_setzero_si256()));
+			}
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 2)
+			{
+				__m256i broadcasted = _mm256_set1_epi16(mask);
+				__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi16(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 0x8000));
+				return T::from_bits_us(_mm256_cmpeq_epi16(x, _mm256_setzero_si256()));
+			}
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 1) //TODO test this and 128 bit version too
+			{
+				__m256i broadcasted = _mm256_set1_epi32(mask);
+				broadcasted = _mm256_shuffle_epi8(broadcasted, _mm256_setr_epi64x(0, 0x0101010101010101, 0x0202020202020202, 0x0303030303030303));
+				__m256i x = _mm256_andnot_si256(broadcasted, _mm256_setr_epi8(1, 2, 4, 8, 16, 32, 64, 0x7F, 0, 1, 2, 4, 8, 16, 32, 64, 0x7F, 1, 2, 4, 8, 16, 32, 64, 0x7F, 0, 1, 2, 4, 8, 16, 32, 64, 0x7F));
+				return T::from_bits_us(_mm256_cmpeq_epi8(x, _mm256_setzero_si256()));
+				//https://stackoverflow.com/questions/21622212/how-to-perform-the-inverse-of-mm256-movemask-epi8-vpmovmskb
+				/*__m256i vmask(_mm256_set1_epi32(mask));
+				const __m256i shuffle(_mm256_setr_epi64x(0x0000000000000000,
+					0x0101010101010101, 0x0202020202020202, 0x0303030303030303));
+				vmask = _mm256_shuffle_epi8(vmask, shuffle);
+				const __m256i bit_mask(_mm256_set1_epi64x(0x7fbfdfeff7fbfdfe));
+				vmask = _mm256_or_si256(vmask, bit_mask);
+				return T::from_bits_us(_mm256_cmpeq_epi8(vmask, _mm256_set1_epi64x(-1)));*/
+			}
+
+			//TODO: emulations for older
+			else if constexpr (FS.has(SSE41) && xmm_sized<T> && sizeof(S) == 8)
+			{
+				__m128i broadcasted = _mm_set1_epi64x(mask);
+				__m128i x = _mm_andnot_si128(broadcasted, _mm_setr_epi64(1, 2));
+				return T::from_bits_us(_mm_cmpeq_epi64(x, _mm_setzero_si128()));
+			}
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && sizeof(S) == 4)
+			{
+				__m128i broadcasted = _mm_set1_epi32(mask);
+				__m128i x = _mm_andnot_si128(broadcasted, _mm_setr_epi32(1, 2, 4, 8));
+				return T::from_bits_us(_mm_cmpeq_epi32(x, _mm_setzero_si128()));
+			}
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && sizeof(S) == 2) //only 8 bits can fit into register
+			{
+				__m128i broadcasted = _mm_set1_epi16(mask);
+				__m128i x = _mm_andnot_si128(broadcasted, _mm_setr_epi16(1, 2, 4, 8, 16, 32, 64, 128));
+				return T::from_bits_us(_mm_cmpeq_epi16(x, _mm_setzero_si128()));
+			}
+			else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 1) //only 16 elements can fit into register
+			{
+				__m128i broadcasted = _mm_set1_epi16(mask);
+				broadcasted = _mm_shuffle_epi8(broadcasted, _mm_setr_epi64(0, 0x0101010101010101));
+				__m128i x = _mm_andnot_si128(broadcasted, _mm_setr_epi8(1, 2, 4, 8, 16, 32, 64, 0x7F, 0, 1, 2, 4, 8, 16, 32, 64, 0x7F));
+				return T::from_bits_us(_mm_cmpeq_epi8(x, _mm_setzero_si128()));
+			}
+			else if constexpr (sizeof(T) > 16)
+			{
+				static_assert(N % 2 == 0);
+				return T{ _movm_raw<S,N>(extract_u64_bits<0,N / 2>(mask)), _movm_raw<S,N>(extract_u64_bits<N / 2,N / 2>(mask,N / 2)) };
+			}
+			else
+			{
+				//internals::scream();
+				SIMD_Vector<S, N> ret;
+				using Tr = meta::ScalarTraits<S>;
+				for (size_t i = 0; i < N; ++i)
+				{
+					typename Tr::UintT u = (mask & (1ull << i)) ? Tr::AllOnesUint : 0;
+					ret[i] = std::bit_cast<S>(u);
+				}
+				return ret;
+			}
+		}
+	}
+
 	template<meta::ScalarSizeClassEnum LS, size_t N> requires IsValid_SIMD_Mask<N>
 	inline SIMD_Mask<LS, N>::VecT SIMD_Mask<LS, N>::_movm(BitsUintT bits)
 	{
