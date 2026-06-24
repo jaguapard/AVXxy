@@ -582,12 +582,53 @@ namespace AVXXY_NAMESPACE
 	__forceinline mask_t<S, N> cmp_greater(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 
-		internals::scream();
-		typename SIMD_Vector<S, N>::MaskT ret = 0;
-		for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] > b[i]);
-		return ret;
+		if constexpr (sizeof(T) > 64) return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_cmpgt_epi8_mask(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_u8<S>) return _mm512_cmpgt_epu8_mask(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_cmpgt_epi16_mask(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_u16<S>) return _mm512_cmpgt_epu16_mask(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i32<S>) return _mm512_cmpgt_epi32_mask(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_u32<S>) return _mm512_cmpgt_epu32_mask(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i64<S>) return _mm512_cmpgt_epi64_mask(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_u64<S>) return _mm512_cmpgt_epu64_mask(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_cmp_ps_mask(a, b, _CMP_GT_OQ);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_cmp_pd_mask(a, b, _CMP_GT_OQ);
+		else if constexpr (sizeof(T) > 32) return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<T> && is_i8<S>) return _mm256_cmpgt_epi8_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<T> && is_u8<S>) return _mm256_cmpgt_epu8_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<T> && is_i16<S>) return _mm256_cmpgt_epi16_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<T> && is_u16<S>) return _mm256_cmpgt_epu16_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<T> && is_i32<S>) return _mm256_cmpgt_epi32_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<T> && is_u32<S>) return _mm256_cmpgt_epu32_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<T> && is_i64<S>) return _mm256_cmpgt_epi64_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<T> && is_u64<S>) return _mm256_cmpgt_epu64_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<T> && is_f32<S>) return _mm256_cmp_ps_mask(a, b, _CMP_GT_OQ);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<T> && is_f64<S>) return _mm256_cmp_pd_mask(a, b, _CMP_GT_OQ);
+		//TODO: add AVX2 and AVX!
+		//else if constexpr (FS.has(AVX2) && )
+		else if constexpr (sizeof(T) > 16) return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<T> && is_i8<S>) return _mm_cmpgt_epi8_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<T> && is_u8<S>) return _mm_cmpgt_epu8_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<T> && is_i16<S>) return _mm_cmpgt_epi16_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<T> && is_u16<S>) return _mm_cmpgt_epu16_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<T> && is_i32<S>) return _mm_cmpgt_epi32_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<T> && is_u32<S>) return _mm_cmpgt_epu32_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<T> && is_i64<S>) return _mm_cmpgt_epi64_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<T> && is_u64<S>) return _mm_cmpgt_epu64_mask(a, b);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<T> && is_f32<S>) return _mm_cmp_ps_mask(a, b, _CMP_GT_OQ);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<T> && is_f64<S>) return _mm_cmp_pd_mask(a, b, _CMP_GT_OQ);
+		//TODO: add SSE
+		else
+		{
+			internals::scream();
+			typename SIMD_Vector<S, N>::MaskT ret = 0;
+			for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] > b[i]);
+			return ret;
+		}
 	}
 	template<typename S, size_t N>
 	__forceinline mask_t<S, N> cmp_greater_or_equal(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
