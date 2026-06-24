@@ -124,17 +124,46 @@ namespace AVXXY_NAMESPACE
 		using T = SIMD_Vector<S, N>;
 		using canon_t = std::conditional_t<(std::is_signed_v<S>), int16_t, uint16_t>;
 
-		if constexpr (sizeof(T) > 64) return T{ mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+		if constexpr (any_i8<S>) return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b))); //no 8 bit mul as of last AVX512, so emulate
+
 		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && any_i64<S>) return _mm512_mullo_epi64(a, b);
 		else if constexpr (FS.has(AVX512_DQ) && FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_mullo_epi64(a, b);
 		else if constexpr (FS.has(AVX512_DQ) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mullo_epi64(a, b);
+
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_mullo_epi16(a, b);
-		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_mul_pd(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_mul_ps(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_mullox_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_mullo_epi32(a, b);
-		else if constexpr (sizeof(T) > 32) return T{ mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>)
+		{
+			__m256i p1 = _mm256_mul_epu32(a, b); //alo*blo
+			__m256i ahi = _mm256_srli_epi64(a, 32);
+			__m256i bhi = _mm256_srli_epi64(b, 32);
+			__m256i p2 = _mm256_slli_epi64(_mm256_mul_epu32(a, bhi), 32);
+			__m256i p3 = _mm256_slli_epi64(_mm256_mul_epu32(b, ahi), 32);
+			return _mm256_add_epi64(p3, _mm256_add_epi64(p1, p2));
+		}
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_mullo_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_mullo_epi16(a, b);
+
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_mul_pd(a, b);
+		else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_mul_ps(a, b);
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && any_i32<S>) return _mm_mullo_epi32(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_mullo_epi16(a, b);
+
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) //TODO: check if it works. 256-bit version does
+		{
+			__m128i p1 = _mm_mul_epu32(a, b); //alo*blo
+			__m128i ahi = _mm_srli_epi64(a, 32);
+			__m128i bhi = _mm_srli_epi64(b, 32);
+			__m128i p2 = _mm_slli_epi64(_mm_mul_epu32(a, bhi), 32);
+			__m128i p3 = _mm_slli_epi64(_mm_mul_epu32(b, ahi), 32);
+			return _mm_add_epi64(p3, _mm_add_epi64(p1, p2));
+		}
+
+		else if constexpr (sizeof(T) > 16) return T{ mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
 
 		else
 		{
