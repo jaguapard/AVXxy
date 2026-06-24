@@ -411,24 +411,60 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_permutexvar_epi16(ind, a);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_permutexvar_epi16(ind, a);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_permutexvar_epi16(ind, a);
-		else if constexpr (FS.has(AVX512_BW) && sizeof(S) == 1)
-		{
-			//1 byte permute can be emulated by zero-extending the values to 16 bits
-			//permuting as 16 bits, then narrowing back, removing redundant zeros
-			//Note that values of the items must not change, since permute is data-movement operation
-			auto a16 = vcvt<uint16_t>(vcast<uint8_t>(a)); //reinterpret a as 8-bit ints, zero-extend
-			auto p = vcast<uint16_t>(permx(a16, ind)); //permute as 16 bit ints
-			auto ret8 = vcvt<uint8_t>(p); //narrow back to 8 bits
-			return vcast<S>(ret8); //return reinterpreted back to input type
-		}
+		else if constexpr (FS.has(AVX512_BW) && sizeof(S) == 1) return vrtrunc<S>(permx(vrzext<uint16_t>(a), ind));
+
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_permutexvar_pd(ind, a);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_permutexvar_ps(ind, a);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_permutexvar_epi64(ind, a);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_permutexvar_epi32(ind, a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i16<S>) return vrtrunc<S>(permx(vrzext<uint32_t>(a), ind)); //probably worth it to extend 16->32, but 8->32 may be better with pshufb breakup? TODO: test if it's good
+
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_f64<S>) return _mm256_permutexvar_pd(ind, a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_f32<S>) return _mm256_permutexvar_ps(ind, a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_permutexvar_epi64(ind, a);
-		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_permutexvar_epi32(ind, a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_permutexvar_epi32(ind, a); //although this (and ps version) exist in AVX2, it could make compiler's job of optimizing permutex+mask_mov into mask_permutex easier
+
+		//TODO: maybe add _mm version via permx2 for AVX512F?
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_f32<S>) return _mm256_permutevar8x32_ps(a, ind);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_permutevar8x32_epi32(a, ind);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 8) //emulate with 4-byte perm. //TODO: maybe allowing it to SSSE3 or AVX is better?
+		{
+			using X = std::conditional_t<is_f64<S>, float, uint32_t>;
+			auto a32 = vcast<X>(a);
+			__m256i ind32 = _mm256_castps_si256(_mm256_moveldup_ps(_mm256_castsi256_ps(ind)));//duplicate each low 32-bits of 64-bit index element into 32-bit lanes. Wrap around and power of 2 vector size limitation allow this to work.
+			auto perm = permx(a32, _mm256_or_si256(_mm256_slli_epi32(ind32, 1), _mm256_setr_epi32(0, 1, 0, 1, 0, 1, 0, 1))); //index is multiplied by 2 and added to alterating 0, 1, emulating 64 bit behavior
+			return vcast<S>(perm);
+		}
+
+		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 4) return _mm_permutevar_ps(vreinterpret_us<__m128>(a), ind);
+		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 8) return _mm_permutevar_pd(vreinterpret_us<__m128d>(a), ind);
+
+		//TODO: these may break with >127 bytes. Also check if they work at all
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 1) return _mm_shuffle_epi8(a, ind & 0x7F); //discard sign bit to avoid unwanted zero-masking
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 2)
+		{
+			__m128i ind2 = _mm_slli_epi16(ind, 1);
+			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 2, 2, 4, 4, 6, 6, 8, 8, 10, 10, 12, 12, 14, 14)); //duplicate low byte of each word
+			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1));
+			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
+			return T::from_bits_us(_mm_shuffle_epi8(vreinterpret_us<__m128i>(a), ind4));
+		}
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 4)
+		{
+			__m128i ind2 = _mm_slli_epi32(ind, 2);
+			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 4, 4, 4, 4, 8, 8, 8, 8, 12, 12, 12, 12)); //duplicate low byte of each dword
+			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3));
+			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
+			return T::from_bits_us(_mm_shuffle_epi8(vreinterpret_us<__m128i>(a), ind4));
+		}
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 8)
+		{
+			__m128i ind2 = _mm_slli_epi64(ind, 3);
+			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8)); //duplicate low byte of each qdword
+			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7));
+			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
+			return T::from_bits_us(_mm_shuffle_epi8(vreinterpret_us<__m128i>(a), ind4));
+		}
 		else if constexpr (sizeof(T) > 16)
 		{
 			auto alo = a.lo();
