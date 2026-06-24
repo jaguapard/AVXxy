@@ -1,7 +1,9 @@
 #pragma once
 #include "funcs.h"
 #include "SIMD_Vector.h"
-#include "Dispatcher.h"
+#include "FeatureSet.h"
+#include <source_location>
+
 
 namespace AVXXY_NAMESPACE
 {
@@ -44,25 +46,75 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> add(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
+		using namespace internals;
 		using namespace meta;
-		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = a[i] + b[i];
-		return ret;
+		if constexpr (sizeof(T) > 64) return T{ add(a.lo(), b.lo()), add(a.hi(),a.hi()) };
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_add_pd(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && is_f32<S>) return _mm512_add_ps(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && any_i64<S>) return _mm512_add_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && any_i32<S>) return _mm512_add_epi32(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_add_epi16(a,b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_add_epi8(a,b);
+		else if constexpr (sizeof(T) > 32) return { add(a.lo(), b.lo()), add(a.hi(), b.hi()) };
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_add_epi64(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_add_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_add_epi16(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return _mm256_add_epi8(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_add_pd(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f32<S>) return _mm256_add_ps(a, b);
+		else if constexpr (sizeof(T) > 16) return { add(a.lo(), b.lo()), add(a.hi(), b.hi()) };
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_add_pd(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_add_epi64(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_add_epi32(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_add_epi16(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i8<S>) return _mm_add_epi8(a, b);
+		else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_add_ps(a, b);
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = a[i] + b[i];
+			return ret;
+		}
 	}
 
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> sub(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
+		using namespace internals;
 		using namespace meta;
-		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = a[i] - b[i];
-		return ret;
+		if constexpr (sizeof(T) > 64) return T{ sub(a.lo(), b.lo()), sub(a.hi(),a.hi()) };
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_sub_pd(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && is_f32<S>) return _mm512_sub_ps(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && any_i64<S>) return _mm512_sub_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && zmm_sized<T> && any_i32<S>) return _mm512_sub_epi32(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_sub_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_sub_epi8(a, b);
+		else if constexpr (sizeof(T) > 32) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_sub_epi64(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_sub_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_sub_epi16(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return _mm256_sub_epi8(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_sub_pd(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f32<S>) return _mm256_sub_ps(a, b);
+		else if constexpr (sizeof(T) > 16) return { sub(a.lo(), b.lo()), sub(a.hi(), b.hi()) };
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_sub_pd(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_sub_epi64(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_sub_epi32(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_sub_epi16(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i8<S>) return _mm_sub_epi8(a, b);
+		else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_sub_ps(a, b);
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = a[i] - b[i];
+			return ret;
+		}
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> mul(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
