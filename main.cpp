@@ -55,6 +55,9 @@ int main()
 	f32x16 rr = abs(read);
 	int xx = 0;
 	std::cout << rr;
+
+	mask2b a = 0x32;
+	std::cout << "\n" << a;
 #if 0
 	
 
