@@ -120,12 +120,30 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> mul(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		using namespace meta;
-		using U = typename ScalarTraits<S>::UintT;
+		using namespace internals;
+		using T = SIMD_Vector<S, N>;
+		using canon_t = std::conditional_t<(std::is_signed_v<S>), int16_t, uint16_t>;
 
-		internals::scream();
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = a[i] * b[i];
-		return ret;
+		if constexpr (sizeof(T) > 64) return T{ mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && any_i64<S>) return _mm512_mullo_epi64(a, b);
+		else if constexpr (FS.has(AVX512_DQ) && FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_mullo_epi64(a, b);
+		else if constexpr (FS.has(AVX512_DQ) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mullo_epi64(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_mullo_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b)));
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_mul_pd(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_mul_ps(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_mullox_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_mullo_epi32(a, b);
+		else if constexpr (sizeof(T) > 32) return T{ mul(a.lo(), b.lo()), mul(a.hi(), b.hi()) };
+
+		else
+		{
+			internals::scream();
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = a[i] * b[i];
+			return ret;
+		}
+		
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> div(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
