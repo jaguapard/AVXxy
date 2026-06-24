@@ -184,9 +184,20 @@ namespace AVXXY_NAMESPACE
 
 		if constexpr (any_i32<S>) return vcvt<S>(div(vcvt<double>(a), vcvt<double>(b))); //emulate 32 bit integer division via double precision division
 		else if constexpr (any_small_int<S>) return vcvt<S>(div(vcvt<float>(a), vcvt<float>(b))); //emulate small integer division via single precision division
-		else if constexpr (sizeof(T) > 64) return T{ div(a.lo(), b.lo()), div(a.hi(),b.hi()) };
+
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_div_pd(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_div_ps(a, b);
+
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_div_pd(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f32<S>) return _mm256_div_ps(a, b);
+
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_div_pd(a, b);
+		else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_div_ps(a, b);
+
+		else if constexpr (sizeof(T) > 16) return T{ div(a.lo(), b.lo()), div(a.hi(),b.hi()) };
+		//manual 64-bit integer divisions are dog slow, while scalar div is pretty fast (comparatively) on newer CPUs, so it's not insane to fall back to scalar
+		//even on older ones, bad division algorithms lose out to scalar.
+		//Either that, or more work needs to be done to find a good solution. For now, I don't bother and fall back to scalar
 		else
 		{
 			internals::scream();
