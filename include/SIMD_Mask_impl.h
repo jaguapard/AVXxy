@@ -109,7 +109,7 @@ namespace AVXXY_NAMESPACE
 			else if constexpr (sizeof(T) > 16)
 			{
 				static_assert(N % 2 == 0);
-				return T{ _movm_raw<S,N>(extract_u64_bits<0,N / 2>(mask)), _movm_raw<S,N>(extract_u64_bits<N / 2,N / 2>(mask,N / 2)) };
+				return T{ _movm_raw<S,N / 2>(extract_u64_bits<0,N / 2>(mask)), _movm_raw<S,N / 2>(extract_u64_bits<N / 2,N / 2>(mask)) };
 			}
 			else
 			{

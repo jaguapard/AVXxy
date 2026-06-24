@@ -1276,7 +1276,7 @@ namespace AVXXY_NAMESPACE
 		{
 			using I = typename ScalarTraits<S>::IntT;
 			constexpr I xorv = I(1) << ((sizeof(I) * 8) - 1); //xor with 0x800..000 before comparison
-			return cmp_greater(vcast<I>(a) ^ xorv, vcast<I> ^ xorv);
+			return cmp_greater(vcast<I>(a) ^ xorv, vcast<I>(b) ^ xorv);
 		}
 
 		else if constexpr (sizeof(T) > 16) return { cmp_greater(a.lo(),b.lo()), cmp_greater(a.hi(),b.hi()) };
