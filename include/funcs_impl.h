@@ -695,12 +695,45 @@ namespace AVXXY_NAMESPACE
 	__forceinline void store(const SIMD_Vector<S, N>& v, void* p, const mask_t<S, N>& mask)
 	{
 		using namespace meta;
+		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
-		//if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) store(vcast<U>(v), p, mask);
+		using T = SIMD_Vector<S, N>;
+		const S* sp = (const S*)p;
 
-		internals::scream();
-		S* sp = static_cast<S*>(p);
-		for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = v[i];
+		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) store(vcast<U>(v), p, mask);
+
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_mask_storeu_epi16(p, mask, v);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return _mm512_mask_storeu_epi8(p, mask, v);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_mask_storeu_epi16(p, mask, v);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i8<S>) return _mm256_mask_storeu_epi8(p, mask, v);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_mask_storeu_epi16(p, mask, v);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i8<S>) return _mm_mask_storeu_epi8(p, mask, v);
+
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_mask_storeu_pd(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_mask_storeu_ps(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_mask_storeu_epi64(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_mask_storeu_epi32(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_f64<S>) return _mm256_mask_storeu_pd(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_f32<S>) return _mm256_mask_storeu_ps(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_mask_storeu_epi64(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && any_i32<S>) return _mm256_mask_storeu_epi32(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f64<S>) return _mm_mask_storeu_pd(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_storeu_ps(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_storeu_epi64(p, mask, v);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_storeu_epi32(p, mask, v);
+
+		else if constexpr (sizeof(T) > 16)
+		{
+			store(v.lo(), p, mask.lo());
+			store(v.hi(), sp + N / 2, mask.hi());
+		}
+		else
+		{
+			internals::scream();
+			S* sp = static_cast<S*>(p);
+			for (size_t i = 0; i < N; ++i) if (mask[i]) sp[i] = v[i];
+		}
+		
 	}
 
 	template<typename S, size_t N, size_t Scale, typename I>
