@@ -691,7 +691,26 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(F16C) && is_ymm_size(MaxSize) && is_fp16<From> && is_f32<To>) return _mm256_cvtph_ps(a);
 		else if constexpr (FS.has(F16C) && is_xmm_size(MaxSize) && is_fp16<From> && is_f32<To>) return _mm_cvtph_ps(a);
 
-		//TODO: add AVX2, AVX, SSE cvts
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_i16<From> && any_i32<To>) return _mm256_cvtepi16_epi32(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_i16<From> && any_i64<To>) return _mm256_cvtepi16_epi64(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_i32<From> && any_i64<To>) return _mm256_cvtepi32_epi64(a);
+		else if constexpr (FS.has(AVX) && is_ymm_size(MaxSize) && is_i32<From> && is_f64<To>) return _mm256_cvtepi32_pd(a);
+		else if constexpr (FS.has(AVX) && is_ymm_size(MaxSize) && is_i32<From> && is_f32<To>) return _mm256_cvtepi32_ps(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_i8<From> && any_i16<To>) return _mm256_cvtepi8_epi16(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_i8<From> && any_i32<To>) return _mm256_cvtepi8_epi32(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_i8<From> && any_i64<To>) return _mm256_cvtepi8_epi64(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_u16<From> && any_i32<To>) return _mm256_cvtepu16_epi32(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_u16<From> && any_i64<To>) return _mm256_cvtepu16_epi64(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_u32<From> && any_i64<To>) return _mm256_cvtepu32_epi64(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_u8<From> && any_i16<To>) return _mm256_cvtepu8_epi16(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_u8<From> && any_i32<To>) return _mm256_cvtepu8_epi32(a);
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && is_u8<From> && any_i64<To>) return _mm256_cvtepu8_epi64(a);
+		else if constexpr (FS.has(AVX) && is_ymm_size(MaxSize) && is_f64<From> && is_i32<To>) return _mm256_cvttpd_epi32(a);
+		else if constexpr (FS.has(AVX) && is_ymm_size(MaxSize) && is_f32<From> && is_i32<To>) return _mm256_cvttps_epi32(a);
+		else if constexpr (FS.has(AVX) && is_ymm_size(MaxSize) && is_f32<From> && is_f64<To>) return _mm256_cvtps_pd(a);
+		else if constexpr (FS.has(AVX) && is_ymm_size(MaxSize) && is_f64<From> && is_f32<To>) return _mm256_cvtpd_ps(a);
+
+		//TODO: add SSE cvts
 		else if constexpr (MaxSize > 16) return TV{ vcvt<To>(a.lo()), vcvt<To>(a.hi()) };
 		else
 		{
