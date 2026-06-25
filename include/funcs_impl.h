@@ -451,15 +451,15 @@ namespace AVXXY_NAMESPACE
 			//if (lsb == 0 && p2) -> element resides in lower, but wants upper -> shift left by 16
 			//if (lsb == 1 && p2) -> element resides in upper, wants upper -> pass through
 
-			__m256i p1a = _mm256_and_si256(p1, _mm256_set1_epi32(0xFFFF));
+			//__m256i p1a = _mm256_and_si256(p1, _mm256_set1_epi32(0xFFFF));
 			__m256i p1s = _mm256_srli_epi32(p1, 16);
 			__m256i p2s = _mm256_slli_epi32(p2, 16);
-			__m256i p2a = _mm256_and_si256(p2, _mm256_set1_epi32(0xFFFF0000));
+			//__m256i p2a = _mm256_and_si256(p2, _mm256_set1_epi32(0xFFFF0000));
 			__m256 bmask1 = _mm256_castsi256_ps(_mm256_slli_epi32(ind, 31));
 			__m256 bmask2 = _mm256_castsi256_ps(_mm256_slli_epi32(ind, 15));
 
-			__m256 b1 = _mm256_blendv_ps(_mm256_castsi256_ps(p1a), _mm256_castsi256_ps(p1s), bmask1);
-			__m256 b2 = _mm256_blendv_ps(_mm256_castsi256_ps(p2s), _mm256_castsi256_ps(p2a), bmask2);
+			__m256 b1 = _mm256_blendv_ps(_mm256_castsi256_ps(p1), _mm256_castsi256_ps(p1s), bmask1);
+			__m256 b2 = _mm256_blendv_ps(_mm256_castsi256_ps(p2s), _mm256_castsi256_ps(p2), bmask2);
 			return _mm256_blend_epi16(b1, b2, 0b10101010);
 		}
 		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 4) return _mm_permutevar_ps(vreinterpret_us<__m128>(a), ind);
