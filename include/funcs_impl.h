@@ -3,7 +3,7 @@
 #include "SIMD_Vector.h"
 #include "FeatureSet.h"
 #include <source_location>
-
+#include "tables.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -1671,8 +1671,30 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_compress_ps(src, mask, a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_compress_epi64(src, mask, a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_compress_epi32(src, mask, a);
+
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 4)
+		{
+			auto permx_ind = vcvt<U>(SIMD_Vector<int8_t, N>(_mm_loadu_si64(&tables::compress_to_permx8[mask])));
+			auto tmp = permx(a, permx_ind); //permx_ind is setup in such a way that is can be used both as index register and blend mask without extra conversions
+			if constexpr (is_f32<S>) return _mm256_blendv_ps(tmp, src, _mm256_castsi256_ps(permx_ind));
+			else return _mm256_blendv_epi8(vreinterpret_us<__m256i>(tmp), src, permx_ind);
+		}
+		else if constexpr (sizeof(T) > 16)
+		{
+			T ret = src;
+			auto cl = compress(mask.lo(), a.lo());
+			auto ch = compress(mask.hi(), a.hi());
+			size_t popcnt_lo = std::popcount((uint64_t)mask.lo());
+			size_t popcnt_hi = std::popcount((uint64_t)mask.hi());
+
+			static_assert(N <= 64);
+			float* p = (float*)&ret;
+			store(cl, p);
+			U cm = (uint64_t(1) << popcnt_hi) - 1;
+			store(ch, p + popcnt_lo, cm); //don't overwrite src remains
+			return ret;
+		}
 		//TODO: compress emulation for bytes and words by extending for AVX512 F
-		//TODO: compress splitting via overlapping stores
 		else
 		{
 			internals::scream();
