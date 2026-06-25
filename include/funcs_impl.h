@@ -914,12 +914,12 @@ namespace AVXXY_NAMESPACE
 
 			else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_maskload_epi64(reinterpret_cast<const int64_t*>(p), mask);
 			else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_maskload_epi32(reinterpret_cast<const int32_t*>(p), mask);
-			else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_maskload_pd(reinterpret_cast<const double*>(p), mask);
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return _mm256_maskload_pd(reinterpret_cast<const double*>(p), mask);
 			else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return _mm256_maskload_ps(reinterpret_cast<const float*>(p), mask);
 
 			else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i64<S>) return _mm_maskload_epi64(reinterpret_cast<const int64_t*>(p), mask);
 			else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i32<S>) return _mm_maskload_epi64(reinterpret_cast<const int32_t*>(p), mask);
-			else if constexpr (FS.has(AVX) && xmm_sized<T> && is_f64<S>) return _mm_maskload_pd(reinterpret_cast<const double*>(p), mask);
+			else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 8) return _mm_maskload_pd(reinterpret_cast<const double*>(p), mask);
 			else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 4) return _mm_maskload_ps(reinterpret_cast<const float*>(p), mask);
 
 			else if constexpr (sizeof(T) > 16) return T{ load<S,N / 2>(p,mask.lo()), load<S,N / 2>(sp + N / 2,mask.hi()) };
