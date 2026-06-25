@@ -135,6 +135,12 @@ namespace AVXXY_NAMESPACE
 	//Loads vector from memory p and returns the result. The memory does not have to be aligned
 	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p);
 
+	//Loads vector from aligned memory p and returns the result. The pointer p must be aligned to boundary depending on output size:
+	//16 bytes for vectors less than or equal to 16 bytes
+	//32 bytes for vectors sized between 17 and 32 bytes inclusive
+	//64 bytes for vectors larger than 32 bytes
+	template<typename S, size_t N> SIMD_Vector<S, N> load_a(const void* p);
+
 	//Loads the vector from memory location pointed to by `p` and returns the result.
 	//If the corresponding mask bit is set, the corresponding element in memory is read and stored into the returned vector
 	//If the corresponding mask bit is cleared, the corresponding element in memory is not read and the corresponding element from src is stored into the retuned vector

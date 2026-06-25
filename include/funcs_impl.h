@@ -833,26 +833,53 @@ namespace AVXXY_NAMESPACE
 		using T = SIMD_Vector<S, N>;
 
 		auto ld = [&]() {
-		if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_loadu_pd(p);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_loadu_ps(p);
+			if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_loadu_pd(p);
+			else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_loadu_ps(p);
 			else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_loadu_si512(p);
-		else if constexpr (FS.has(AVX) && ymm_sized<T> && any_int<S>) return _mm256_loadu_si256(reinterpret_cast<const __m256i_u*>(p));
-		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_loadu_pd(reinterpret_cast<const double*>(p));
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && any_int<S>) return _mm256_loadu_si256(reinterpret_cast<const __m256i_u*>(p));
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_loadu_pd(reinterpret_cast<const double*>(p));
 			else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_loadu_ps(reinterpret_cast<const float*>(p));
 			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_int<S>) return _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(p));
-		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_loadu_pd(reinterpret_cast<const double*>(p));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_loadu_pd(reinterpret_cast<const double*>(p));
 			else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_loadu_ps(reinterpret_cast<const float*>(p));
 			else if constexpr (sizeof(T) > 16) return T{ SIMD_Vector<S,N / 2>(load(p)), SIMD_Vector<S,N / 2>(load(reinterpret_cast<const S*>(p) + N / 2)) };
-		else
-		{
-			T ret;
-			memcpy(&ret, p, sizeof(ret));
-			return ret;
-		}
+			else
+			{
+				T ret;
+				memcpy(&ret, p, sizeof(ret));
+				return ret;
+			}
 		};
 		//TODO: investigate differences between loadu and lddqu: https://stackoverflow.com/questions/47425851/whats-the-difference-between-mm256-lddqu-si256-and-mm256-loadu-si256
 		return vcast<S>(T::from_bits_us(ld()));		
 	}
+
+	template<typename S, size_t N>
+	SIMD_Vector<S, N> load_a(const void* p)
+	{
+		using namespace meta;
+		using namespace internals;
+		using T = SIMD_Vector<S, N>;
+
+		auto ld = [&]() {
+			if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_load_pd(p);
+			else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_load_ps(p);
+			else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_load_si512(p);
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && any_int<S>) return _mm256_load_si256(reinterpret_cast<const __m256i*>(p));
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_load_pd(reinterpret_cast<const double*>(p));
+			else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_load_ps(reinterpret_cast<const float*>(p));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_int<S>) return _mm_load_si128(reinterpret_cast<const __m128i*>(p));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_load_pd(reinterpret_cast<const double*>(p));
+			else if constexpr (FS.has(SSE) && xmm_sized<T>) return _mm_load_ps(reinterpret_cast<const float*>(p));
+			else if constexpr (sizeof(T) > 16) return T{ SIMD_Vector<S,N / 2>(load_a(p)), SIMD_Vector<S,N / 2>(load_a(reinterpret_cast<const S*>(p) + N / 2)) };
+			else
+			{
+				T ret;
+				memcpy(&ret, p, sizeof(ret));
+				return ret;
+			}
+		};
+		return vcast<S>(T::from_bits_us(ld()));
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask, const SIMD_Vector<S, N>& src)
