@@ -513,7 +513,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_permutex2var_ps(a, ind, b);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_permutex2var_epi64(a, ind, b);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_permutex2var_epi32(a, ind, b);
-		else if constexpr (sizeof(T) > 16)
+		else if constexpr (true || sizeof(T) > 16) //TODO: seems to work, but very sus. Although, what else to do?
 		{
 			T pa = permx(a, ind);
 			T pb = permx(b, ind);
