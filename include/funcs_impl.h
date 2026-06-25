@@ -383,6 +383,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i64<S>) return _mm_srlv_epi64(a, b); //no shifts in SSE!
 		else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i32<S>) return _mm_srlv_epi32(a, b);
 
+		else if constexpr (sizeof(T) > 16) return { shift_right(a.lo(), b.lo()), shift_right(a.hi(), b.hi()) };
 		else
 		{
 			internals::scream();
