@@ -996,6 +996,16 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_storeu_epi64(p, mask, v);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_storeu_epi32(p, mask, v);
 
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_maskstore_epi64(reinterpret_cast<int64_t*>(p), mask, v);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_maskstore_epi32(reinterpret_cast<int32_t*>(p), mask, v);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return _mm256_maskstore_pd(reinterpret_cast<double*>(p), mask, vreinterpret_us<__m256d>(v));
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return _mm256_maskstore_ps(reinterpret_cast<float*>(p), mask, vreinterpret_us<__m256>(v));
+
+		else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i64<S>) return _mm_maskstore_epi64(reinterpret_cast<int64_t*>(p), mask, v);
+		else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i32<S>) return _mm_maskstore_epi32(reinterpret_cast<int32_t*>(p), mask, v);
+		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 8) return _mm_maskstore_pd(reinterpret_cast<double*>(p), mask, vreinterpret_us<__m128d>(v));
+		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 4) return _mm_maskstore_ps(reinterpret_cast<float*>(p), mask, vreinterpret_us<__m128>(v));
+
 		else if constexpr (sizeof(T) > 16)
 		{
 			store(v.lo(), p, mask.lo());
