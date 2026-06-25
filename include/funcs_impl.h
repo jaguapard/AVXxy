@@ -826,7 +826,7 @@ namespace AVXXY_NAMESPACE
 		return mask_mov(ifBitClear, mask, ifBitSet);
 	}
 	template<typename S, size_t N>
-	SIMD_Vector<S, N> load(const void* p)
+	__forceinline SIMD_Vector<S, N> load(const void* p)
 	{
 		using namespace meta;
 		using namespace internals;
@@ -842,7 +842,7 @@ namespace AVXXY_NAMESPACE
 			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_int<S>) return _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(p));
 			else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_loadu_pd(reinterpret_cast<const double*>(p));
 			else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_loadu_ps(reinterpret_cast<const float*>(p));
-			else if constexpr (sizeof(T) > 16) return T{ SIMD_Vector<S,N / 2>(load(p)), SIMD_Vector<S,N / 2>(load(reinterpret_cast<const S*>(p) + N / 2)) };
+			else if constexpr (sizeof(T) > 16) return T{ load<S,N / 2>(p), load<S,N / 2>(reinterpret_cast<const S*>(p) + N / 2) };
 			else
 			{
 				T ret;
@@ -871,7 +871,7 @@ namespace AVXXY_NAMESPACE
 			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_int<S>) return _mm_load_si128(reinterpret_cast<const __m128i*>(p));
 			else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_load_pd(reinterpret_cast<const double*>(p));
 			else if constexpr (FS.has(SSE) && xmm_sized<T>) return _mm_load_ps(reinterpret_cast<const float*>(p));
-			else if constexpr (sizeof(T) > 16) return T{ SIMD_Vector<S,N / 2>(load_a(p)), SIMD_Vector<S,N / 2>(load_a(reinterpret_cast<const S*>(p) + N / 2)) };
+			else if constexpr (sizeof(T) > 16) return T{ load_a<S,N / 2>(p), load_a<S,N / 2>(reinterpret_cast<const S*>(p) + N / 2) };
 			else
 			{
 				T ret;

@@ -135,11 +135,26 @@ namespace AVXXY_NAMESPACE
 	//Loads vector from memory p and returns the result. The memory does not have to be aligned
 	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p);
 
+	//Loads vector from memory p and returns the result. The memory does not have to be aligned
+	template<typename T> requires meta::IsSimdVector<T> T load(const void* p)
+	{
+		return load<typename T::ScalarT, T::LaneCount>(p);
+	}
+
 	//Loads vector from aligned memory p and returns the result. The pointer p must be aligned to boundary depending on output size:
 	//16 bytes for vectors less than or equal to 16 bytes
 	//32 bytes for vectors sized between 17 and 32 bytes inclusive
 	//64 bytes for vectors larger than 32 bytes
 	template<typename S, size_t N> SIMD_Vector<S, N> load_a(const void* p);
+
+	//Loads vector from aligned memory p and returns the result. The pointer p must be aligned to boundary depending on output size:
+	//16 bytes for vectors less than or equal to 16 bytes
+	//32 bytes for vectors sized between 17 and 32 bytes inclusive
+	//64 bytes for vectors larger than 32 bytes
+	template<typename T> requires meta::IsSimdVector<T> T load_a(const void* p)
+	{
+		return load_a<typename T::ScalarT, T::LaneCount>(p);
+	}
 
 	//Loads the vector from memory location pointed to by `p` and returns the result.
 	//If the corresponding mask bit is set, the corresponding element in memory is read and stored into the returned vector
@@ -153,7 +168,7 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : src[i]
 	template<typename T> requires meta::IsSimdVector<T>
-	__forceinline T load(const void* p, const typename T::MaskT& mask = T::MaskT::AllOnesUint, const T& src = 0)
+	__forceinline T load(const void* p, const typename T::MaskT& mask, const T& src = 0)
 	{
 		return load<typename T::ScalarT, T::LaneCount>(p, mask, src);
 	}
