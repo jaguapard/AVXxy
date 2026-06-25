@@ -1622,14 +1622,32 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_i64<S>) return _mm_max_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_u64<S>) return _mm_max_epu64(a, b);
 
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i8<S>) return _mm256_max_epi8(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i16<S>) return _mm256_max_epi16(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i32<S>) return _mm256_max_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_u8<S>) return _mm256_max_epu8(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_u16<S>) return _mm256_max_epu16(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_u32<S>) return _mm256_max_epu32(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_max_pd(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f32<S>) return _mm256_max_ps(a, b);
+
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && is_i8<S>) return _mm_max_epi8(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_i16<S>) return _mm_max_epi16(a, b);
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && is_i32<S>) return _mm_max_epi32(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_u8<S>) return _mm_max_epu8(a, b);
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && is_u16<S>) return _mm_max_epu16(a, b);
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && is_u32<S>) return _mm_max_epu32(a, b);
+
 		else if constexpr (sizeof(T) > 16) return T{ max(a.lo(), b.lo()), max(a.hi(),b.hi()) };
+		else return mask_mov(a, b > a, b);
+		/*
 		else
 		{
 			internals::scream();
 			SIMD_Vector<S, N> ret;
 			for (size_t i = 0; i < N; ++i) ret[i] = std::max(a[i], b[i]);
 			return ret;
-		}
+		}*/
 	}
 
 	template<typename S, size_t N>
