@@ -1658,6 +1658,20 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_unpacklo_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_unpacklo_epi32(a, b);
 
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_unpacklo_epi64(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_unpacklo_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_unpacklo_epi16(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return _mm256_unpacklo_epi8(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return T::from_bits_us(_mm256_unpacklo_pd(vreinterpret_us<__m256d>(a), vreinterpret_us<__m256d>(b)));
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return T::from_bits_us(_mm256_unpacklo_ps(vreinterpret_us<__m256>(a), vreinterpret_us<__m256>(b)));
+
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_unpacklo_epi64(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_unpacklo_epi32(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_unpacklo_epi16(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i8<S>) return _mm_unpacklo_epi8(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_unpacklo_pd(a, b);
+		else if constexpr (FS.has(SSE) && xmm_sized<T> && sizeof(S) == 4) return T::from_bits_us(_mm_unpacklo_ps(vreinterpret_us<__m128>(a), vreinterpret_us<__m128>(b)));
+
 		else if constexpr (sizeof(T) > 16) return T{ unpacklo(a.lo(),b.lo()), unpacklo(a.hi(),b.hi()) };
 		else
 		{
@@ -1681,6 +1695,20 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_unpackhi_ps(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_unpackhi_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_unpackhi_epi32(a, b);
+
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_unpackhi_epi64(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_unpackhi_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_unpackhi_epi16(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return _mm256_unpackhi_epi8(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return T::from_bits_us(_mm256_unpackhi_pd(vreinterpret_us<__m256d>(a), vreinterpret_us<__m256d>(b)));
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return T::from_bits_us(_mm256_unpackhi_ps(vreinterpret_us<__m256>(a), vreinterpret_us<__m256>(b)));
+
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_unpackhi_epi64(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_unpackhi_epi32(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_unpackhi_epi16(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i8<S>) return _mm_unpackhi_epi8(a, b);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_unpackhi_pd(a, b);
+		else if constexpr (FS.has(SSE) && xmm_sized<T> && sizeof(S) == 4) return T::from_bits_us(_mm_unpackhi_ps(vreinterpret_us<__m128>(a), vreinterpret_us<__m128>(b)));
 
 		else if constexpr (sizeof(T) > 16) return T{ unpackhi(a.lo(),b.lo()), unpackhi(a.hi(),b.hi()) };
 		else
