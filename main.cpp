@@ -56,8 +56,9 @@ int main()
 	int xx = 0;
 	std::cout << rr;
 
-	mask2b a = 0x32;
-	std::cout << "\n" << a;
+	mask32d x = 0x434234;
+	auto z123187 = mask_mov(vcast<uint16_t>(rr), x, vcast<uint16_t>(read));
+	std::cout << "\n" << z123187;
 #if 0
 	
 
