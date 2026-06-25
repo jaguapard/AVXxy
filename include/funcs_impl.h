@@ -612,6 +612,7 @@ namespace AVXXY_NAMESPACE
 
 		//Route all FP16 conversions to it's only friend - float
 		if constexpr ((is_fp16<From> && !is_f32<To>) || (!is_f32<From> && is_fp16<To>)) return vcvt<To>(vcvt<float>(a));
+		else if constexpr (sizeof(From) == sizeof(To) && any_int<From> && any_int<To>) return vcast<To>(a);
 		//Route small int to FP through their 32 bit types of same signedness
 		else if constexpr (any_small_int<From> && !any_int<To>)
 		{
