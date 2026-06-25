@@ -1571,6 +1571,12 @@ namespace AVXXY_NAMESPACE
 
 		if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_floor_pd(a);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_floor_ps(a);
+
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_floor_pd(a);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f32<S>) return _mm256_floor_ps(a);
+		
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && is_f64<S>) return _mm_floor_pd(a);
+		else if constexpr (FS.has(SSE41) && xmm_sized<T> && is_f32<S>) return _mm_floor_ps(a);
 		else if constexpr (sizeof(T) > 16) return T{ floor(a.lo()), floor(a.hi()) };
 		else
 		{
