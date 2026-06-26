@@ -769,7 +769,13 @@ namespace AVXXY_NAMESPACE
 			//__m256i packus = _mm256_packus_epi16(trunc1, trunc1); //upper 64-bit halves of each 128-bit lane are duplicated result
 			return TV::from_bits_us(_mm256_permute4x64_epi64(sh, 2 << 2)); //0, 2, 0, 0, upper discarded
 		}
-
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && any_i32<From> && any_i8<To>)
+		{
+			__m256i sh = _mm256_shuffle_epi8(a, _mm256_set1_epi32(0x0C'08'04'00));
+			return TV::from_bits_us(_mm256_permutevar8x32_epi32(sh, _mm256_set1_epi64x(4ull << 32)));
+			//return _mm_unpacklo_epi32(_mm256_castsi256_si128(sh), _mm256_extracti128_si256(sh, 1));
+			//return TV::from_bits_us(_mm256_permute
+		}
 		else if constexpr (FS.has(SSE41) && is_xmm_size(MaxSize) && is_i16<From> && any_i32<To>) return _mm_cvtepi16_epi32(a);
 		else if constexpr (FS.has(SSE41) && is_xmm_size(MaxSize) && is_i16<From> && any_i64<To>) return _mm_cvtepi16_epi64(a);
 		else if constexpr (FS.has(SSE41) && is_xmm_size(MaxSize) && is_i32<From> && any_i64<To>) return _mm_cvtepi32_epi64(a);
