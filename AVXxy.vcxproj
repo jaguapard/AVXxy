@@ -269,6 +269,7 @@
     <ClInclude Include="include\meta\type_factories.h" />
     <ClInclude Include="include\namespace.h" />
     <ClInclude Include="include\operators.h" />
+    <ClInclude Include="include\settings.h" />
     <ClInclude Include="include\SIMD_Mask.h" />
     <ClInclude Include="include\SIMD_Mask_impl.h" />
     <ClInclude Include="include\SIMD_Vector.h" />
