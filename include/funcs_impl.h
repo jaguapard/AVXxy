@@ -1925,12 +1925,12 @@ namespace AVXXY_NAMESPACE
 		//TODO: update this for new architecture and change return type to bits_to_uint_t<N>
 		//TODO: should it even allow floating point types?
 		//TODO: if yes, then add an integer routing
-		if constexpr (FS.has(AVX512_CD) && zmm_sized<T> && sizeof(S) == 4) return _mm512_conflict_epi32(vcast<SIMD_Vector<int32_t, N>>(a));
-		else if constexpr (FS.has(AVX512_CD) && zmm_sized<T> && sizeof(S) == 8) return _mm512_conflict_epi64(vcast<SIMD_Vector<int64_t, N>>(a));
-		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && ymm_sized<T> && sizeof(S) == 4) return _mm256_conflict_epi32(vcast<SIMD_Vector<int32_t, N>>(a));
-		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && ymm_sized<T> && sizeof(S) == 8) return _mm256_conflict_epi64(vcast<SIMD_Vector<int64_t, N>>(a));
-		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 4) return _mm_conflict_epi32(vcast<SIMD_Vector<int32_t, N>>(a));
-		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 8) return _mm_conflict_epi64(vcast<SIMD_Vector<int64_t, N>>(a));
+		if constexpr (FS.has(AVX512_CD) && zmm_sized<T> && sizeof(S) == 4) return _mm512_conflict_epi32(vcast<int32_t>(a));
+		else if constexpr (FS.has(AVX512_CD) && zmm_sized<T> && sizeof(S) == 8) return _mm512_conflict_epi64(vcast<int64_t>(a));
+		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && ymm_sized<T> && sizeof(S) == 4) return _mm256_conflict_epi32(vcast<int32_t>(a));
+		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && ymm_sized<T> && sizeof(S) == 8) return _mm256_conflict_epi64(vcast<int64_t>(a));
+		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 4) return _mm_conflict_epi32(vcast<int32_t>(a));
+		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 8) return _mm_conflict_epi64(vcast<int64_t>(a));
 		//TODO: >64 byte CD
 
 		else
