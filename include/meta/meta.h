@@ -35,6 +35,7 @@ namespace AVXXY_NAMESPACE
 
 		template<typename T> static constexpr T BitsAllZeroF(T) { return BitsAllZero<T>; }
 		template<typename T> static constexpr T BitsAllOneF(T) { return BitsAllOne<T>; }
+
 		//template <typename T>
 		//struct ScalarTraits;
 
@@ -102,6 +103,8 @@ namespace AVXXY_NAMESPACE
 			//indicates whether this type is not integral
 			static inline constexpr bool not_int = !std::is_integral_v<S>;
 		};
+
+		template<typename T> requires IsScalarType<T> inline constexpr T UppermostBitMask = std::bit_cast<T>(ScalarTraits<T>::SignMask);
 
 		//Returns true if this value is a power of 2.
 		//0 and 1 are NOT considered powers of 2
