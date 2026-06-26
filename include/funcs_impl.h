@@ -822,9 +822,13 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
-		T ret;
-		memcpy(&ret, &value, std::min(sizeof(ret), sizeof(value)));
-		return ret;
+		if constexpr (sizeof(T) == sizeof(value)) return std::bit_cast<T>(value);
+		else
+		{
+			T ret;
+			memcpy(&ret, &value, std::min(sizeof(ret), sizeof(value)));
+			return ret;
+		}
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> mask_mov(const SIMD_Vector<S, N>& ifBitClear, const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet)
