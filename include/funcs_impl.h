@@ -487,7 +487,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 8)
 		{
 			__m128i ind2 = _mm_slli_epi64(ind, 3);
-			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8)); //duplicate low byte of each qdword
+			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8)); //duplicate low byte of each qword
 			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7));
 			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
 			return T::from_bits_us(_mm_shuffle_epi8(vreinterpret_us<__m128i>(a), ind4));
