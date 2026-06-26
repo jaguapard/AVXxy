@@ -1589,7 +1589,7 @@ namespace AVXXY_NAMESPACE
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
 
-		auto split_abs = [&]() { return T{ abs(a.lo()), abs(a.hi()) }; };
+#define AVXXY_SPLIT_ABS T{ abs(a.lo()), abs(a.hi()) }
 
 		if constexpr (std::is_unsigned_v<S>) return a;
 
@@ -1600,10 +1600,10 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_abs_ps(a);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i64<S>) return _mm512_abs_epi64(a);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i32<S>) return _mm512_abs_epi32(a);
-		else if constexpr (sizeof(T) > 64 && FS.has(AVX512_F) && (is_f32<S> || is_f64<S> || is_i64<S>)) return split_abs();
+		else if constexpr (sizeof(T) > 64 && FS.has(AVX512_F) && (is_f32<S> || is_f64<S> || is_i64<S>)) return AVXXY_SPLIT_ABS;
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_i64<S>) return _mm256_abs_epi64(a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_i64<S>) return _mm_abs_epi64(a);
-		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_i64<S>) return split_abs();
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_i64<S>) return AVXXY_SPLIT_ABS;
 
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i8<S>) return _mm256_abs_epi8(a);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i16<S>) return _mm256_abs_epi16(a);
@@ -1619,7 +1619,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (is_f32<S>) return a & std::bit_cast<S>(~(uint32_t(1) << 31));
 		else if constexpr (is_fp16<S> || is_bf16<S>) return a & std::bit_cast<S>(~(uint16_t(1) << 15));
 
-		else if constexpr (sizeof(T) > 16) return split_abs();
+		else if constexpr (sizeof(T) > 16) return AVXXY_SPLIT_ABS;
 		else
 		{
 			internals::scream();
@@ -1627,6 +1627,7 @@ namespace AVXXY_NAMESPACE
 			for (size_t i = 0; i < N; ++i) ret[i] = std::abs(a[i]);
 			return ret;
 		}
+#undef AVXXY_SPLIT_ABS
 	}
 
 	template<typename S, size_t N>
