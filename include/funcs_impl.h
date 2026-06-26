@@ -764,7 +764,7 @@ namespace AVXXY_NAMESPACE
 		//TODO: put it in proper place!
 		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && any_i16<From> && any_i8<To>)
 		{
-			__m256i sh = _mm256_shuffle_epi8(a, _mm256_set1_epi64(0x0E'0C'0A'08'06'04'02'00)); //don't care about odd 64-bit members, so can just broadcast
+			__m256i sh = _mm256_shuffle_epi8(a, _mm256_set1_epi64x(0x0E'0C'0A'08'06'04'02'00)); //don't care about odd 64-bit members, so can just broadcast
 			//__m256i trunc1 = _mm256_and_si256(a, _mm256_set1_epi16(0xFF)); //force upper bytes of each word to zero
 			//__m256i packus = _mm256_packus_epi16(trunc1, trunc1); //upper 64-bit halves of each 128-bit lane are duplicated result
 			return TV::from_bits_us(_mm256_permute4x64_epi64(sh, 2 << 2)); //0, 2, 0, 0, upper discarded
@@ -794,6 +794,15 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(SSE2) && is_xmm_size(MaxSize) && is_f64<From> && is_f32<To>) return _mm_cvtpd_ps(a);
 		else if constexpr (FS.has(SSE2) && is_xmm_size(MaxSize) && is_i32<From> && is_f32<To>) return _mm_cvtepi32_ps(a);
 		else if constexpr (FS.has(SSE2) && is_xmm_size(MaxSize) && is_i32<From> && is_f64<To>) return _mm_cvtepi32_pd(a);
+
+		//TODO: test these. Also, add packus fallback
+		else if constexpr (FS.has(SSSE3) && is_xmm_size(MaxSize) && any_i8<To> && any_i64<From>) return _mm_shuffle_epi8(a, _mm_setr_epi8(0, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1));
+		else if constexpr (FS.has(SSSE3) && is_xmm_size(MaxSize) && any_i8<To> && any_i32<From>) return _mm_shuffle_epi8(a, _mm_setr_epi8(0, 4, 8, 12, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1));
+		else if constexpr (FS.has(SSSE3) && is_xmm_size(MaxSize) && any_i8<To> && any_i16<From>) return _mm_shuffle_epi8(a, _mm_setr_epi8(0, 2, 4, 6, 8, 10, 12, 14, -1, -1, -1, -1, -1, -1, -1, -1));
+		else if constexpr (FS.has(SSSE3) && is_xmm_size(MaxSize) && any_i16<To> && any_i32<From>) return _mm_shuffle_epi8(a, _mm_setr_epi8(0, 1, 4, 5, 8, 9, 12, 13, -1, -1, -1, -1, -1, -1, -1, -1));
+		else if constexpr (FS.has(SSSE3) && is_xmm_size(MaxSize) && any_i16<To> && any_i64<From>) return _mm_shuffle_epi8(a, _mm_setr_epi8(0, 1, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1));
+		else if constexpr (FS.has(SSE2) && is_xmm_size(MaxSize) && any_i32<To> && any_i64<From>) return _mm_shuffle_epi32(a, 0 | (2 << 2));
+		else if constexpr (FS.has(SSE) && is_xmm_size(MaxSize) && any_i32<To> && any_i64<From>) return _mm_shuffle_ps(vreinterpret_us<__m128>(a), vreinterpret_us<__m128>(a), 0 | (2 << 2));
 
 		else if constexpr (MaxSize > 16) return TV{ vcvt<To>(a.lo()), vcvt<To>(a.hi()) };
 		else
