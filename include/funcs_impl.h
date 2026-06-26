@@ -134,7 +134,12 @@ namespace AVXXY_NAMESPACE
 		using T = SIMD_Vector<S, N>;
 		using canon_t = std::conditional_t<(std::is_signed_v<S>), int16_t, uint16_t>;
 
-		if constexpr (any_i8<S>) return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b))); //no 8 bit mul as of last AVX512, so emulate
+		if constexpr (FS.has(AVX512_FP16) && zmm_sized<T> && is_fp16<S>) return _mm512_mul_ph(a, b);
+		else if constexpr (FS.has(AVX512_FP16) && FS.has(AVX512_VL) && ymm_sized<T> && is_fp16<S>) return _mm256_mul_ph(a, b);
+		else if constexpr (FS.has(AVX512_FP16) && FS.has(AVX512_VL) && xmm_sized<T> && is_fp16<S>) return _mm_mul_ph(a, b);
+		else if constexpr (!FS.has(AVX512_FP16) && is_fp16<S>) return vcvt<fp16_t>(mul(vcvt<float>(a), vcvt<float>(b)));
+
+		else if constexpr (any_i8<S>) return vcvt<S>(mul(vcvt<canon_t>(a), vcvt<canon_t>(b))); //no 8 bit mul as of last AVX512, so emulate
 
 		else if constexpr (FS.has(AVX512_DQ) && zmm_sized<T> && any_i64<S>) return _mm512_mullo_epi64(a, b);
 		else if constexpr (FS.has(AVX512_DQ) && FS.has(AVX512_VL) && ymm_sized<T> && any_i64<S>) return _mm256_mullo_epi64(a, b);
@@ -157,6 +162,8 @@ namespace AVXXY_NAMESPACE
 		}
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_mullo_epi32(a, b);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_mullo_epi16(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_mul_pd(a, b);
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f32<S>) return _mm256_mul_ps(a, b);
 
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_mul_pd(a, b);
 		else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_mul_ps(a, b);
