@@ -5,6 +5,7 @@
 #include "../small_fp.h"
 #include <bit>
 #include "enums.h"
+#include <array>
 
 namespace AVXXY_NAMESPACE
 {
@@ -108,6 +109,22 @@ namespace AVXXY_NAMESPACE
 
 		template<typename T> //requires (SupportsSizeClass<T>) 
 		inline constexpr VectorSizeClassEnum vector_size_class_v = vector_size_class(sizeof(T));
+
+		template<typename S, size_t N>
+		struct VectorTraits
+		{
+			static constexpr ScalarTraits<S> scalarTraits;
+			static inline constexpr size_t ActiveSize = sizeof(S) * N;
+			static inline constexpr std::array<S, N> AllZeroesArray = []() {
+				std::array<S, N> ret; for (auto& it : ret) it = std::bit_cast<S>(scalarTraits.AllZeroesUint);
+				return ret;
+				}();
+			static inline constexpr std::array<S, N> AllOnesArray = []() {
+				std::array<S, N> ret; for (auto& it : ret) it = std::bit_cast<S>(scalarTraits.AllOnesUint);
+				return ret;
+				}();
+			static inline constexpr VectorSizeClassEnum sizeClass = vector_size_class_v<std::array<S, N>>;
+		};
 
 		//@note for now, bigger than 64 lanes vectors are not supported (mainly due to mask type not being ready for it)
 		//@tparam S scalar type of the would-be vector
