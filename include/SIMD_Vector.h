@@ -122,7 +122,9 @@ namespace AVXXY_NAMESPACE
 		static SIMD_Vector<S, N> from_bits_us(const T& inp)
 		{
 			SIMD_Vector<S, N> ret;
-			memcpy(ret.arr.data(), &inp, std::min(sizeof(inp), sizeof(ret)));
+			static_assert(sizeof(ret.arr) == sizeof(ret));
+			if constexpr (sizeof(ret.arr) == sizeof(inp)) ret.arr = std::bit_cast<decltype(ret.arr)>(inp);
+			else memcpy(ret.arr.data(), &inp, std::min(sizeof(inp), sizeof(ret)));
 			return ret;
 		}
 
