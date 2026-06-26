@@ -900,15 +900,22 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using namespace internals;
 		using T = SIMD_Vector<S, N>;
-
+#ifdef __clang__
+		using unaligned256i = __m256i_u;
+		using unaligned128i = __m128i_u;
+#else
+		using unaligned256i = __m256i;
+		using unaligned128i = __m128i;
+#endif
+		
 		auto ld = [&]() {
 			if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_loadu_pd(p);
 			else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_loadu_ps(p);
 			else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_loadu_si512(p);
-			else if constexpr (FS.has(AVX) && ymm_sized<T> && any_int<S>) return _mm256_loadu_si256(reinterpret_cast<const __m256i_u*>(p));
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && any_int<S>) return _mm256_loadu_si256(reinterpret_cast<const unaligned256i*>(p));
 			else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_loadu_pd(reinterpret_cast<const double*>(p));
 			else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_loadu_ps(reinterpret_cast<const float*>(p));
-			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_int<S>) return _mm_loadu_si128(reinterpret_cast<const __m128i_u*>(p));
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_int<S>) return _mm_loadu_si128(reinterpret_cast<const unaligned128i*>(p));
 			else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_loadu_pd(reinterpret_cast<const double*>(p));
 			else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_loadu_ps(reinterpret_cast<const float*>(p));
 			else if constexpr (sizeof(T) > 16) return T{ load<S,N / 2>(p), load<S,N / 2>(reinterpret_cast<const S*>(p) + N / 2) };
