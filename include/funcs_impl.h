@@ -1538,8 +1538,10 @@ namespace AVXXY_NAMESPACE
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
+
+		auto split_abs = [&]() { return T{ abs(a.lo()), abs(a.hi()) }; };
+
 		if constexpr (std::is_unsigned_v<S>) return a;
-		//TODO: can add fallback for FP types by forcing sign bit to zero? Even if they're unsupported (i.e. FP16 on SSE)
 
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_abs_epi16(a);
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i8<S>) return _mm512_abs_epi8(a);
@@ -1548,8 +1550,10 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_abs_ps(a);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i64<S>) return _mm512_abs_epi64(a);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i32<S>) return _mm512_abs_epi32(a);
+		else if constexpr (sizeof(T) > 64 && FS.has(AVX512_F) && (is_f32<S> || is_f64<S> || is_i64<S>)) return split_abs();
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && ymm_sized<T> && is_i64<S>) return _mm256_abs_epi64(a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_i64<S>) return _mm_abs_epi64(a);
+		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && is_i64<S>) return split_abs();
 
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i8<S>) return _mm256_abs_epi8(a);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i16<S>) return _mm256_abs_epi16(a);
@@ -1560,10 +1564,12 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && is_i32<S>) return _mm_abs_epi32(a);
 
 		else if constexpr (is_i64<S>) return mask_mov(a, a < 0, -a);
-		else if constexpr (is_f32<S>) return a & std::bit_cast<S>(~(1u << 31)); //remove sign bits
-		else if constexpr (is_f64<S>) return a & std::bit_cast<S>(~(1ull << 63));
+		//force sign bit to zero
+		else if constexpr (is_f64<S>) return a & std::bit_cast<S>(~(uint64_t(1) << 63));
+		else if constexpr (is_f32<S>) return a & std::bit_cast<S>(~(uint32_t(1) << 31));
+		else if constexpr (is_fp16<S> || is_bf16<S>) return a & std::bit_cast<S>(~(uint16_t(1) << 15));
 
-		else if constexpr (sizeof(T) > 16) return T{ abs(a.lo()), abs(a.hi()) };
+		else if constexpr (sizeof(T) > 16) return split_abs();
 		else
 		{
 			internals::scream();
