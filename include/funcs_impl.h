@@ -809,6 +809,9 @@ namespace AVXXY_NAMESPACE
 		if constexpr (sizeof(S) == sizeof(S2)) return vcast<S2>(a);
 		else
 		{
+			//TODO: pre-AVX512 there are almost none narrowing conversions (or they use saturation)
+			//Thus, some other way is needed to truncate them.
+			//Saturation can be used by AND-ing with zeroes in upper bytes, that way saturation == truncation
 			using U = meta::ScalarTraits<S>::UintT;
 			using U2 = meta::ScalarTraits<S2>::UintT;
 			auto ex = vcvt<U2>(vcast<U>(a));
