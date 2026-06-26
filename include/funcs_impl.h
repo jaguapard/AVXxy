@@ -762,11 +762,12 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX) && is_ymm_size(MaxSize) && is_f64<From> && is_f32<To>) return _mm256_cvtpd_ps(a);
 
 		//TODO: put it in proper place!
-		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && any_i16 <From> && any_i8<To>)
+		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && any_i16<From> && any_i8<To>)
 		{
-			__m256i trunc1 = _mm256_and_si256(a, _mm256_set1_epi16(0xFF)); //force upper bytes of each word to zero
-			__m256i packus = _mm256_packus_epi16(trunc1, trunc1); //upper 64-bit halves of each 128-bit lane are duplicated result
-			return TV::from_bits_us(_mm256_permute4x64_epi64(packus, 2 << 2)); //0, 2, 0, 0, upper discarded
+			__m256i sh = _mm256_shuffle_epi8(a, _mm256_set1_epi64(0x0E0C0A0806040200)); //don't care about odd 64-bit members, so can just broadcast
+			//__m256i trunc1 = _mm256_and_si256(a, _mm256_set1_epi16(0xFF)); //force upper bytes of each word to zero
+			//__m256i packus = _mm256_packus_epi16(trunc1, trunc1); //upper 64-bit halves of each 128-bit lane are duplicated result
+			return TV::from_bits_us(_mm256_permute4x64_epi64(sh, 2 << 2)); //0, 2, 0, 0, upper discarded
 		}
 
 		else if constexpr (FS.has(SSE41) && is_xmm_size(MaxSize) && is_i16<From> && any_i32<To>) return _mm_cvtepi16_epi32(a);
