@@ -199,8 +199,14 @@ namespace AVXXY_NAMESPACE
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
 
+		//TODO: maybe BF16 is good enough to emulate 8 bit integer divison? Check whether it can represent numbers exactly. Only signed?
 		if constexpr (any_i32<S>) return vcvt<S>(div(vcvt<double>(a), vcvt<double>(b))); //emulate 32 bit integer division via double precision division
 		else if constexpr (any_small_int<S>) return vcvt<S>(div(vcvt<float>(a), vcvt<float>(b))); //emulate small integer division via single precision division
+
+		else if constexpr (FS.has(AVX512_FP16) && zmm_sized<T> && is_fp16<S>) return _mm512_div_ph(a, b);
+		else if constexpr (FS.has(AVX512_FP16) && FS.has(AVX512_VL) && ymm_sized<T> && is_fp16<S>) return _mm256_div_ph(a, b);
+		else if constexpr (FS.has(AVX512_FP16) && FS.has(AVX512_VL) && xmm_sized<T> && is_fp16<S>) return _mm_div_ph(a, b);
+		else if constexpr (!FS.has(AVX512_FP16) && is_fp16<S>) return vcvt<fp16_t>(div(vcvt<float>(a), vcvt<float>(b)));
 
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_div_pd(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_div_ps(a, b);
