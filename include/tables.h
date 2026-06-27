@@ -53,5 +53,13 @@ namespace AVXXY_NAMESPACE
 			}
 			return ret;
 			}();
+
+		//64-entry popcnt table for nibbles (duplicated 4 times)
+		//element at index i equals to popcnt(i % 16). This property allows this table to be used in _mm*_shuffle_epi8 family of instructions
+		alignas(64) static constexpr std::array<int8_t, 64> popcnt_table_for_nibbles_as_epi8 = []() {
+			std::array<int8_t, 64> ret;
+			for (size_t i = 0; i < 64; ++i) ret[i] = std::popcount(i % 16);
+			return ret;
+			}();
 	}
 }
