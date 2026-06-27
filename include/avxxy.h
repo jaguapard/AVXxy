@@ -146,6 +146,8 @@ namespace AVXXY_NAMESPACE
 	typedef SIMD_Vector<uint8_t, meta::NATIVE_VEC_N<uint8_t>> u8xn;
 	typedef SIMD_Vector<float, meta::NATIVE_VEC_N<float>> f32xn;
 	typedef SIMD_Vector<double, meta::NATIVE_VEC_N<double>> f64xn;
+	typedef SIMD_Vector<fp16_t, meta::NATIVE_VEC_N<fp16_t>> fp16xn;
+	typedef SIMD_Vector<bf16_t, meta::NATIVE_VEC_N<bf16_t>> bf16xn;
 
 
 
