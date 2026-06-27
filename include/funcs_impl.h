@@ -2121,6 +2121,28 @@ namespace AVXXY_NAMESPACE
 
 	}
 
+	template<size_t N>
+	SIMD_Vector<uint8_t, N> byte_shuffle(const SIMD_Vector<uint8_t, N>& a, const SIMD_Vector<uint8_t, N>& b)
+	{
+		using namespace meta;
+		using namespace internals;
+		using T = SIMD_Vector<uint8_t, N>;
+
+		if constexpr (FS.has(AVX512_BW) && zmm_sized<T>) return _mm512_shuffle_epi8(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T>) return _mm256_shuffle_epi8(a, b);
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T>) return _mm_shuffle_epi8(a, b);
+		else if constexpr (sizeof(T) > 16) return { byte_shuffle(a.lo(),b.lo()), byte_shuffle(a.hi(),b.hi()) };
+		else
+		{
+			T ret;
+			for (size_t start = 0; start < N; start += 16)
+				for (size_t i = 0; i < 16; ++i)
+					ret[start + i] = b[start + i] > 127 ? 0 : a[start + (b[i] & 15)];
+			return ret;
+		}
+		
+	}
+
 	template<typename S, size_t N, size_t Scale, typename I>
 	__forceinline SIMD_Vector<S, N> __gather_impl(const void* p, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
 	{
