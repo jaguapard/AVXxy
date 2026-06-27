@@ -1989,6 +1989,80 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N>
+	SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> vpopcnt(const SIMD_Vector<S, N>& a)
+	{
+		using namespace meta;
+		using namespace internals;
+		using U = typename ScalarTraits<S>::UintT;
+		using T = SIMD_Vector<S, N>;
+
+		//Requires AVX512-BW
+		auto popcnt512_epi8_via_shuffle = [](const __m512i& x) {
+			__m512i popcnt_table = _mm512_load_si512(tables::popcnt_table_for_nibbles_as_epi8.data());
+			__m512i nibble_mask = _mm512_set1_epi8(15);
+			__m512i lower_nibbles = _mm512_and_si512(x, nibble_mask);
+			__m512i upper_nibbles = _mm512_and_si512(_mm512_srli_epi32(x, 4), nibble_mask);
+			return _mm512_add_epi8(_mm512_shuffle_epi8(popcnt_table, lower_nibbles), _mm512_shuffle_epi8(popcnt_table, upper_nibbles));
+			};
+
+		//Requires AVX2
+		auto popcnt256_epi8_via_shuffle = [](const __m256i& x) {
+			__m256i popcnt_table = _mm256_load_si256(reinterpret_cast<const __m256i*>(tables::popcnt_table_for_nibbles_as_epi8.data()));
+			__m256i nibble_mask = _mm256_set1_epi8(15);
+			__m256i lower_nibbles = _mm256_and_si256(x, nibble_mask);
+			__m256i upper_nibbles = _mm256_and_si256(_mm256_srli_epi32(x, 4), nibble_mask);
+			return _mm256_add_epi8(_mm256_shuffle_epi8(popcnt_table, lower_nibbles), _mm256_shuffle_epi8(popcnt_table, upper_nibbles));
+			};
+
+		//Requires SSSE3
+		auto popcnt128_epi8_via_shuffle = [](const __m128i& x) {
+			__m128i popcnt_table = _mm_load_si128(reinterpret_cast<const __m128i*>(tables::popcnt_table_for_nibbles_as_epi8.data()));
+			__m128i nibble_mask = _mm_set1_epi8(15);
+			__m128i lower_nibbles = _mm_and_si128(x, nibble_mask);
+			__m128i upper_nibbles = _mm_and_si128(_mm_srli_epi32(x, 4), nibble_mask);
+			return _mm_add_epi8(_mm_shuffle_epi8(popcnt_table, lower_nibbles), _mm_shuffle_epi8(popcnt_table, upper_nibbles));
+			};
+
+		if constexpr (!any_int<S>) return vpopcnt(vcast<U>(a));
+		else if constexpr (FS.has(AVX512_VPOPCNTDQ) && zmm_sized<T> && any_i64<S>) return _mm512_popcnt_epi64(a);
+		else if constexpr (FS.has(AVX512_VPOPCNTDQ) && zmm_sized<T> && any_i32<S>) return _mm512_popcnt_epi32(a);
+		else if constexpr (FS.has(AVX512_BITALG) && zmm_sized<T> && any_i16<S>) return _mm512_popcnt_epi16(a);
+		else if constexpr (FS.has(AVX512_BITALG) && zmm_sized<T> && any_i8<S>) return _mm512_popcnt_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_VPOPCNTDQ) && ymm_sized<T> && any_i64<S>) return _mm256_popcnt_epi64(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_VPOPCNTDQ) && ymm_sized<T> && any_i32<S>) return _mm256_popcnt_epi32(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BITALG) && ymm_sized<T> && any_i16<S>) return _mm256_popcnt_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BITALG) && ymm_sized<T> && any_i8<S>) return _mm256_popcnt_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_VPOPCNTDQ) && xmm_sized<T> && any_i64<S>) return _mm_popcnt_epi64(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_VPOPCNTDQ) && xmm_sized<T> && any_i32<S>) return _mm_popcnt_epi32(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BITALG) && xmm_sized<T> && any_i16<S>) return _mm_popcnt_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BITALG) && xmm_sized<T> && any_i8<S>) return _mm_popcnt_epi8(a);
+
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return popcnt512_epi8_via_shuffle(a);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_maddubs_epi16(popcnt512_epi8_via_shuffle(a), _mm512_set1_epi8(1));
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i32<S>) return _mm512_madd_epi16(vpopcnt(vcast<uint16_t>(a)), _mm512_set1_epi16(1));
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i64<S>) return _mm512_sad_epu8(popcnt512_epi8_via_shuffle(a), _mm512_setzero_si512());
+
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return popcnt256_epi8_via_shuffle(a);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_maddubs_epi16(popcnt256_epi8_via_shuffle(a), _mm256_set1_epi8(1));
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_madd_epi16(vpopcnt(vcast<uint16_t>(a)), _mm256_set1_epi16(1));
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_sad_epu8(popcnt256_epi8_via_shuffle(a), _mm256_setzero_si256());
+
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i8<S>) return popcnt128_epi8_via_shuffle(a);
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i16<S>) return _mm_maddubs_epi16(popcnt128_epi8_via_shuffle(a), _mm_set1_epi8(1));
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i32<S>) return _mm_madd_epi16(vpopcnt(vcast<uint16_t>(a)), _mm_set1_epi16(1));
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i64<S>) return _mm_sad_epu8(popcnt128_epi8_via_shuffle(a), _mm_setzero_si128());
+
+		else if constexpr (sizeof(S) > 16) return { vpopcnt(a.lo()), vpopcnt(a.hi()) };
+		else
+		{
+			T ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = std::popcount(a[i]);
+			return ret;
+		}
+
+	}
+
+	template<typename S, size_t N>
 	__forceinline mask_t<S, N> movemask(const SIMD_Vector<S, N>& v)
 	{
 		using namespace meta;
