@@ -57,7 +57,7 @@ int main()
 	std::cout << rr;
 
 	mask32d x = 0x434234;
-	auto z123187 = mask_mov(vcast<uint16_t>(rr), x, vcast<uint16_t>(read));
+	auto z123187 = vpopcnt(read);
 	std::cout << "\n" << z123187;
 #if 0
 	
