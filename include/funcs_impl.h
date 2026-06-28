@@ -2171,7 +2171,7 @@ namespace AVXXY_NAMESPACE
 		{
 			T ret;
 			for (size_t start = 0; start < N; start += 16)
-				for (size_t i = 0; i < 16; ++i)
+				for (size_t i = 0; i < std::min(N-start, 16); ++i)
 					ret[start + i] = b[start + i] > 127 ? 0 : a[start + (b[i] & 15)];
 			return ret;
 		}

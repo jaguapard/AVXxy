@@ -347,7 +347,7 @@ namespace AVXXY_NAMESPACE
 	//If uppermost bit of the index in `b` is set, then corresponding output lane is zeroed out.
 	//Otherwise, the byte is taken from the same 128-bit lane `a` by index b[i] & 15.
 	//for (size_t start = 0; start < sizeof(a); start += 16)
-	//    for (size_t i = 0; i < 16; ++i)
+	//    for (size_t i = 0; i < std::min(N-start, 16); ++i)
 	//        ret[start + i] = b[start + i] > 127 ? 0 : a[start + (b[i] & 15)]
 	template<typename S, size_t N>
 	SIMD_Vector<S, N> byte_shuffle(const SIMD_Vector<S, N>& a, const SIMD_Vector<uint8_t, N * sizeof(S)>& b);
