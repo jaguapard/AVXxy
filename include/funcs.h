@@ -35,14 +35,21 @@ namespace AVXXY_NAMESPACE
 
 
 
-	//Shift packed integers in `a` left by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result
+	//Shift packed integers in `a` left by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result.
 	template<meta::any_int S, size_t N, meta::any_int I>
 	SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount);
 
-	//Shift packed integers in `a` right by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result
+	//Shift packed integers in `a` left by the amount specified by the template parameter A while shifting in zeros, and returns the result.
+	template<size_t A, meta::any_int S, size_t N>
+	SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a);
+
+	//Shift packed integers in `a` right by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result.
 	template<meta::any_int S, size_t N, meta::any_int I>
 	SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount);
 
+	//Shift packed integers in `a` right by the amount specified by the template parameter A while shifting in zeros, and returns the result.
+	template<size_t A, meta::any_int S, size_t N>
+	SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a);
 
 
 	//Performs permutation on the elements from vector `a`. Elements of the returned vector are gathered from vector `a` by indices passed in `ind`.
@@ -64,18 +71,23 @@ namespace AVXXY_NAMESPACE
 	//Converts the input to double-precision floating point numbers, then returns the square root of this value
 	template<typename S, size_t N> SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a);
 
-	//Converts the vector of one type to vector of another and returns the result
+	//Converts the vector of one scalar type to vector of another scalar type and returns the result
 	//For floating point to integer conversions, the input vector is truncated
 	//For integer to bigger integer conversions, the input vector is sign or zero extended, depending on input signedness
 	//For integer to smaller integer conversions, the input vector is wrapped around small integer's max value (TODO: is it true?)
-	template<typename To, size_t N, typename From> SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value);
-	//Appends vector `what` to vector `to` and returns the result
-	template<typename S, size_t N> SIMD_Vector<S, N * 2> concat(const SIMD_Vector<S, N>& to, const SIMD_Vector<S, N>& what);
+	template<meta::IsScalarType To, size_t N, meta::IsScalarType From> SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value);
+
+	//Concatenates vectors in order they are passed to function call (left to right) and returns the result.
+	//Leftmost vector is copied to lowest bits of the output, then second leftmost is appended to it, etc
+	//Until the final rightmost vector that is copied to the highest bits of the output
+	//The resultant vector's size is equal to sum of all input sizes
+	template<typename S, size_t... Ns>
+	auto concat(const SIMD_Vector<S, Ns>&... vectors);
 
 	//vrzext - vector reinterpret and zero-extend
 	//Reinterprets input vector as raw memory, zero-extends each element vector to size of S2 and returns the resultant vector
 	//requires output scalar type to be larger or equal in size to input scalar type
-	//i.e. vrzext<double>(SIMD_Vector<int8_t, 8>> will put the input element into lowest byte of 8 byte lane of output, upper 7 bytes will be zeroes, then reinterpreted as doubles and returned
+	//i.e. vrzext<double>(SIMD_Vector<int8_t, 8>>) will put the input element into lowest byte of 8 byte lane of output, upper 7 bytes will be filled with zeros, then reinterpreted as doubles and returned
 	//If input and output scalar sizes match, the input vector is only reinterpreted as output vector
 	template<typename S2, typename S, size_t N>
 	requires (sizeof(S2) >= sizeof(S))
@@ -298,11 +310,6 @@ namespace AVXXY_NAMESPACE
 	//chunk_ret[i] = i % 2 == 0 ? chunk_a[x+i/2] : chunk_b[x+i/2]
 	template<typename S, size_t N> SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 
-	//Converts vector of half-precision floating point numbers (FP16) to single precision (FP32)
-	//template <size_t N> SIMD_Vector<float, N> vcvt_fp16_fp32(const SIMD_Vector<uint16_t, N>& a);
-	//Converts vector of single precision floating point numbers (FP32) to half-precision (FP16)
-	//template <size_t N> SIMD_Vector<uint16_t, N> vcvt_fp32_fp16(const SIMD_Vector<float, N>& a);
-
 	//Copies vector `src` and conditionally overwrites it with elements of vector `a`
 	//Mask is iterated from lower bits to higher ones. 
 	//If the mask bit is set, the corresponding element is read from `a` and is written to return vector at pivot point, 
@@ -338,10 +345,36 @@ namespace AVXXY_NAMESPACE
 	//After the shuffle is done, reinterprets the shuffled vector back to input type and returns it.
 	//Only uppermost bit and 4 lowest bits of each index byte are used for the shuffle.
 	//If uppermost bit of the index in `b` is set, then corresponding output lane is zeroed out.
-	//Otherwise, the byte is taken from the same 128-bit lane `a` by index b[i] & 15.
-	//for (size_t start = 0; start < sizeof(a); start += 16)
-	//    for (size_t i = 0; i < 16; ++i)
+	//Otherwise, the byte is taken from the same 128-bit lane of `a` by index b[i] & 15.
+	//X = sizeof(a)
+	//for (size_t start = 0; start < X; start += 16)
+	//    for (size_t i = 0; i < std::min(X-start, 16); ++i)
 	//        ret[start + i] = b[start + i] > 127 ? 0 : a[start + (b[i] & 15)]
 	template<typename S, size_t N>
 	SIMD_Vector<S, N> byte_shuffle(const SIMD_Vector<S, N>& a, const SIMD_Vector<uint8_t, N * sizeof(S)>& b);
+
+
+	//Performs a block permutation of input vector by compile-time-known indices.
+	//Requires size of input to be divisible by size of block.
+	//Requires number of indices and number of blocks in input to match.
+	//Requires all indices to be in range 0 to C-1 inclusive, where C in number of blocks in the input vector.
+	//@tparam Block This type's size is used as permutation granularity. Only scalar and vector types are accepted
+	//@tparam Idx zero-indexed source block indices. Output block i is copied from input block Idx[i]
+	template<typename Block, size_t... Idx, typename S, size_t N>
+	SIMD_Vector<S, N> permute(const SIMD_Vector<S, N>& a);
+
+	//Performs a block permutation of 2 input vectors by compile-time-known indices.
+	//Requires size of inputs to be divisible by size of block.
+	//Requires number of indices and number of blocks in input to match.
+	//Requires all indices to be in range 0 to 2*C-1 inclusive, where C in number of blocks in the input vector.
+	//@tparam Block This type's size is used as permutation granularity. Only scalar and vector types are accepted
+	//@tparam Idx zero-indexed source block indices. Output block i is copied from a's block Idx[i] if index is less than C or from b's block Idx[i] otherwise 
+	template<typename Block, size_t... Idx, typename S, size_t N>
+	SIMD_Vector<S, N> permute2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+
+	//Loads a vector of same type as input from p using mask, then blends the loaded value with input vector, and stores the result back to p
+	//Pointer p does not have to be aligned.
+	//This operation is very similar to masked store, but umasked lanes may still cause memory-related faults.
+	//Due to not requiring masking, it is preferred to use this function if caller guarantees that the load will not touch invalid memory
+	//template<typename S, size_t N> blend_store(const SIMD_Vector<S, N>& v, const mask_t<S, N>& mask, void* p);
 }
