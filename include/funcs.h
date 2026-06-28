@@ -344,4 +344,11 @@ namespace AVXXY_NAMESPACE
 	//        ret[start + i] = b[start + i] > 127 ? 0 : a[start + (b[i] & 15)]
 	template<typename S, size_t N>
 	SIMD_Vector<S, N> byte_shuffle(const SIMD_Vector<S, N>& a, const SIMD_Vector<uint8_t, N * sizeof(S)>& b);
+
+
+	//Loads a vector of same type as input from p using mask, then blends the loaded value with input vector, and stores the result back to p
+	//Pointer p does not have to be aligned.
+	//This operation is very similar to masked store, but umasked lanes may still cause memory-related faults.
+	//Due to not requiring masking, it is preferred to use this function if caller guarantees that the load will not touch invalid memory
+	//template<typename S, size_t N> blend_store(const SIMD_Vector<S, N>& v, const mask_t<S, N>& mask, void* p);
 }
