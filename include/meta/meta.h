@@ -219,7 +219,7 @@ namespace AVXXY_NAMESPACE
 			if constexpr (FS.has(AVX512_F)) return 64 / sizeof(S);
 			else if constexpr (FS.has(AVX)) return 32 / sizeof(S);
 			else if constexpr (FS.has(SSE)) return 16 / sizeof(S);
-			else return 2; //TODO: safeguard for scalars, since vectors can't have size 1 for now
+			else return 1;
 			}();
 
 
