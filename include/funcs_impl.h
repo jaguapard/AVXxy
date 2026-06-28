@@ -845,15 +845,15 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
-	template<typename S2, typename S, size_t N> requires (meta::IsScalarType<S2> && (sizeof(SIMD_Vector<S, N>) % sizeof(S2) == 0))
-		__forceinline SIMD_Vector<S2, sizeof(SIMD_Vector<S, N>) / sizeof(S2)> vcast(const SIMD_Vector<S, N>& a)
+	template<meta::IsScalarType S2, typename S, size_t N> requires (sizeof(SIMD_Vector<S, N>) % sizeof(S2) == 0)
+	__forceinline SIMD_Vector<S2, sizeof(SIMD_Vector<S, N>) / sizeof(S2)> vcast(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
 		using U = typename ScalarTraits<S>::UintT;
 		return vreinterpret_us<SIMD_Vector<S2, sizeof(SIMD_Vector<S, N>) / sizeof(S2)>>(a);
 	}
-	template<typename T, typename S, size_t N>
-		requires (meta::IsSimdVector<T> && (sizeof(SIMD_Vector<S, N>) % sizeof(typename T::ScalarT) == 0) && sizeof(SIMD_Vector<S, N>) == sizeof(T))
+	template<meta::IsSimdVector T, typename S, size_t N>
+		requires ((sizeof(SIMD_Vector<S, N>) % sizeof(typename T::ScalarT) == 0) && sizeof(SIMD_Vector<S, N>) == sizeof(T))
 	__forceinline T vcast(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
