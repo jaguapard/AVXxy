@@ -12,7 +12,7 @@ namespace AVXXY_NAMESPACE
 {
 	//Vector of N values of type S.
 	//@tparam S element type of this vector. Only these types are supported: signed and unsigned integers: 8, 16, 32 and 64-bit wide, float, double, FP16 (via fp16_t) and BF16 (via bf16_t)
-	//@tparam N Lane count of this vector. Must be one of these values: 2, 4, 8, 16, 32, 64
+	//@tparam N Lane count of this vector. Must be one of these values: 1, 2, 4, 8, 16, 32, 64
 	template <typename S, size_t N>
 		requires meta::IsValid_SIMD_Vector<S, N>
 	class alignas(std::min<uint32_t>(64, sizeof(S)* N)) SIMD_Vector
