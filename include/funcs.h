@@ -221,7 +221,7 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//By default, scale is set to the size of vector's scalar type
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
-	template <meta::IsSimdVector T, size_t Scale = sizeof(typename T::ScalarT), typename I>
+	template <meta::IsSimdVector T, size_t Scale = sizeof(typename T::ScalarT), meta::any_int I>
 	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskT& mask = T::MaskT::AllOnesUint, const T& src = 0)
 	{
 		return __gather_impl<typename T::ScalarT, T::LaneCount, Scale>(base, ind, mask, src);
@@ -271,9 +271,9 @@ namespace AVXXY_NAMESPACE
 	//The returned values are undefined for signed elements equal to their minimum value
 	template<typename S, size_t N> SIMD_Vector<S, N> abs(const SIMD_Vector<S, N>& a);
 	//Rounds each element of input vector towards negative infinity (floor) and returns the result.
-	template<typename S, size_t N> requires (meta::any_float<S>) SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a);
+	template<meta::any_float S, size_t N> SIMD_Vector<S, N> floor(const SIMD_Vector<S, N>& a);
 	//Rounds each element of input vector towards positive infinity (ceil) and returns the result.
-	template<typename S, size_t N> requires (meta::any_float<S>) SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a);
+	template<meta::any_float S, size_t N> SIMD_Vector<S, N> ceil(const SIMD_Vector<S, N>& a);
 	//Compares two vectors together element-wise and returns the lower ones.
 	//ret[i] = a[i] < b[i] ? a[i] : b[i]
 	template<typename S, size_t N> SIMD_Vector<S, N> min(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
@@ -320,7 +320,7 @@ namespace AVXXY_NAMESPACE
 	//    for (size_t j = 0; j < i; ++j)
 	//        if (a[i] == a[j]) ret[i] |= 1 << j; 
 	template <typename S, size_t N> requires (sizeof(S) * 8 >= N)
-		SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a);
+	SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> conflict(const SIMD_Vector<S, N>& a);
 
 	//For each element in `a`, computes the number of set bits and stores the computed value into corresponding element of returned vector
 	//for (size_t i = 0; i < N; ++i) ret[i] = popcnt(a[i])
