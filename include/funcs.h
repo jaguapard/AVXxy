@@ -148,7 +148,7 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p);
 
 	//Loads vector from memory p and returns the result. The memory does not have to be aligned
-	template<typename T> requires meta::IsSimdVector<T> T __forceinline load(const void* p)
+	template<meta::IsSimdVector T> T __forceinline load(const void* p)
 	{
 		return load<typename T::ScalarT, T::LaneCount>(p);
 	}
@@ -163,7 +163,7 @@ namespace AVXXY_NAMESPACE
 	//16 bytes for vectors less than or equal to 16 bytes
 	//32 bytes for vectors sized between 17 and 32 bytes inclusive
 	//64 bytes for vectors larger than 32 bytes
-	template<typename T> requires meta::IsSimdVector<T> T __forceinline load_a(const void* p)
+	template<meta::IsSimdVector T> T __forceinline load_a(const void* p)
 	{
 		return load_a<typename T::ScalarT, T::LaneCount>(p);
 	}
@@ -174,7 +174,7 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : std::bit_cast<S>(0);
 	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask);
-	template<typename T> requires (meta::IsSimdVector<T>) T __forceinline load(const void* p, const typename T::MaskT& mask)
+	template<meta::IsSimdVector T> T __forceinline load(const void* p, const typename T::MaskT& mask)
 	{
 		return load<typename T::ScalarT, T::LaneCount>(p, mask);
 	}
@@ -190,7 +190,7 @@ namespace AVXXY_NAMESPACE
 	//If the corresponding mask bit is cleared, the corresponding element in memory is not read and the corresponding element from src is stored into the retuned vector
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : src[i]
-	template<typename T> requires meta::IsSimdVector<T>
+	template<meta::IsSimdVector T>
 	__forceinline T load(const void* p, const typename T::MaskT& mask, const T& src)
 	{
 		return load<typename T::ScalarT, T::LaneCount>(p, mask, src);
