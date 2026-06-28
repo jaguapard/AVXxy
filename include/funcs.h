@@ -19,14 +19,21 @@ namespace AVXXY_NAMESPACE
 	//64-bit integer division is scalar
 	template<typename S, size_t N> SIMD_Vector<S, N> div(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 
+
+
 	//Returns bitwise logical and of the two vectors. Floating point vectors are also legibile for this operation.
 	template<typename S, size_t N> SIMD_Vector<S, N> logic_and(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+
 	//Returns bitwise logical or of the two vectors. Floating point vectors are also legibile for this operation.
 	template<typename S, size_t N> SIMD_Vector<S, N> logic_or(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+
 	//Returns bitwise logical exclusive or of the two vectors. Floating point vectors are also legibile for this operation.
 	template<typename S, size_t N> SIMD_Vector<S, N> logic_xor(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+
 	//Returns bitwise logical negation of the input vector. Floating point vectors are also legibile for this operation.
 	template<typename S, size_t N> SIMD_Vector<S, N> logic_not(const SIMD_Vector<S, N>& a);
+
+
 
 	//Shift packed integers in `a` left by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result
 	template<meta::any_int S, size_t N, meta::any_int I>
@@ -36,16 +43,21 @@ namespace AVXXY_NAMESPACE
 	template<meta::any_int S, size_t N, meta::any_int I>
 	SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount);
 
+
+
 	//Performs permutation on the elements from vector `a`. Elements of the returned vector are gathered from vector `a` by indices passed in `ind`.
 	//Indices outside the range [0, N-1] wrap around N (-1 maps to N-1, N maps to 0).
 	//ret[i] = a[ind[i] & (N-1)]
-	template<typename S, size_t N, typename I> requires (meta::any_int<I>) SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind);
+	template<typename S, size_t N, meta::any_int I> SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind);
+
 	//Appends vector `b` to vector `a`, then performs permutation on the elements from this temporary value. 
 	//Elements of the returned vector are gathered from temporary vector by indices passed in `ind` 
 	//Indices outside the range [0, 2*N-1] wrap around 2*N (-1 maps to 2*N-1, 2*N maps to 0).
 	//t = ind[i] & (2*N - 1)
 	//ret[i] = t < N ? a[t] : b[t-N]
-	template<typename S, size_t N, typename I> requires (meta::any_int<I>) SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind);
+	template<typename S, size_t N, meta::any_int I> SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind);
+
+
 
 	//Converts the input to single-precision floating point numbers, then returns the square root of this value
 	template<typename S, size_t N> SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a);
