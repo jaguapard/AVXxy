@@ -2073,8 +2073,8 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BITALG) && xmm_sized<T> && any_i8<S>) return _mm_popcnt_epi8(a);
 
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i64<S>) return _mm512_sad_epu8(vpopcnt(vcast<uint8_t>(a)), _mm512_setzero_si512());
-		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_maddubs_epi16(vpopcnt(vcast<uint8_t>(a)), _mm512_set1_epi8(1));
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i32<S>) return _mm512_madd_epi16(vpopcnt(vcast<uint16_t>(a)), _mm512_set1_epi16(1));
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_maddubs_epi16(vpopcnt(vcast<uint8_t>(a)), _mm512_set1_epi8(1));
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return popcnt8();
 
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_sad_epu8(vpopcnt(vcast<uint8_t>(a)), _mm256_setzero_si256());
