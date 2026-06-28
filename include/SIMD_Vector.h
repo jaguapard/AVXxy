@@ -210,6 +210,17 @@ namespace AVXXY_NAMESPACE
 			(*this)[48] = s48; (*this)[49] = s49; (*this)[50] = s50; (*this)[51] = s51; (*this)[52] = s52; (*this)[53] = s53; (*this)[54] = s54; (*this)[55] = s55;
 			(*this)[56] = s56; (*this)[57] = s57; (*this)[58] = s58; (*this)[59] = s59; (*this)[60] = s60; (*this)[61] = s61; (*this)[62] = s62; (*this)[63] = s63;
 		}
+
+		//Generic constructor. Converts all input arguments to vector's scalar type and assigns them in left-to-right order
+		template<typename... Ts> requires (N != 1 && N > 64 && meta::AllAreScalarTypes<Ts...> && sizeof...(Ts) == N)
+			SIMD_Vector(Ts... s)
+		{
+			size_t i = 0;
+			auto append = [&](auto x) {
+				(*this)[i++] = x;
+				};
+			(append(s), ...);
+		}
 	};
 
 	template<typename S, size_t N>
