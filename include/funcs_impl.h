@@ -683,7 +683,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 
-	template<typename To, size_t N, typename From>
+	template<meta::IsScalarType To, size_t N, meta::IsScalarType From>
 	__forceinline SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& a)
 	{
 		using namespace meta;
