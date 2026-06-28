@@ -7,6 +7,7 @@
 #include "enums.h"
 #include <array>
 #include "../FeatureSet.h"
+#include "../settings.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -220,5 +221,9 @@ namespace AVXXY_NAMESPACE
 			else if constexpr (FS.has(SSE)) return 16 / sizeof(S);
 			else return 2; //TODO: safeguard for scalars, since vectors can't have size 1 for now
 			}();
+
+
+		template<typename S>
+		concept vpopcnt_allowed = (meta::any_int<S> || settings::ALLOW_VPOPCNT_FOR_NON_INTS);
 	}
 }

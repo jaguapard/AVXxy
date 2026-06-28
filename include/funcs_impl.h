@@ -1988,7 +1988,7 @@ namespace AVXXY_NAMESPACE
 
 	}
 
-	template<typename S, size_t N>
+	template<typename S, size_t N> requires (meta::vpopcnt_allowed<S>)
 	SIMD_Vector<typename meta::ScalarTraits<S>::UintT, N> vpopcnt(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;

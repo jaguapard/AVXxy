@@ -29,6 +29,11 @@ namespace AVXXY_NAMESPACE
 		//Operations relying on it will use zero-filling if they have size mismatch
 		static constexpr bool ALLOW_UNSAFE_OPERATIONS = true;
 
+		//If this value is true, vpopcnt function will allow passing floating point types to it.
+		//The returned vectors will still be integral.
+		//Default value: true
+		static constexpr bool ALLOW_VPOPCNT_FOR_NON_INTS = true;
+
 
 		//FP16 operations without native support (AVX512-FP16) are emulated via convert to FP32 + do operation + convert back to FP16
 		//Repeated conversions introduce performance penalty and less precision in calculations
