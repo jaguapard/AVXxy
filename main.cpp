@@ -22,6 +22,18 @@ void scatterToFrameBuffer(const std::array<f32x16, 4>& colors, i32x16 x, i32x16 
 	//scatter(rgba8_15, frameBuf, scatterInd.hi(), mask.hi());
 }
 
+//Prevent value passed to it from being optimized away
+#ifdef __clang__
+template <typename T>
+inline void DoNotOptimize(T& value) {
+	asm volatile("" : "+r,m"(value) : : "memory");
+}
+#else
+template <typename T>
+inline void DoNotOptimize(T& value) {
+	volatile T out = value;
+}
+#endif
 
 using namespace AVXXY_NAMESPACE;
 using namespace internals;
@@ -35,6 +47,8 @@ int main()
 
 	f32x64 ff;
 	f32x16 read;
+	f32x8 read2;
+	f32x4 read3;
 	size_t zcnt = 0;
 	for (auto c : buf) if (!c) ++zcnt;
 	if (zcnt < sizeof(buf) - 1)
@@ -44,13 +58,23 @@ int main()
 		{
 			float* pp = &ff[0];
 			memcpy(pp + i * 16, buf, 64);
+			read2 = load<f32x8>(buf);
+			read3 = load<f32x4>(buf);
 		}
 	}
 	else
 	{
 		for (size_t i = 0; i < 64; ++i) ff[i] = i;
 		read = f32x16(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+		read3 = f32x4(101, 102, 103, 104);
+		read2= f32x8(201, 202, 203, 204, 205, 206, 207, 208);
 	}
+
+	
+
+	auto concatted = concat(read, read3, read2, read3);
+	DoNotOptimize(concatted);
+	//std::cout << "Concat returned:" << concatted << "\n";
 
 	f32x16 rr = abs(read);
 	int xx = 0;

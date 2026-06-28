@@ -76,8 +76,13 @@ namespace AVXXY_NAMESPACE
 	//For integer to bigger integer conversions, the input vector is sign or zero extended, depending on input signedness
 	//For integer to smaller integer conversions, the input vector is wrapped around small integer's max value (TODO: is it true?)
 	template<typename To, size_t N, typename From> SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value);
-	//Appends vector `what` to vector `to` and returns the result
-	template<typename S, size_t N> SIMD_Vector<S, N * 2> concat(const SIMD_Vector<S, N>& to, const SIMD_Vector<S, N>& what);
+
+	//Concatenates vectors in order they are passed to function call (left to right) and returns the result.
+	//Leftmost vector is copied to lowest bits of the output, then second leftmost is appended to it, etc
+	//Until the final rightmost vector that is copied to the highest bits of the output
+	//The resultant vector's size is equal to sum of all input sizes
+	template<typename S, size_t... Ns>
+	auto concat(const SIMD_Vector<S, Ns>&... vectors);
 
 	//vrzext - vector reinterpret and zero-extend
 	//Reinterprets input vector as raw memory, zero-extends each element vector to size of S2 and returns the resultant vector

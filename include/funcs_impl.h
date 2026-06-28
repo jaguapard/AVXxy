@@ -872,6 +872,23 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
+	template<typename S, size_t... Ns>
+	auto concat(const SIMD_Vector<S, Ns>&... vectors)
+	{
+		constexpr size_t total_N = (Ns + ...);
+		SIMD_Vector<S, total_N> ret;
+
+		std::byte* p = reinterpret_cast<std::byte*>(&ret);
+		auto append = [&](const auto& v)
+		{
+			memcpy(p, &v, sizeof(v));
+			p += sizeof(v);
+		};
+
+		(append(vectors), ...);
+		return ret;
+	}
+
 	template<typename S2, typename S, size_t N> requires (sizeof(S2) >= sizeof(S))
 		SIMD_Vector<S2, N> vrzext(const SIMD_Vector<S, N>& a)
 	{
