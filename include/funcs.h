@@ -39,10 +39,17 @@ namespace AVXXY_NAMESPACE
 	template<meta::any_int S, size_t N, meta::any_int I>
 	SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount);
 
+	//Shift packed integers in `a` left by the amount specified by the template parameter A while shifting in zeros, and returns the result
+	template<size_t A, meta::any_int S, size_t N>
+	SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a);
+
 	//Shift packed integers in `a` right by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result
 	template<meta::any_int S, size_t N, meta::any_int I>
 	SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount);
 
+	//Shift packed integers in `a` right by the amount specified by the template parameter A while shifting in zeros, and returns the result
+	template<size_t A, meta::any_int S, size_t N>
+	SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a);
 
 
 	//Performs permutation on the elements from vector `a`. Elements of the returned vector are gathered from vector `a` by indices passed in `ind`.

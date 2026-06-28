@@ -378,6 +378,62 @@ namespace AVXXY_NAMESPACE
 			return ret;
 		}
 	}
+	template<size_t A, meta::any_int S, size_t N>
+	SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a)
+	{
+		using namespace internals;
+		using namespace meta;
+		using T = SIMD_Vector<S, N>;
+
+		//TODO: add GFNI 8-bit shift
+		if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_slli_epi16(a, A);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_slli_epi32(a, A);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_slli_epi64(a, A);
+
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_slli_epi16(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_slli_epi32(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_slli_epi64(a, A);
+
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_slli_epi16(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_slli_epi32(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_slli_epi64(a, A);
+		else if constexpr (sizeof(T) > 16) return { shift_left<A>(a.lo()), shift_left<A>(a.hi()) };
+		else
+		{
+			T ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = a[i] << A;
+			return ret;
+		}
+	}
+
+	template<size_t A, meta::any_int S, size_t N>
+	SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a)
+	{
+		using namespace internals;
+		using namespace meta;
+		using T = SIMD_Vector<S, N>;
+
+		//TODO: add GFNI 8-bit shift
+		if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srli_epi16(a, A);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srli_epi32(a, A);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srli_epi64(a, A);
+
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_srli_epi16(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_srli_epi32(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_srli_epi64(a, A);
+
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_srli_epi16(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_srli_epi32(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_srli_epi64(a, A);
+		else if constexpr (sizeof(T) > 16) return { shift_right<A>(a.lo()), shift_right<A>(a.hi()) };
+		else
+		{
+			T ret;
+			for (size_t i = 0; i < N; ++i) ret[i] = a[i] << A;
+			return ret;
+		}
+	}
+
 	template<meta::any_int S, size_t N, meta::any_int I>
 	__forceinline SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
