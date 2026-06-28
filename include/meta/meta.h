@@ -188,7 +188,7 @@ namespace AVXXY_NAMESPACE
 		//indicates whether this type is 64 bit integer, signed or unsigned
 		template <typename T> inline constexpr bool any_i64 = (is_u64<T> || is_i64<T>);
 		//indicates whether this type is integral
-		template <typename T> requires (IsScalarType<T>) inline constexpr bool any_int = std::is_integral_v<T>;
+		template <typename T> concept any_int = std::is_integral_v<T> && IsScalarType<T>;
 		//indicates whether this type is not integralmore
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool not_int = !std::is_integral_v<T>;
 
