@@ -20,7 +20,7 @@ namespace AVXXY_NAMESPACE
 	private:
 		union {
 			std::array<S, N> arr;
-			struct { std::array<S, N / 2> half_lo, half_hi; };
+			//struct { std::array<S, N / 2> half_lo, half_hi; };
 		};
 	public:
 		template<typename FriendS, size_t FriendN> requires meta::IsValid_SIMD_Vector<FriendS, FriendN>
@@ -77,12 +77,12 @@ namespace AVXXY_NAMESPACE
 
 		//Constructs vector from halves
 		template<size_t N2>
-			requires (N2 >= 2 && N2 * 2 == N)
+			requires (N2 * 2 == N)
 		SIMD_Vector(const SIMD_Vector<S, N2>& lo, const SIMD_Vector<S, N2>& hi)
 		{
 			static_assert(N % 2 == 0);
-			half_lo = lo.arr;
-			half_hi = hi.arr;
+			memcpy(arr.data(), lo.arr.data(), sizeof(lo.arr));
+			memcpy(arr.data() + N / 2, hi.arr.data(), sizeof(hi.arr));
 		}
 
 
@@ -98,30 +98,19 @@ namespace AVXXY_NAMESPACE
 			return ret;
 		}
 		//Copies and returns lower half of this vector
-		auto lo() const
-			requires (N >= 4)
+		auto lo() const requires (N >= 2)
 		{
-			return SIMD_Vector<S, N / 2>(half_lo);
+			SIMD_Vector<S, N / 2> ret;
+			memcpy(ret.arr.data(), arr.data(), sizeof(ret.arr));
+			return ret;
 		}
 		//Copies and returns upper half of this vector
-		auto hi() const
-			requires (N >= 4)
+		auto hi() const requires (N >= 2)
 		{
-			return SIMD_Vector<S, N / 2>(half_hi);
+			SIMD_Vector<S, N / 2> ret;
+			memcpy(ret.arr.data(), arr.data() + N / 2, sizeof(ret.arr));
+			return ret;
 		}
-		//Copies and returns lower half of this vector
-		S lo() const
-			requires (N == 2)
-		{
-			return arr[0];
-		}
-		//Copies and returns upper half of this vector
-		S hi() const
-			requires (N == 2)
-		{
-			return arr[1];
-		}
-
 
 		//Constructs vector by reinterperting the value of inp as vector of wanted type
 		//If input value is larger than returned vector, the input's upper bits are discarded
