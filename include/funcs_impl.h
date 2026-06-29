@@ -1995,6 +1995,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_compress_epi64(src, mask, a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_compress_epi32(src, mask, a);
 
+		else if constexpr (FS.has(AVX512_F) && (zmm_sized<T> || ((ymm_sized<T> || xmm_sized<T>) && FS.has(AVX512_VL))) && any_small_int<S>) return vrtrunc<S>(compress(mask, vrzext<uint32_t>(a), vrzext<uint32_t>(src)));
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 4)
 		{
 			auto permx_ind = vcvt<U>(SIMD_Vector<int8_t, N>(_mm_loadu_si64(&tables::compress_to_permx8[mask])));
@@ -2002,8 +2003,6 @@ namespace AVXXY_NAMESPACE
 			if constexpr (is_f32<S>) return _mm256_blendv_ps(tmp, src, _mm256_castsi256_ps(permx_ind));
 			else return _mm256_blendv_epi8(vreinterpret_us<__m256i>(tmp), src, permx_ind);
 		}
-
-
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 4)
 		{
 			uint32_t maskb = mask;
@@ -2028,7 +2027,6 @@ namespace AVXXY_NAMESPACE
 			store(ch, p + popcnt_lo, cm); //don't overwrite src remains
 			return ret;
 		}
-		//TODO: compress emulation for bytes and words by extending for AVX512 F
 		else
 		{
 			internals::scream();
@@ -2064,7 +2062,8 @@ namespace AVXXY_NAMESPACE
 		{
 			using UV = SIMD_Vector<U, N>;
 			UV ret;
-			for (size_t i = 0; i < N; ++i)
+			ret[0] = 0;
+			for (size_t i = 1; i < N; ++i)
 			{
 				U acc = 0;
 				for (size_t j = 0; j < i; ++j)
