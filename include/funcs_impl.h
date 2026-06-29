@@ -2006,7 +2006,7 @@ namespace AVXXY_NAMESPACE
 
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 4)
 		{
-			int maskb = mask;
+			uint32_t maskb = mask;
 			const int8_t* table_ptr = tables::compress_dwords_pshufb.data() + (maskb * 16);
 			//negative ind = pass through src
 			__m128i ind = _mm_load_si128(reinterpret_cast<const __m128i*>(table_ptr));
@@ -2059,7 +2059,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 4) return _mm_conflict_epi32(vcast<int32_t>(a));
 		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 8) return _mm_conflict_epi64(vcast<int64_t>(a));
 		//TODO: >64 byte CD
-
+		//TODO: emulations for CD
 		else
 		{
 			using UV = SIMD_Vector<U, N>;
