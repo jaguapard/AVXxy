@@ -116,7 +116,7 @@ namespace AVXXY_NAMESPACE
 		//If input value is larger than returned vector, the input's upper bits are discarded
 		//If input value is smaller than returned vector, upper bits of returned vector values are underfined
 		template<typename T>
-		static SIMD_Vector<S, N> from_bits_us(const T& inp)
+		static SIMD_Vector<S, N> fromBits(const T& inp)
 		{
 			SIMD_Vector<S, N> ret;
 			static_assert(sizeof(ret.arr) == sizeof(ret));
