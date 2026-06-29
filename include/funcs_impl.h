@@ -937,40 +937,21 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
-	template<meta::IsScalarType S2, typename S, size_t N> requires (sizeof(SIMD_Vector<S, N>) % sizeof(S2) == 0)
-		__forceinline SIMD_Vector<S2, sizeof(SIMD_Vector<S, N>) / sizeof(S2)> vcast(const SIMD_Vector<S, N>& a)
+	template<typename To, typename S, size_t N> requires (std::is_trivially_copyable_v<To>)
+	auto vcast(const SIMD_Vector<S, N>& a)
 	{
-		using namespace meta;
-		using U = typename ScalarTraits<S>::UintT;
-		return vreinterpret_us<SIMD_Vector<S2, sizeof(SIMD_Vector<S, N>) / sizeof(S2)>>(a);
-	}
-	template<meta::IsSimdVector T, typename S, size_t N>
-		requires ((sizeof(SIMD_Vector<S, N>) % sizeof(typename T::ScalarT) == 0) && sizeof(SIMD_Vector<S, N>) == sizeof(T))
-	__forceinline T vcast(const SIMD_Vector<S, N>& a)
-	{
-		using namespace meta;
-		using U = typename ScalarTraits<S>::UintT;
-		return vreinterpret_us<T>(a);
-	}
-
-
-	template<typename T, typename S, size_t N> requires (sizeof(T) == sizeof(SIMD_Vector<S, N>))
-		__forceinline T vreinterpret(const SIMD_Vector<S, N>& value)
-	{
-		using namespace meta;
-		using U = typename ScalarTraits<S>::UintT;
-		return vreinterpret_us<T>(value);
-	}
-	template<typename T, typename S, size_t N>
-	__forceinline T vreinterpret_us(const SIMD_Vector<S, N>& value)
-	{
-		using namespace meta;
-		using U = typename ScalarTraits<S>::UintT;
-		if constexpr (sizeof(T) == sizeof(value)) return std::bit_cast<T>(value);
+		using T = SIMD_Vector<S, N>;
+		if constexpr (meta::IsScalarType<To>)
+		{
+			constexpr size_t RetN = sizeof(T) / sizeof(To) + bool(sizeof(T) % sizeof(To));
+			SIMD_Vector<To, RetN> ret;
+			memcpy(&ret, &a, std::min(sizeof(ret), sizeof(a)));
+			return ret;
+		}
 		else
 		{
-			T ret;
-			memcpy(&ret, &value, std::min(sizeof(ret), sizeof(value)));
+			To ret;
+			memcpy(&ret, &a, std::min(sizeof(ret), sizeof(a)));
 			return ret;
 		}
 	}

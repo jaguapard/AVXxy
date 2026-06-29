@@ -102,7 +102,16 @@ namespace AVXXY_NAMESPACE
 	requires (sizeof(S2) <= sizeof(S))
 	SIMD_Vector<S2, N> vrtrunc(const SIMD_Vector<S, N>& a);
 
-
+	//Reinterprets input vector as any type of any size
+	//Requires the output type to be trivially copyable
+	//If T is a scalar type, the vector is reinterpreted as vector of other scalar type
+	//with lane count calculated automatically to be smallest vector that is bigger or the same size as input
+	//i.e. vcast<uint32_t, uint8_t, 3> will return SIMD_Vector<uint32_t, 1>
+	//If output type is larger than input, the upper bytes of output are undefined
+	//If output type is smaller than input, the upper bytes of input are discarded
+	template<typename To, typename S, size_t N> requires (std::is_trivially_copyable_v<To>)
+	auto vcast(const SIMD_Vector<S, N>& a);
+#if 0
 	//Reinterprets input vector as vector of different scalar type
 	//Lane count of output vector is computed automatically to match input's total size
 	//This function is only available if size of input is divisible by size of output's scalar type
@@ -137,6 +146,7 @@ namespace AVXXY_NAMESPACE
 	//@tparam S scalar type of input vector
 	//@tparam N lane count of input vector
 	template<typename T, typename S, size_t N> T vreinterpret_us(const SIMD_Vector<S, N>& value);
+#endif
 
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
 	//If the mask bit is 0, the corresponding element of `ifBitClear` is chosen
