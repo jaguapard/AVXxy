@@ -74,6 +74,9 @@
     <ClInclude Include="include\settings.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\typedefs.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">

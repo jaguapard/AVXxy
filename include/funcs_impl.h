@@ -4,6 +4,7 @@
 #include "FeatureSet.h"
 #include <source_location>
 #include "tables.h"
+#include "typedefs.h"
 
 namespace AVXXY_NAMESPACE
 {
