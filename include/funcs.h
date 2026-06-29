@@ -111,42 +111,6 @@ namespace AVXXY_NAMESPACE
 	//If output type is smaller than input, the upper bytes of input are discarded
 	template<typename To, typename S, size_t N> requires (std::is_trivially_copyable_v<To>)
 	auto vcast(const SIMD_Vector<S, N>& a);
-#if 0
-	//Reinterprets input vector as vector of different scalar type
-	//Lane count of output vector is computed automatically to match input's total size
-	//This function is only available if size of input is divisible by size of output's scalar type
-	//@tparam S2 scalar type of output vector
-	//@tparam S scalar size of input vector
-	//@tparam N lane count of input vector
-	template<meta::IsScalarType S2, typename S, size_t N>
-	requires (sizeof(SIMD_Vector<S,N>) % sizeof(S2) == 0)
-	SIMD_Vector<S2, sizeof(SIMD_Vector<S, N>) / sizeof(S2)> vcast(const SIMD_Vector<S, N>& a);
-
-	//Reinterprets input vector as vector of different scalar type
-	//This function is only available if vector sizes match and size of input is divisible by size of output's scalar type
-	//@tparam T vector type to be casted to (return type)
-	//@tparam S scalar type of input vector
-	//@tparam N input's lane count
-	template<meta::IsSimdVector T, typename S, size_t N>
-		requires ((sizeof(SIMD_Vector<S, N>) % sizeof(typename T::ScalarT) == 0) && sizeof(SIMD_Vector<S,N>) == sizeof(T))
-	T vcast(const SIMD_Vector<S, N>& value);
-
-	//Reinterprets value of any other same sized type and returns the result
-	template<typename T, typename S, size_t N> 
-	requires (sizeof(T) == sizeof(SIMD_Vector<S,N>))
-	T vreinterpret(const SIMD_Vector<S, N>& value);
-
-	//vreinterpret_us - vector reinterpret unsafe
-	//Reinterprets value as any other type and returns the result.
-	//If returned value's size is smaller than input, input's upper bits are discarded
-	//If returned value's size is bigger than input, upper bits of returned value are undefined.
-	//Unlike vcast, this function allows to reinterpret to any type of any size
-	//Unlike vreinterpret, this functions doesn't check input sizes
-	//@tparam T type to be casted to (return type)
-	//@tparam S scalar type of input vector
-	//@tparam N lane count of input vector
-	template<typename T, typename S, size_t N> T vreinterpret_us(const SIMD_Vector<S, N>& value);
-#endif
 
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
 	//If the mask bit is 0, the corresponding element of `ifBitClear` is chosen
