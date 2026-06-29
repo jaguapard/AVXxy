@@ -571,7 +571,7 @@ namespace AVXXY_NAMESPACE
 			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 2, 2, 4, 4, 6, 6, 8, 8, 10, 10, 12, 12, 14, 14)); //duplicate low byte of each word
 			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1));
 			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
-			return T::from_bits_us(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
+			return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
 		}
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 4)
 		{
@@ -579,7 +579,7 @@ namespace AVXXY_NAMESPACE
 			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 4, 4, 4, 4, 8, 8, 8, 8, 12, 12, 12, 12)); //duplicate low byte of each dword
 			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3));
 			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
-			return T::from_bits_us(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
+			return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
 		}
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 8)
 		{
@@ -587,7 +587,7 @@ namespace AVXXY_NAMESPACE
 			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8)); //duplicate low byte of each qword
 			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7));
 			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
-			return T::from_bits_us(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
+			return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
 		}
 		else if constexpr (sizeof(T) > 16)
 		{
@@ -842,14 +842,14 @@ namespace AVXXY_NAMESPACE
 			__m256i sh = _mm256_shuffle_epi8(a, _mm256_set1_epi64x(0x0E'0C'0A'08'06'04'02'00)); //don't care about odd 64-bit members, so can just broadcast
 			//__m256i trunc1 = _mm256_and_si256(a, _mm256_set1_epi16(0xFF)); //force upper bytes of each word to zero
 			//__m256i packus = _mm256_packus_epi16(trunc1, trunc1); //upper 64-bit halves of each 128-bit lane are duplicated result
-			return TV::from_bits_us(_mm256_permute4x64_epi64(sh, 2 << 2)); //0, 2, 0, 0, upper discarded
+			return TV::fromBits(_mm256_permute4x64_epi64(sh, 2 << 2)); //0, 2, 0, 0, upper discarded
 		}
 		else if constexpr (FS.has(AVX2) && is_ymm_size(MaxSize) && any_i32<From> && any_i8<To>)
 		{
 			__m256i sh = _mm256_shuffle_epi8(a, _mm256_set1_epi32(0x0C'08'04'00));
-			return TV::from_bits_us(_mm256_permutevar8x32_epi32(sh, _mm256_set1_epi64x(4ull << 32)));
+			return TV::fromBits(_mm256_permutevar8x32_epi32(sh, _mm256_set1_epi64x(4ull << 32)));
 			//return _mm_unpacklo_epi32(_mm256_castsi256_si128(sh), _mm256_extracti128_si256(sh, 1));
-			//return TV::from_bits_us(_mm256_permute
+			//return TV::fromBits(_mm256_permute
 		}
 		else if constexpr (FS.has(SSE41) && is_xmm_size(MaxSize) && is_i16<From> && any_i32<To>) return _mm_cvtepi16_epi32(a);
 		else if constexpr (FS.has(SSE41) && is_xmm_size(MaxSize) && is_i16<From> && any_i64<To>) return _mm_cvtepi16_epi64(a);
@@ -1050,7 +1050,7 @@ namespace AVXXY_NAMESPACE
 			}
 			};
 		//TODO: investigate differences between loadu and lddqu: https://stackoverflow.com/questions/47425851/whats-the-difference-between-mm256-lddqu-si256-and-mm256-loadu-si256
-		return T::from_bits_us(ld());
+		return T::fromBits(ld());
 	}
 
 	template<typename S, size_t N>
@@ -1078,7 +1078,7 @@ namespace AVXXY_NAMESPACE
 				return ret;
 			}
 			};
-		return T::from_bits_us(ld());
+		return T::fromBits(ld());
 	}
 
 	template<typename S, size_t N>
@@ -1131,7 +1131,7 @@ namespace AVXXY_NAMESPACE
 			};
 
 		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) return vcast<S>(load<S, N>(p, mask));
-		else return T::from_bits_us(zload());
+		else return T::fromBits(zload());
 	}
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask, const SIMD_Vector<S, N>& src)
@@ -1919,15 +1919,15 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_unpacklo_epi32(a, b);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_unpacklo_epi16(a, b);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return _mm256_unpacklo_epi8(a, b);
-		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return T::from_bits_us(_mm256_unpacklo_pd(vcast<__m256d>(a), vcast<__m256d>(b)));
-		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return T::from_bits_us(_mm256_unpacklo_ps(vcast<__m256>(a), vcast<__m256>(b)));
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return T::fromBits(_mm256_unpacklo_pd(vcast<__m256d>(a), vcast<__m256d>(b)));
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return T::fromBits(_mm256_unpacklo_ps(vcast<__m256>(a), vcast<__m256>(b)));
 
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_unpacklo_epi64(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_unpacklo_epi32(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_unpacklo_epi16(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i8<S>) return _mm_unpacklo_epi8(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_unpacklo_pd(a, b);
-		else if constexpr (FS.has(SSE) && xmm_sized<T> && sizeof(S) == 4) return T::from_bits_us(_mm_unpacklo_ps(vcast<__m128>(a), vcast<__m128>(b)));
+		else if constexpr (FS.has(SSE) && xmm_sized<T> && sizeof(S) == 4) return T::fromBits(_mm_unpacklo_ps(vcast<__m128>(a), vcast<__m128>(b)));
 
 		else if constexpr (sizeof(T) > 16) return T{ unpacklo(a.lo(),b.lo()), unpacklo(a.hi(),b.hi()) };
 		else
@@ -1957,15 +1957,15 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_unpackhi_epi32(a, b);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_unpackhi_epi16(a, b);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return _mm256_unpackhi_epi8(a, b);
-		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return T::from_bits_us(_mm256_unpackhi_pd(vcast<__m256d>(a), vcast<__m256d>(b)));
-		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return T::from_bits_us(_mm256_unpackhi_ps(vcast<__m256>(a), vcast<__m256>(b)));
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 8) return T::fromBits(_mm256_unpackhi_pd(vcast<__m256d>(a), vcast<__m256d>(b)));
+		else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return T::fromBits(_mm256_unpackhi_ps(vcast<__m256>(a), vcast<__m256>(b)));
 
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_unpackhi_epi64(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_unpackhi_epi32(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_unpackhi_epi16(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i8<S>) return _mm_unpackhi_epi8(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_unpackhi_pd(a, b);
-		else if constexpr (FS.has(SSE) && xmm_sized<T> && sizeof(S) == 4) return T::from_bits_us(_mm_unpackhi_ps(vcast<__m128>(a), vcast<__m128>(b)));
+		else if constexpr (FS.has(SSE) && xmm_sized<T> && sizeof(S) == 4) return T::fromBits(_mm_unpackhi_ps(vcast<__m128>(a), vcast<__m128>(b)));
 
 		else if constexpr (sizeof(T) > 16) return T{ unpackhi(a.lo(),b.lo()), unpackhi(a.hi(),b.hi()) };
 		else
