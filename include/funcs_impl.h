@@ -1239,6 +1239,32 @@ namespace AVXXY_NAMESPACE
 
 	}
 
+	namespace internals
+	{
+		//x86 gather and scatter intrinsics only allow their Scale value to be 1, 2, 4 or 8.
+		//This type takes in any Scale value and type of indices and calculates
+		//optimal multiplier, new scale and canonical type for the indices
+		//For example, a scale of 32 can be simplified to 8, since it's divisible by 8. 
+		//Thus, input Scale value will be overridden with 8, and 
+		//indices will need to be multiplied by 4 to preserve API-documented behavior
+		//Fields:
+		//indexMultiplier: the multiplier that indices must be multiplied by
+		//extended_t: type that indices need to be converted to before the multiplication.
+		//newScale: new scale value to be forwarded to gather or scatter intrinsic 
+		template<size_t Scale, meta::any_int InputIndexT>
+		struct GatherScatterScaleSanitizer
+		{
+			static inline constexpr size_t indexMultiplier = []() {for (auto& it : { 8,4,2,1 }) if (Scale % it == 0) return Scale / it; }();
+			static inline constexpr size_t newScale = []() {for (auto& it : { 8,4,2,1 }) if (Scale % it == 0) return it; }();
+			static constexpr inline bool fitsInto_i32 = []() {
+				constexpr int64_t minVal = int64_t(std::numeric_limits<InputIndexT>::min()) * indexMultiplier;
+				constexpr int64_t maxVal = int64_t(std::numeric_limits<InputIndexT>::max()) * indexMultiplier;
+				return minVal >= std::numeric_limits<int32_t>::min() && maxVal <= std::numeric_limits<int32_t>::max();
+				}();
+			using extended_t = std::conditional_t<fitsInto_i32, int32_t, int64_t>;
+		};
+	}
+
 	template<typename S, size_t N, size_t Scale, meta::any_int I>
 	__forceinline void scatter(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask)
 	{
@@ -1259,8 +1285,11 @@ namespace AVXXY_NAMESPACE
 
 		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) scatter<S, N, Scale, I>(vcast<U>(v), base, ind, mask);
 		//if scale is not native, emulate it by gathering with scale 1 and manually calculated byte offsets. 
-		//TODO: Can optimize a little by checking if Scale*maxint(I) fits into smaller sizes
-		else if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8) return scatter<S, N, 1>(v, base, vcvt<int64_t>(ind) * Scale, mask);
+		else if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8)
+		{
+			using SN = GatherScatterScaleSanitizer<Scale, I>;
+			return scatter<S, N, SN::newScale>(v, base, vcvt<typename SN::extended_t>(ind) * SN::indexMultiplier, mask);
+		}
 
 		//TODO: emulation of small int scatter (where elements gathered are small ints)
 		else if constexpr (!std::is_same_v<I, CanonicalIndex_t>) return scatter<S, N, Scale>(v, base, vcvt<CanonicalIndex_t>(ind), mask);
@@ -2233,8 +2262,11 @@ namespace AVXXY_NAMESPACE
 			const intr_base_ptr_t base = (const intr_base_ptr_t)p;
 
 			//if scale is not native, emulate it by gathering with scale 1 and manually calculated byte offsets. 
-			//TODO: Can optimize a little by checking if Scale*maxint(I) fits into smaller sizes
-			if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8) return gather<S, N, 1>(base, vcvt<int64_t>(ind) * Scale, mask, src);
+			if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8)
+			{
+				using SN = GatherScatterScaleSanitizer<Scale, I>;
+				return gather<S, N, SN::newScale>(base, vcvt<typename SN::extended_t>(ind) * SN::indexMultiplier, mask, src);
+			}
 
 			//TODO: emulation of small int gathers (where elements gathered are small ints)
 			else if constexpr (!std::is_same_v<I, CanonicalIndex_t>) return gather<S, N, Scale>(base, vcvt<CanonicalIndex_t>(ind), mask, src);
