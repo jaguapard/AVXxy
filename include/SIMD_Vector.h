@@ -235,12 +235,6 @@ namespace AVXXY_NAMESPACE
 		return os;
 	}
 
-	namespace meta
-	{
-		template<typename T>
-		concept IsSimdVector = requires { T::IsSimdVector; };
-	}
-
 	template<typename S, size_t N>
 	using mask_t = SIMD_Vector<S, N>::MaskT;
 }

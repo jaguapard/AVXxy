@@ -4,6 +4,7 @@
 #include "FeatureSet.h"
 #include <source_location>
 #include "tables.h"
+#include "typedefs.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -170,7 +171,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(SSE41) && xmm_sized<T> && any_i32<S>) return _mm_mullo_epi32(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_mullo_epi16(a, b);
 
-		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) //TODO: check if it works. 256-bit version does
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>)
 		{
 			__m128i p1 = _mm_mul_epu32(a, b); //alo*blo
 			__m128i ahi = _mm_srli_epi64(a, 32);
@@ -347,13 +348,14 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 		using canon_t = typename ScalarTraits<S>::UintT;
-
+		
+		//TODO: may cause loops, no need to convert to 8 bits
 		if constexpr (!std::is_same_v<I, canon_t>) return shift_left(a, vcvt<canon_t>(b));
 
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_sllv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_sllv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_sllv_epi16(a, b);
-		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_left(vrzext<uint16_t>(a)));
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_left(vrzext<uint16_t>(a), b));
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_sllv_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_sllv_epi32(a, b);
 
@@ -385,8 +387,17 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 
-		//TODO: add GFNI 8-bit shift
-		if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_slli_epi16(a, A);
+		if constexpr (A == 0) return a;
+		else if constexpr (A >= sizeof(S) * 8) return T(0);
+		else if constexpr (any_i8<S>)
+		{
+			//TODO: this will fail on vectors < 4 sized. Same with shift_right
+			auto interm = shift_left<A>(vcast<uint32_t>(a));
+			constexpr uint32_t andc = ((1 << N) - 1) & 0xFF;
+			constexpr uint32_t andc2 = (andc << 8) | (andc << 16) | (andc << 24);
+			return vcast<S>(interm & ~andc2); //remove bits bleeding over neighboring bytes
+		}
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_slli_epi16(a, A);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_slli_epi32(a, A);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_slli_epi64(a, A);
 
@@ -413,8 +424,16 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 
-		//TODO: add GFNI 8-bit shift
-		if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srli_epi16(a, A);
+		if constexpr (A == 0) return a;
+		else if constexpr (A >= sizeof(S) * 8) return T(0);
+		else if constexpr (any_i8<S>)
+		{
+			auto interm = shift_right<A>(vcast<uint32_t>(a));
+			constexpr uint32_t fin = ((1 << (8 - N)) - 1) & 0xFF;
+			constexpr uint32_t andc2 = (fin << 0) | (fin << 8) | (fin << 16) | (fin << 24);
+			return vcast<S>(interm & andc2); //remove bits bleeding over neighboring bytes
+		}
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srli_epi16(a, A);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srli_epi32(a, A);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srli_epi64(a, A);
 
@@ -447,7 +466,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srlv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_srlv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_srlv_epi16(a, b);
-		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_right(vrzext<uint16_t>(a)));
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_right(vrzext<uint16_t>(a), b));
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srlv_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srlv_epi32(a, b);
 
@@ -1221,6 +1240,32 @@ namespace AVXXY_NAMESPACE
 
 	}
 
+	namespace internals
+	{
+		//x86 gather and scatter intrinsics only allow their Scale value to be 1, 2, 4 or 8.
+		//This type takes in any Scale value and type of indices and calculates
+		//optimal multiplier, new scale and canonical type for the indices
+		//For example, a scale of 32 can be simplified to 8, since it's divisible by 8. 
+		//Thus, input Scale value will be overridden with 8, and 
+		//indices will need to be multiplied by 4 to preserve API-documented behavior
+		//Fields:
+		//indexMultiplier: the multiplier that indices must be multiplied by
+		//extended_t: type that indices need to be converted to before the multiplication.
+		//newScale: new scale value to be forwarded to gather or scatter intrinsic 
+		template<size_t Scale, meta::any_int InputIndexT>
+		struct GatherScatterScaleSanitizer
+		{
+			static inline constexpr size_t indexMultiplier = []() {for (auto& it : { 8,4,2,1 }) if (Scale % it == 0) return Scale / it; }();
+			static inline constexpr size_t newScale = []() {for (auto& it : { 8,4,2,1 }) if (Scale % it == 0) return it; }();
+			static constexpr inline bool fitsInto_i32 = []() {
+				constexpr int64_t minVal = int64_t(std::numeric_limits<InputIndexT>::min()) * indexMultiplier;
+				constexpr int64_t maxVal = int64_t(std::numeric_limits<InputIndexT>::max()) * indexMultiplier;
+				return minVal >= std::numeric_limits<int32_t>::min() && maxVal <= std::numeric_limits<int32_t>::max();
+				}();
+			using extended_t = std::conditional_t<fitsInto_i32, int32_t, int64_t>;
+		};
+	}
+
 	template<typename S, size_t N, size_t Scale, meta::any_int I>
 	__forceinline void scatter(const SIMD_Vector<S, N>& v, void* base, const SIMD_Vector<I, N>& ind, const mask_t<S, N>& mask)
 	{
@@ -1241,8 +1286,11 @@ namespace AVXXY_NAMESPACE
 
 		if constexpr (!is_f32<S> && !is_f64<S> && !any_int<S>) scatter<S, N, Scale, I>(vcast<U>(v), base, ind, mask);
 		//if scale is not native, emulate it by gathering with scale 1 and manually calculated byte offsets. 
-		//TODO: Can optimize a little by checking if Scale*maxint(I) fits into smaller sizes
-		else if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8) return scatter<S, N, 1>(v, base, vcvt<int64_t>(ind) * Scale, mask);
+		else if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8)
+		{
+			using SN = GatherScatterScaleSanitizer<Scale, I>;
+			return scatter<S, N, SN::newScale>(v, base, vcvt<typename SN::extended_t>(ind) * SN::indexMultiplier, mask);
+		}
 
 		//TODO: emulation of small int scatter (where elements gathered are small ints)
 		else if constexpr (!std::is_same_v<I, CanonicalIndex_t>) return scatter<S, N, Scale>(v, base, vcvt<CanonicalIndex_t>(ind), mask);
@@ -1977,6 +2025,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_compress_epi64(src, mask, a);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_compress_epi32(src, mask, a);
 
+		else if constexpr (FS.has(AVX512_F) && (zmm_sized<T> || ((ymm_sized<T> || xmm_sized<T>) && FS.has(AVX512_VL))) && any_small_int<S>) return vrtrunc<S>(compress(mask, vrzext<uint32_t>(a), vrzext<uint32_t>(src)));
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 4)
 		{
 			auto permx_ind = vcvt<U>(SIMD_Vector<int8_t, N>(_mm_loadu_si64(&tables::compress_to_permx8[mask])));
@@ -1984,11 +2033,9 @@ namespace AVXXY_NAMESPACE
 			if constexpr (is_f32<S>) return _mm256_blendv_ps(tmp, src, _mm256_castsi256_ps(permx_ind));
 			else return _mm256_blendv_epi8(vreinterpret_us<__m256i>(tmp), src, permx_ind);
 		}
-
-
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 4)
 		{
-			int maskb = mask;
+			uint32_t maskb = mask;
 			const int8_t* table_ptr = tables::compress_dwords_pshufb.data() + (maskb * 16);
 			//negative ind = pass through src
 			__m128i ind = _mm_load_si128(reinterpret_cast<const __m128i*>(table_ptr));
@@ -2010,7 +2057,6 @@ namespace AVXXY_NAMESPACE
 			store(ch, p + popcnt_lo, cm); //don't overwrite src remains
 			return ret;
 		}
-		//TODO: compress emulation for bytes and words by extending for AVX512 F
 		else
 		{
 			internals::scream();
@@ -2041,12 +2087,13 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 4) return _mm_conflict_epi32(vcast<int32_t>(a));
 		else if constexpr (FS.has(AVX512_CD) && FS.has(AVX512_VL) && xmm_sized<T> && sizeof(S) == 8) return _mm_conflict_epi64(vcast<int64_t>(a));
 		//TODO: >64 byte CD
-
+		//TODO: emulations for CD
 		else
 		{
 			using UV = SIMD_Vector<U, N>;
 			UV ret;
-			for (size_t i = 0; i < N; ++i)
+			ret[0] = 0;
+			for (size_t i = 1; i < N; ++i)
 			{
 				U acc = 0;
 				for (size_t j = 0; j < i; ++j)
@@ -2216,8 +2263,11 @@ namespace AVXXY_NAMESPACE
 			const intr_base_ptr_t base = (const intr_base_ptr_t)p;
 
 			//if scale is not native, emulate it by gathering with scale 1 and manually calculated byte offsets. 
-			//TODO: Can optimize a little by checking if Scale*maxint(I) fits into smaller sizes
-			if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8) return gather<S, N, 1>(base, vcvt<int64_t>(ind) * Scale, mask, src);
+			if constexpr (Scale != 1 && Scale != 2 && Scale != 4 && Scale != 8)
+			{
+				using SN = GatherScatterScaleSanitizer<Scale, I>;
+				return gather<S, N, SN::newScale>(base, vcvt<typename SN::extended_t>(ind) * SN::indexMultiplier, mask, src);
+			}
 
 			//TODO: emulation of small int gathers (where elements gathered are small ints)
 			else if constexpr (!std::is_same_v<I, CanonicalIndex_t>) return gather<S, N, Scale>(base, vcvt<CanonicalIndex_t>(ind), mask, src);
