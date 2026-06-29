@@ -170,7 +170,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(SSE41) && xmm_sized<T> && any_i32<S>) return _mm_mullo_epi32(a, b);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_mullo_epi16(a, b);
 
-		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) //TODO: check if it works. 256-bit version does
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>)
 		{
 			__m128i p1 = _mm_mul_epu32(a, b); //alo*blo
 			__m128i ahi = _mm_srli_epi64(a, 32);
@@ -347,13 +347,14 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 		using canon_t = typename ScalarTraits<S>::UintT;
-
+		
+		//TODO: may cause loops, no need to convert to 8 bits
 		if constexpr (!std::is_same_v<I, canon_t>) return shift_left(a, vcvt<canon_t>(b));
 
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_sllv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_sllv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_sllv_epi16(a, b);
-		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_left(vrzext<uint16_t>(a)));
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_left(vrzext<uint16_t>(a), b));
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_sllv_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_sllv_epi32(a, b);
 
@@ -385,8 +386,17 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 
-		//TODO: add GFNI 8-bit shift
-		if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_slli_epi16(a, A);
+		if constexpr (A == 0) return a;
+		else if constexpr (A >= sizeof(S) * 8) return T(0);
+		else if constexpr (any_i8<S>)
+		{
+			//TODO: this will fail on vectors < 4 sized. Same with shift_right
+			auto interm = shift_left<A>(vcast<uint32_t>(a));
+			constexpr uint32_t andc = ((1 << N) - 1) & 0xFF;
+			constexpr uint32_t andc2 = (andc << 8) | (andc << 16) | (andc << 24);
+			return vcast<S>(interm & ~andc2); //remove bits bleeding over neighboring bytes
+		}
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_slli_epi16(a, A);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_slli_epi32(a, A);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_slli_epi64(a, A);
 
@@ -413,8 +423,16 @@ namespace AVXXY_NAMESPACE
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
 
-		//TODO: add GFNI 8-bit shift
-		if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srli_epi16(a, A);
+		if constexpr (A == 0) return a;
+		else if constexpr (A >= sizeof(S) * 8) return T(0);
+		else if constexpr (any_i8<S>)
+		{
+			auto interm = shift_right<A>(vcast<uint32_t>(a));
+			constexpr uint32_t fin = ((1 << (8 - N)) - 1) & 0xFF;
+			constexpr uint32_t andc2 = (fin << 0) | (fin << 8) | (fin << 16) | (fin << 24);
+			return vcast<S>(interm & andc2); //remove bits bleeding over neighboring bytes
+		}
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srli_epi16(a, A);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srli_epi32(a, A);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srli_epi64(a, A);
 
@@ -447,7 +465,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srlv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_srlv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_srlv_epi16(a, b);
-		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_right(vrzext<uint16_t>(a)));
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_right(vrzext<uint16_t>(a), b));
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srlv_epi64(a, b);
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srlv_epi32(a, b);
 
