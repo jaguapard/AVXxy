@@ -139,11 +139,11 @@ namespace AVXXY_NAMESPACE
 			if constexpr (bmask && ((sizeof(T) > 32 && zmm_eligible) || (sizeof(T) <= 32 && xmm_ymm_eligible))) return (vcast<I>(a) < 0);
 			else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 1) return _mm256_movemask_epi8(vreinterpret_us<__m256i>(a));
 			else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 4) return _mm256_movemask_ps(vreinterpret_us<__m256>(a));
-			else if constexpr (FS.has(AVX) && ymm_sized<T> && sizeof(S) == 2)
+			else if constexpr (FS.has(AVX2) && ymm_sized<T> && sizeof(S) == 2)
 			{
 				//AVX2 has no movemask_epi16 intrinsic
 				// low bits -> upper bits go to the right, opposite to shifts
-				//Post-shuffle layout: |012345678xxxxxxxx|xxxxxxxx9abcdef|, where x are always 0 and 0,1,..f are upper bytes of words
+				//Post-shuffle layout: |01234567xxxxxxxx|xxxxxxxx89abcdef|, where x are always 0 and 0,1,..f are upper bytes of words
 				//Extracting the mask, shifting and oring (| = byte boundary, 0..f = sign bits of words):
 				//|01234567|xxxxxxxx|xxxxxxxx|89abcdef| OR
 				//|xxxxxxxx|89abcdef|xxxxxxxx|xxxxxxxx|
