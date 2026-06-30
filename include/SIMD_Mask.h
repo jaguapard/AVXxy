@@ -39,9 +39,9 @@ namespace AVXXY_NAMESPACE
 			requires IsValid_SIMD_Mask<FriendN>
 		friend class SIMD_Mask;
 
-		//Smallest unsigned integer type is able to hold of this mask's bits
+		//Smallest unsigned integer type is able to hold all of this mask's bits
 		using BitsUintT = meta::bits_to_uint_t<N>;
-		//Smallest signed integer type is able to hold of this mask's bits
+		//Smallest signed integer type is able to hold all of this mask's bits
 		using VecIntT = meta::ScalarSizeTraits<LS>::IntT;
 		//Vector type that has lane count equal to this mask's bit count, and whose lane size is the same as size class of this mask
 		using VecT = SIMD_Vector<VecIntT, N>;
