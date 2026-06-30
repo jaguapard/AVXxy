@@ -685,7 +685,7 @@ namespace AVXXY_NAMESPACE
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
 
-		if constexpr (!is_f32<S>) return sqrtd(vcvt<double>(a));
+		if constexpr (!is_f64<S>) return sqrtd(vcvt<double>(a));
 		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_sqrt_pd(a);
 		else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_sqrt_pd(a);
 		else if constexpr (FS.has(SSE2) && xmm_sized<T>) return _mm_sqrt_pd(a);
