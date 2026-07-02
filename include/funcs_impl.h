@@ -430,7 +430,7 @@ namespace AVXXY_NAMESPACE
 		{
 			//TODO: this will fail on vectors < 4 sized. Same with shift_right
 			auto interm = shift_left<A>(vcast<uint32_t>(a));
-			constexpr uint32_t andc = ((1 << N) - 1) & 0xFF;
+			constexpr uint32_t andc = ((1 << A) - 1) & 0xFF;
 			constexpr uint32_t andc2 = (andc << 8) | (andc << 16) | (andc << 24);
 			return vcast<T>(interm & ~andc2); //remove bits bleeding over neighboring bytes
 		}
@@ -466,7 +466,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (any_i8<S>)
 		{
 			auto interm = shift_right<A>(vcast<uint32_t>(a));
-			constexpr uint32_t fin = ((1 << (8 - N)) - 1) & 0xFF;
+			constexpr uint32_t fin = ((1 << (8 - A)) - 1) & 0xFF;
 			constexpr uint32_t andc2 = (fin << 0) | (fin << 8) | (fin << 16) | (fin << 24);
 			return vcast<T>(interm & andc2); //remove bits bleeding over neighboring bytes
 		}
