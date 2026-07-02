@@ -281,7 +281,7 @@ namespace AVXXY_NAMESPACE
 	//Chunks are merged back into the resultant vector in the same order they appear in input vectors
 	//x = 8 bytes / sizeof(S)
 	//chunk_ret[i] = i % 2 == 0 ? chunk_a[x+i/2] : chunk_b[x+i/2]
-	template<typename S, size_t N> SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
+	template<typename S, size_t N> requires meta::unpackhi_legal<S, N> SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b);
 
 	//Copies vector `src` and conditionally overwrites it with elements of vector `a`
 	//Mask is iterated from lower bits to higher ones. 

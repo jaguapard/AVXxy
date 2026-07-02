@@ -1956,6 +1956,7 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 	template<typename S, size_t N>
+		requires meta::unpackhi_legal<S, N>
 	__forceinline SIMD_Vector<S, N> unpackhi(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
 	{
 		using namespace meta;
