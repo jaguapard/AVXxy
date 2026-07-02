@@ -465,22 +465,39 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (A >= sizeof(S) * 8) return T(0);
 		else if constexpr (any_i8<S>)
 		{
-			auto interm = shift_right<A>(vcast<uint32_t>(a));
+			auto interm = shift_right<A>(vcast<uint32_t>(a)); //everything has 32-bit shifts!
 			constexpr uint32_t fin = ((1 << (8 - A)) - 1) & 0xFF;
-			constexpr uint32_t andc2 = (fin << 0) | (fin << 8) | (fin << 16) | (fin << 24);
-			return vcast<T>(interm & andc2); //remove bits bleeding over neighboring bytes
+			constexpr uint32_t andc2 = (fin << 0) | (fin << 8) | (fin << 16) | (fin << 24); //zero-out A most significant bits in each byte, removing bits shifted in from neighbors
+			
+			auto shiftedInZeros = interm & andc2;
+			if constexpr (is_u8<S>) return vcast<T>(shiftedInZeros);
+			else
+			{
+				mask_t<S, N> zcmp = vcast<int8_t>(a) < 0;
+				auto shiftedInOnes = vcast<T>(shiftedInZeros | ~andc2); //force shifted in bits to ones for initially negative inputs
+				return mask_mov(vcast<T>(shiftedInZeros), zcmp, vcast<T>(shiftedInOnes));
+			}
 		}
-		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srli_epi16(a, A);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srli_epi32(a, A);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srli_epi64(a, A);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_u16<S>) return _mm512_srli_epi16(a, A);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_u32<S>) return _mm512_srli_epi32(a, A);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_u64<S>) return _mm512_srli_epi64(a, A);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_srai_epi16(a, A);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i32<S>) return _mm512_srai_epi32(a, A);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i64<S>) return _mm512_srai_epi64(a, A);
 
-		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_srli_epi16(a, A);
-		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_srli_epi32(a, A);
-		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_srli_epi64(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_u16<S>) return _mm256_srli_epi16(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_u32<S>) return _mm256_srli_epi32(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_u64<S>) return _mm256_srli_epi64(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i16<S>) return _mm256_srai_epi16(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i32<S>) return _mm256_srai_epi32(a, A);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i64<S>) return _mm256_srai_epi64(a, A);
 
-		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i16<S>) return _mm_srli_epi16(a, A);
-		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i32<S>) return _mm_srli_epi32(a, A);
-		else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_i64<S>) return _mm_srli_epi64(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_u16<S>) return _mm_srli_epi16(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_u32<S>) return _mm_srli_epi32(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_u64<S>) return _mm_srli_epi64(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_i16<S>) return _mm_srai_epi16(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_i32<S>) return _mm_srai_epi32(a, A);
+		else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_i64<S>) return _mm_srai_epi64(a, A);
 		else if constexpr (sizeof(T) > 16) return { shift_right<A>(a.lo()), shift_right<A>(a.hi()) };
 		else
 		{
