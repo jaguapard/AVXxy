@@ -491,13 +491,19 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N, meta::any_int I>
-	__forceinline SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind)
+	__forceinline SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& indBase)
 	{
 		using namespace meta;
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
 		using canon_t = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
+
+		//Native permutexvar implementations wrap around themselves, but on truncated vectors, they still follow XMM wrapping, which pulls in garbage. 
+		//For example, if permx is called on SIMD_Vector<uint8_t, 4>, API documents wrapping around 4, but native permutex/shuffle will still wrap around 16 bytes.
+		//In this case, if ind is 5, garbage will be pulled in, while API documents that it will wrap to 1 and stay within input's bounds.
+		SIMD_Vector<I, N> ind = indBase;
+		if constexpr (sizeof(T) < 16) ind &= N - 1;
 
 		if constexpr (!is_f64<S> && !is_f32<S> && !any_int<S>) return vcast<S>(permx(vcast<U>(a), ind));
 		//TODO: some workaround for 127+ 8-bit perms?
@@ -560,8 +566,8 @@ namespace AVXXY_NAMESPACE
 			__m256 b2 = _mm256_blendv_ps(_mm256_castsi256_ps(p2s), _mm256_castsi256_ps(p2), bmask2);
 			return _mm256_blend_epi16(_mm256_castps_si256(b1), _mm256_castps_si256(b2), 0b10101010);
 		}
-		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 4) return _mm_permutevar_ps(vcast<__m128>(a), ind);
-		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 8) return _mm_permutevar_pd(vcast<__m128d>(a), ind);
+		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 4) return T::fromBits(_mm_permutevar_ps(vcast<__m128>(a), ind));
+		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 8) return T::fromBits(_mm_permutevar_pd(vcast<__m128d>(a), shift_left<1>(ind))); //TY intel for laying this trap for me. for some reason, it takes bit 1 and 65, NOT 0 or 64!!! While ps version is actually sane. lol.
 
 		//TODO: these may break with >127 bytes. Also check if they work at all
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 1) return _mm_shuffle_epi8(a, ind & 0x7F); //discard sign bit to avoid unwanted zero-masking
@@ -606,7 +612,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N, meta::any_int I>
-	__forceinline SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind)
+	__forceinline SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& indBase)
 	{
 		using namespace meta;
 		using namespace internals;
@@ -614,7 +620,25 @@ namespace AVXXY_NAMESPACE
 		using canon_t = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
 
-		if constexpr (!is_f64<S> && !is_f32<S> && !any_int<S>) return vcast<S>(permx2(vcast<U>(a), vcast<U>(b), ind));
+		SIMD_Vector<I, N> ind = indBase;
+		auto emulation = [&]() {
+			T pa = permx(a, ind);
+			T pb = permx(b, ind);
+			return mask_mov(pb, (ind & (2 * N - 1)) < N, pa);
+			};
+
+		//Native permutex2var implementations wrap around themselves, but on truncated vectors, it's a whole other can of worms:
+		//1) Native still wraps only around 2*N - 1 for XMM size, not truncated size. Since vectors are automatically expanded, it will pull garbage for indices outside -N+1..N-1 range
+		//2) The criterion for picking table b is also XMM-sized, meaning it compares for 16 bytes/sizeof(S).
+		//Thus, in a scenario: permx2<uint8_t, 4>({0,1,2,3}, {4,5,6,7}, {3,6,1,0}) API documents result: {3,6,1,0},
+		//But non-scalar implementation will act as: N == 16, so return result is: {3, garbage from expanded A, 1, 0} (b never even considered).
+		//This if block fixes it		
+		if constexpr (sizeof(T) < 16)
+		{
+			ind &= 2 * N - 1;
+			return emulation();
+		}
+		else if constexpr (!is_f64<S> && !is_f32<S> && !any_int<S>) return vcast<S>(permx2(vcast<U>(a), vcast<U>(b), ind));
 		else if constexpr (sizeof(I) != sizeof(S)) return permx2(a, b, vcvt<canon_t>(ind));
 
 		else if constexpr (FS.has(AVX512_VBMI) && zmm_sized<T> && any_i8<S>) return _mm512_permutex2var_epi8(a, ind, b);
@@ -638,12 +662,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_permutex2var_ps(a, ind, b);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_permutex2var_epi64(a, ind, b);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_permutex2var_epi32(a, ind, b);
-		else if constexpr (true || sizeof(T) > 16) //TODO: seems to work, but very sus. Although, what else to do?
-		{
-			T pa = permx(a, ind);
-			T pb = permx(b, ind);
-			return mask_mov(pb, (ind & (2 * N - 1)) < N, pa);
-		}
+		else if constexpr (true || sizeof(T) > 16) return emulation(); //TODO: seems to work, but very sus. Although, what else to do?
 		else
 		{
 			internals::scream();
