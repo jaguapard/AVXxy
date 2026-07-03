@@ -33,7 +33,7 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N> SIMD_Vector<S, N> logic_not(const SIMD_Vector<S, N>& a);
 
 	//Shifts integers in a by amount bits to the left, shifting in zeros.
-	template<meta::any_int S, size_t N, meta::any_uint I>
+	template<meta::any_int S, size_t N, meta::any_int I>
 	SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount);
 
 	//Shift packed integers in `a` left by the amount specified by the template parameter A while shifting in zeros, and returns the result.
@@ -41,7 +41,7 @@ namespace AVXXY_NAMESPACE
 	SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a);
 
 	//Shifts integers in a by amount bits to the right. For unsigned a, shifts in zeros, for signed - sign bits.
-	template<meta::any_int S, size_t N, meta::any_uint I>
+	template<meta::any_int S, size_t N, meta::any_int I>
 	SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount);
 
 	//Shifts integers in a by compile-time-constant amount of bits to the right. For unsigned a, shifts in zeros, for signed - sign bits.

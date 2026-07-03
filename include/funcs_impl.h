@@ -341,7 +341,7 @@ namespace AVXXY_NAMESPACE
 		for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(T(~std::bit_cast<T>(a[i])));
 		return ret;*/
 	}
-	template<meta::any_int S, size_t N, meta::any_uint I>
+	template<meta::any_int S, size_t N, meta::any_int I>
 	__forceinline SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
 		using namespace internals;
@@ -379,7 +379,7 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
-	template<meta::any_int S, size_t N, meta::any_uint I>
+	template<meta::any_int S, size_t N, meta::any_int I>
 	__forceinline SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
 		using namespace internals;
