@@ -189,6 +189,7 @@ namespace AVXXY_NAMESPACE
 		template <typename T> inline constexpr bool any_i64 = (is_u64<T> || is_i64<T>);
 		//indicates whether this type is integral scalar type
 		template <typename T> concept any_int = std::is_integral_v<T> && IsScalarType<T>;
+		template <typename T> concept any_uint = any_int<T> && !std::is_signed_v<T>;
 		//indicates whether this type is not integral
 		template <typename T> requires (IsScalarType<T>) inline constexpr bool not_int = !std::is_integral_v<T>;
 

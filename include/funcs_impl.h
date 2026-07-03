@@ -341,20 +341,20 @@ namespace AVXXY_NAMESPACE
 		for (size_t i = 0; i < N; ++i) ret[i] = std::bit_cast<S>(T(~std::bit_cast<T>(a[i])));
 		return ret;*/
 	}
-	template<meta::any_int S, size_t N, meta::any_int I>
+	template<meta::any_int S, size_t N, meta::any_uint I>
 	__forceinline SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
 		using namespace internals;
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
-		using canon_t = typename ScalarTraits<S>::UintT;
+		using canon_shift_amount_t = typename ScalarTraits<S>::UintT;
 
 		constexpr bool has_native_16bit_shift = FS.has(AVX512_BW) && (zmm_sized<T> || FS.has(AVX512_VL));
 		using routing_t = std::conditional_t<has_native_16bit_shift, uint16_t, uint32_t>;
 
 		//zero-extend small integers, shift and convert back. TODO: There could be a better way?
 		if constexpr ((any_i16<S> && !has_native_16bit_shift) || (any_i8<S>)) return vrtrunc<S>(shift_left(vrzext<routing_t>(a), b));
-		else if constexpr (!std::is_same_v<I, canon_t>) return shift_left(a, vcvt<canon_t>(b));
+		else if constexpr (!std::is_same_v<I, canon_shift_amount_t>) return shift_left(a, vcvt<canon_shift_amount_t>(b));
 
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_sllv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_sllv_epi16(a, b);
@@ -379,32 +379,42 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
-	template<meta::any_int S, size_t N, meta::any_int I>
+	template<meta::any_int S, size_t N, meta::any_uint I>
 	__forceinline SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& b)
 	{
 		using namespace internals;
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
-		using canon_t = typename ScalarTraits<S>::UintT;
+		using canon_shift_amount_t = typename ScalarTraits<S>::UintT;
 
 		constexpr bool has_native_16bit_shift = FS.has(AVX512_BW) && (zmm_sized<T> || FS.has(AVX512_VL));
-		using routing_t = std::conditional_t<has_native_16bit_shift, uint16_t, uint32_t>;
+		using same_signedness_int16_t = std::conditional_t<std::is_signed_v<S>, int16_t, uint16_t>;
+		using same_signedness_int32_t = std::conditional_t<std::is_signed_v<S>, int32_t, uint32_t>;
+		using routing_t = std::conditional_t<has_native_16bit_shift, same_signedness_int16_t, same_signedness_int32_t>;
 
 		//zero-extend small integers, shift and convert back. TODO: There could be a better way?
-		if constexpr ((any_i16<S> && !has_native_16bit_shift) || (any_i8<S>)) return vrtrunc<S>(shift_right(vrzext<routing_t>(a), b));
-		else if constexpr (!std::is_same_v<I, canon_t>) return shift_right(a, vcvt<canon_t>(b));
+		if constexpr ((any_i16<S> && !has_native_16bit_shift) || (any_i8<S>)) return vcvt<S>(shift_right(vcvt<routing_t>(a), b));
+		else if constexpr (!std::is_same_v<I, canon_shift_amount_t>) return shift_right(a, vcvt<canon_shift_amount_t>(b));
 
-		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_srlv_epi16(a, b);
-		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_srlv_epi16(a, b);
-		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && any_i16<S>) return _mm_srlv_epi16(a, b);
-		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && any_i8<S>) return vrtrunc<S>(shift_right(vrzext<uint16_t>(a), b));
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i64<S>) return _mm512_srlv_epi64(a, b);
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && any_i32<S>) return _mm512_srlv_epi32(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_u16<S>) return _mm512_srlv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && is_u16<S>) return _mm256_srlv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && is_u16<S>) return _mm_srlv_epi16(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_u64<S>) return _mm512_srlv_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_u32<S>) return _mm512_srlv_epi32(a, b);
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_i16<S>) return _mm512_srav_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && is_i16<S>) return _mm256_srav_epi16(a, b);
+		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && xmm_sized<T> && is_i16<S>) return _mm_srav_epi16(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i64<S>) return _mm512_srav_epi64(a, b);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_i32<S>) return _mm512_srav_epi32(a, b);
 
-		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_srlv_epi64(a, b);
-		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_srlv_epi32(a, b);
-		else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i64<S>) return _mm_srlv_epi64(a, b); //no shifts in SSE!
-		else if constexpr (FS.has(AVX2) && xmm_sized<T> && any_i32<S>) return _mm_srlv_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_u64<S>) return _mm256_srlv_epi64(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_u32<S>) return _mm256_srlv_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && xmm_sized<T> && is_u64<S>) return _mm_srlv_epi64(a, b); //no shifts in SSE!
+		else if constexpr (FS.has(AVX2) && xmm_sized<T> && is_u32<S>) return _mm_srlv_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i64<S>) return _mm256_srav_epi64(a, b);
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && is_i32<S>) return _mm256_srav_epi32(a, b);
+		else if constexpr (FS.has(AVX2) && xmm_sized<T> && is_i64<S>) return _mm_srav_epi64(a, b); //no shifts in SSE!
+		else if constexpr (FS.has(AVX2) && xmm_sized<T> && is_i32<S>) return _mm_srav_epi32(a, b);
 
 		else if constexpr (sizeof(T) > 16) return { shift_right(a.lo(), b.lo()), shift_right(a.hi(), b.hi()) };
 		else
