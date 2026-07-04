@@ -310,7 +310,7 @@ namespace AVXXY_NAMESPACE
 	//@tparam S scalar type of the returned vector
 	//@tparam N number of lanes in returned vector, same as bit count of input mask
 	//@tparam C size class of the input mask
-	template <typename S, meta::ScalarSizeClassEnum C, size_t N> SIMD_Vector<S, N> movm(const SIMD_Mask<C, N>& mask);
+	template <typename S, meta::ScalarSizeClassEnum C, size_t N> SIMD_Vector<S, N> movm(const internals::SIMD_Mask<C, N>& mask);
 
 	//Reinterprets `a` as vector of bytes, then shuffles these bytes within 128-bit lanes by indices `b`.
 	//After the shuffle is done, reinterprets the shuffled vector back to input type and returns it.

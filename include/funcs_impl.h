@@ -2206,7 +2206,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, meta::ScalarSizeClassEnum C, size_t N>
-	__forceinline SIMD_Vector<S, N> movm(const SIMD_Mask<C, N>& mask)
+	__forceinline SIMD_Vector<S, N> movm(const internals::SIMD_Mask<C, N>& mask)
 	{
 		using namespace meta;
 		using namespace internals;
