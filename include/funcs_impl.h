@@ -1480,7 +1480,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			internals::scream();
-			typename SIMD_Vector<S, N>::MaskT ret = 0;
+			mask_t<S, N> ret = 0;
 			for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] != b[i]);
 			return ret;
 		}
@@ -2181,7 +2181,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			T ret;
-			for (size_t i = 0; i < N; ++i) ret[i] = std::popcount(a[i]);
+			for (size_t i = 0; i < N; ++i) ret[i] = std::popcount(std::bit_cast<U>(a[i]));
 			return ret;
 		}
 	}
@@ -2206,7 +2206,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, meta::ScalarSizeClassEnum C, size_t N>
-	__forceinline SIMD_Vector<S, N> movm(const SIMD_Mask<C, N>& mask)
+	__forceinline SIMD_Vector<S, N> movm(const internals::SIMD_Mask<C, N>& mask)
 	{
 		using namespace meta;
 		using namespace internals;
@@ -2268,7 +2268,7 @@ namespace AVXXY_NAMESPACE
 	}
 
 	template<typename S, size_t N, size_t Scale, meta::any_int I>
-	__forceinline SIMD_Vector<S, N> __gather_impl(const void* p, const SIMD_Vector<I, N>& ind, const typename SIMD_Vector<S, N>::MaskT& mask, const SIMD_Vector<S, N>& src)
+	__forceinline SIMD_Vector<S, N> __gather_impl(const void* p, const SIMD_Vector<I, N>& ind, const mask_t<S,N>& mask, const SIMD_Vector<S, N>& src)
 	{
 		using namespace meta;
 		using namespace internals;
