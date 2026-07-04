@@ -29,8 +29,12 @@ namespace AVXXY_NAMESPACE
 		static inline constexpr bool IsSimdVector = true;
 		static inline constexpr size_t LaneCount = N;
 
+		
 		using IntrinsicT = meta::typed_intrinsic_storage_t<S, N>;
-		using MaskT = SIMD_Mask<meta::ScalarTraits<S>::size_class, N>;
+		/*
+		template<size_t M = N>
+		requires (M <= 64)
+		using MaskT = SIMD_Mask<meta::ScalarTraits<S>::size_class, M>;*/
 		using ScalarT = S;
 
 		SIMD_Vector() {};
@@ -234,7 +238,4 @@ namespace AVXXY_NAMESPACE
 		}
 		return os;
 	}
-
-	template<typename S, size_t N>
-	using mask_t = SIMD_Vector<S, N>::MaskT;
 }

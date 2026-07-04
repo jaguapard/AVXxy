@@ -157,7 +157,7 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : std::bit_cast<S>(0);
 	template<typename S, size_t N> SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask);
-	template<meta::IsSimdVector T> T __forceinline load(const void* p, const typename T::MaskT& mask)
+	template<meta::IsSimdVector T> T __forceinline load(const void* p, const mask_t<typename T::ScalarT, T::LaneCount>& mask)
 	{
 		return load<typename T::ScalarT, T::LaneCount>(p, mask);
 	}
@@ -174,7 +174,7 @@ namespace AVXXY_NAMESPACE
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//ret[i] = mask[i] ? reinterpret_cast<const S*>(p)[i] : src[i]
 	template<meta::IsSimdVector T>
-	__forceinline T load(const void* p, const typename T::MaskT& mask, const T& src)
+	__forceinline T load(const void* p, const mask_t<typename T::ScalarT, T::LaneCount>& mask, const T& src)
 	{
 		return load<typename T::ScalarT, T::LaneCount>(p, mask, src);
 	}
@@ -205,7 +205,7 @@ namespace AVXXY_NAMESPACE
 	//By default, scale is set to the size of vector's scalar type
 	//ret[i] = mask[i] ? *reinterpret_cast<const S*>(size_t(base) + Scale*ind[i]) : src[i]
 	template <meta::IsSimdVector T, size_t Scale = sizeof(typename T::ScalarT), meta::any_int I>
-	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const typename T::MaskT& mask = T::MaskT::AllOnesUint, const T& src = 0)
+	__forceinline T gather(const void* base, const SIMD_Vector<I, T::LaneCount>& ind, const mask_t<typename T::ScalarT, T::LaneCount>& mask = mask_t<typename T::ScalarT, T::LaneCount>::AllOnesUint, const T& src = 0)
 	{
 		return __gather_impl<typename T::ScalarT, T::LaneCount, Scale>(base, ind, mask, src);
 	}

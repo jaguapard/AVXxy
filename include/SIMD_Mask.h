@@ -109,4 +109,18 @@ namespace AVXXY_NAMESPACE
 		using SizeTraits = meta::ScalarSizeTraits<LS>;
 		std::conditional_t<IsBitMask, BitsUintT, VecT> underlying;
 	};
+
+	namespace internals
+	{
+		//this magic detour allows mask_t to work, don't touch it
+		template<typename S, size_t N>
+		struct simd_mask_helper
+		{
+			using type = SIMD_Mask<meta::ScalarTraits<S>::size_class, N>;
+		};
+	}
+
+	//mask type that has size class equal to that of S, and that can hold at least N logical bits. Use this instead of manual instantiation of SIMD_Mask 
+	template<typename S, size_t N>
+	using mask_t = typename internals::simd_mask_helper<S, N>::type;
 }
