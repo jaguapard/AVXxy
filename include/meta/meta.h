@@ -146,7 +146,7 @@ namespace AVXXY_NAMESPACE
 		//@note for now, bigger than 64 lanes vectors are not supported (mainly due to mask type not being ready for it)
 		//@tparam S scalar type of the would-be vector
 		//@tparam N lane count of the would-be vector
-		template<typename S, size_t N> concept IsValid_SIMD_Vector = IsScalarType<S> && ((N == 1) || (N >= 2 && N <= 64 && isPowerOf2(N)));
+		template<typename S, size_t N> concept IsValid_SIMD_Vector = IsScalarType<S> && ((N == 1) || isPowerOf2(N));
 
 		template<typename T> inline constexpr bool xmm_sized = vector_size_class_v<T> == VectorSizeClassEnum::XMM;
 		template<typename T> inline constexpr bool ymm_sized = vector_size_class_v<T> == VectorSizeClassEnum::YMM;
