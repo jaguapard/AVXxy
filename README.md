@@ -31,7 +31,7 @@ _This section describes feature set planned for release. Pre-release versions ma
 - C++-style operators for vector types (`+, -, *, /, <<, >>, &, |, ^, ~`) and in-place variations of them.
 - Signed/unsigned integer vector types disambiguation.
 - Vectors of these scalar types: double, float, (u)int64_t, (u)int32_t, (u)int16_t, (u)int8_t, _FP16, BF16 (support for these is now in it's infancy, especially BF16)_
-- Vector types with power-of-two size from 1 to 64 inclusive. These do not require vector size to be native to architecture, operations on too large vectors are emulated with smaller ones.
+- Vector types with power-of-two size, including 1. These do not require vector size to be native to architecture, operations on too large vectors are emulated with smaller ones. Although vector size is not strictly capped, most functionallity requires them to be no larger than 64 elements. ([learn more](docs/Technicals.md#vector-size-notes))
 - Fallbacks for all operations, down to fully scalar path.
 - Emulation of operations that don't exist in native instruction sets. Examples include:
 	- Multiplication of 64-bit integers

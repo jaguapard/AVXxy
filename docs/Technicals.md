@@ -1,3 +1,17 @@
+# Vector size notes
+Vector sizes are limited to power of 2 sizes, starting from 1. Despite not having a hard cap (except size_t's maximum value), in practice, you will encounter more and more problems and limitations when using huge vectors:
+
+- All masking operations are currently unavailable for vectors with more than 64 elements
+- Some operations scale non-linearly with vector size, and/or can fall back to slower classes of instructions (permx(2) -> gather for instance)
+- Some operations may not be supported at all for larger vectors (for example, conflict detection can't fit into 64 bit elements for N > 64)
+- Kernels utilizing huge vectors will experience heavy register spilling
+- Since all vectors don't perform any heap allocations, stack space can become a concern for huge vectors. 
+- Intended user-range ends at 64 elements, with larger vectors only used as intermediate storage for example, for byte_shuffle indices
+
+Previously (at and before commit 02872426 from July 3, 2026), vector sizes were hard capped at 64 elements. The limit was removed because it wasn't strictly necessary and caused many headaches with nothing being able to use larger vectors (some operations needed small vectors of same total byte size, i.e. intermediate results of vpopcnt). However, there are no plans for full-fledged support for huge vectors, and users are recommended to not exceed 64 elements soft-cap.
+
+64 seems like a practical limit not requiring masking compications and cross-lane operation memory fallbacks. The masks fit into 64 bits, and vanilla x86 SIMD operations (as of now) don't need more than 64 lanes (64 lanes is the limit for zmm vectors containing 8-bit integers), while simple operations can be just broken down into chunks. Thus, u64x64 is the largest vector that can be returned by in-essence vanilla operations (converting 8-bit zmm to 64 bit integers or doubles)
+
 # AVX512 fragmentation
 According to [Wikipedia](https://en.wikipedia.org/wiki/AVX-512#CPUs_with_AVX-512), the minimal instruction set for AVX512 on somewhat desktop-related CPUs (earliest Skylake-X HEDT and Skylake-SP server CPUs) is: AVX512 F, CD, VL, DQ, BW. Only Xeon Phi had some of them missing, and currently, the support for these is out of the library's scope. Thus, the emulations may not be available and feature set boundaries may not be exactly respected with instructions inside this minimal set.
 
