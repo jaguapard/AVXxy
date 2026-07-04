@@ -2181,7 +2181,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			T ret;
-			for (size_t i = 0; i < N; ++i) ret[i] = std::popcount(a[i]);
+			for (size_t i = 0; i < N; ++i) ret[i] = std::popcount(std::bit_cast<U>(a[i]));
 			return ret;
 		}
 	}
