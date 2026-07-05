@@ -39,7 +39,29 @@ namespace AVXXY_NAMESPACE
 	}
 
 
-
+	namespace internals
+	{
+		//Attempts to split vector at HeadByte boundary.
+		//Returns a pair of values, first value is not greater than HeadBytes large.
+		//Second value not greater than sizeof(a) - HeadBytes bytes large
+		//If input size is smaller or equal to HeadBytes, returns pair of a and std::nullopt
+		template<size_t HeadBytes, typename S, size_t N>
+		requires (HeadBytes % sizeof(S) == 0)
+		auto vsplit(const SIMD_Vector<S, N>& a)
+		{
+			using T = SIMD_Vector<S, N>;
+			if constexpr (sizeof(T) <= HeadBytes) return std::make_pair(a, std::nullopt);
+			else
+			{
+				constexpr size_t HeadN = HeadBytes / sizeof(S);
+				SIMD_Vector<S, HeadN> head;
+				SIMD_Vector<S, N - HeadN> tail;
+				memcpy(&head, &a[0], sizeof(head));
+				memcpy(&tail, &a[HeadN], sizeof(tail));
+				return std::make_pair(head, tail);
+			}
+		}
+	}
 
 
 
