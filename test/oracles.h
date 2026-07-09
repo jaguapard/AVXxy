@@ -120,13 +120,18 @@ public:
 	template<meta::any_int S, size_t N, meta::any_int I>
 	static SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
 	{
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i)
+		using canon_t = meta::ScalarTraits<I>::UintT;
+		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_left(a, Oracles::vcvt<canon_t>(amount));
+		else
 		{
-			if (amount[i] < 0 || amount[i] >= sizeof(S) * 8) ret[i] = 0;
-			else ret[i] = a[i] << amount[i];
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i)
+			{
+				if (amount[i] < sizeof(S) * 8) ret[i] = a[i] << amount[i];
+				else ret[i] = 0;
+			}
+			return ret;
 		}
-		return ret;
 	}
 
 	//Shift packed integers in `a` left by the amount specified by the template parameter A while shifting in zeros, and returns the result.
@@ -139,27 +144,39 @@ public:
 		return ret;
 	}
 
-	//Shift packed integers in `a` right by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result.
+	//Shift packed integers in `a` right by the amount specified by the corresponding element of `amount` while shifting in sign bits, and returns the result.
 	template<meta::any_int S, size_t N, meta::any_int I>
 	static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
 	{
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i)
+		using canon_t = meta::ScalarTraits<I>::UintT;
+		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_right(a, Oracles::vcvt<canon_t>(amount));
+		else
 		{
-			if (amount[i] < 0 || amount[i] >= sizeof(S) * 8) ret[i] = 0;
-			else ret[i] = a[i] >> amount[i];
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i)
+			{
+				if (amount[i] < sizeof(S) * 8) ret[i] = a[i] >> amount[i];
+				else ret[i] = a[i] < 0 ? meta::AllOnes<S> : meta::AllZeros<S>;
+			}
+			return ret;
 		}
-		return ret;
 	}
 
-	//Shift packed integers in `a` right by the amount specified by the template parameter A while shifting in zeros, and returns the result.
+	//Shift packed integers in `a` right by the amount specified by the template parameter A while shifting in sign bits, and returns the result.
 	template<size_t A, meta::any_int S, size_t N>
 	static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a)
 	{
-		if constexpr (A >= sizeof(S) * 8) return 0;
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> A;
-		return ret;
+		if constexpr (A == 0) return a;
+		else
+		{
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i)
+			{
+				if (A < sizeof(S) * 8) ret[i] = a[i] >> A;
+				else ret[i] = a[i] < 0 ? meta::AllOnes<S> : meta::AllZeros<S>;
+			}
+			return ret;
+		}
 	}
 
 
