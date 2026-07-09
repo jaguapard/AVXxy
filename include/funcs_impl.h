@@ -460,7 +460,6 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (A >= sizeof(S) * 8) return T(0);
 		else if constexpr (any_i8<S>)
 		{
-			//TODO: this will fail on vectors < 4 sized. Same with shift_right
 			auto interm = shift_left<A>(vcast<uint32_t>(a));
 			constexpr uint32_t andc = ((1 << A) - 1) & 0xFF;
 			constexpr uint32_t andc2 = (andc << 8) | (andc << 16) | (andc << 24);
