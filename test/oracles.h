@@ -123,7 +123,7 @@ public:
 	static SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
 	{
 		using canon_t = meta::ScalarTraits<I>::UintT;
-		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_left(a, Oracles::vcvt<canon_t>(amount));
+		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_left(a, Oracles::vsat<canon_t>(amount));
 		else
 		{
 			SIMD_Vector<S, N> ret;
@@ -154,7 +154,7 @@ public:
 	static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
 	{
 		using canon_t = meta::ScalarTraits<I>::UintT;
-		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_right(a, Oracles::vcvt<canon_t>(amount));
+		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_right(a, Oracles::vsat<canon_t>(amount));
 		else
 		{
 			SIMD_Vector<S, N> ret;
@@ -171,17 +171,13 @@ public:
 	template<size_t A, meta::any_int S, size_t N>
 	static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a)
 	{
-		if constexpr (A == 0) return a;
-		else
+		SIMD_Vector<S, N> ret;
+		for (size_t i = 0; i < N; ++i)
 		{
-			SIMD_Vector<S, N> ret;
-			for (size_t i = 0; i < N; ++i)
-			{
-				if (A < sizeof(S) * 8) ret[i] = a[i] >> A;
-				else ret[i] = a[i] < 0 ? meta::AllOnes<S> : meta::AllZeros<S>;
-			}
-			return ret;
+			if (A < sizeof(S) * 8) ret[i] = a[i] >> A;
+			else ret[i] = a[i] < 0 ? meta::AllOnes<S> : meta::AllZeros<S>;
 		}
+		return ret;
 	}
 
 	//Converts integral input to other integral vector by using saturation and returns the result.

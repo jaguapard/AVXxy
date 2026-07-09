@@ -376,7 +376,7 @@ namespace AVXXY_NAMESPACE
 
 		//zero-extend small integers, shift and convert back. TODO: There could be a better way?
 		if constexpr ((any_i16<S> && !has_native_16bit_shift) || (any_i8<S>)) return vrtrunc<S>(shift_left(vrzext<routing_t>(a), b));
-		else if constexpr (!std::is_same_v<I, canon_shift_amount_t>) return shift_left(a, vcvt<canon_shift_amount_t>(b));
+		else if constexpr (!std::is_same_v<I, canon_shift_amount_t>) return shift_left(a, vsat<canon_shift_amount_t>(b));
 
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_sllv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && any_i16<S>) return _mm256_sllv_epi16(a, b);
@@ -416,7 +416,7 @@ namespace AVXXY_NAMESPACE
 
 		//zero-extend small integers, shift and convert back. TODO: There could be a better way?
 		if constexpr ((any_i16<S> && !has_native_16bit_shift) || (any_i8<S>)) return vcvt<S>(shift_right(vcvt<routing_t>(a), b));
-		else if constexpr (!std::is_same_v<I, canon_shift_amount_t>) return shift_right(a, vcvt<canon_shift_amount_t>(b));
+		else if constexpr (!std::is_same_v<I, canon_shift_amount_t>) return shift_right(a, vsat<canon_shift_amount_t>(b));
 
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_u16<S>) return _mm512_srlv_epi16(a, b);
 		else if constexpr (FS.has(AVX512_BW) && FS.has(AVX512_VL) && ymm_sized<T> && is_u16<S>) return _mm256_srlv_epi16(a, b);
