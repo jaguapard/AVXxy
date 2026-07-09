@@ -65,41 +65,7 @@ namespace AVXXY_NAMESPACE
 			requires IsScalarType<S>
 		struct ScalarTraits : ScalarSizeTraits<scalar_size_class_v<S>>
 		{
-			static inline constexpr bool is_fp16 = std::is_same_v<S, fp16_t>;
-			static inline constexpr bool is_bf16 = std::is_same_v<S, bf16_t>;
-			static inline constexpr bool is_f32 = std::is_same_v<S, float>;
-			static inline constexpr bool is_f64 = std::is_same_v<S, double>;
-			static inline constexpr bool is_i64 = std::is_same_v<S, int64_t>;
-			static inline constexpr bool is_i32 = std::is_same_v<S, int32_t>;
-			static inline constexpr bool is_i16 = std::is_same_v<S, int16_t>;
-			static inline constexpr bool is_i8 = std::is_same_v<S, int8_t>;
-			static inline constexpr bool is_u64 = std::is_same_v<S, uint64_t>;
-			static inline constexpr bool is_u32 = std::is_same_v<S, uint32_t>;
-			static inline constexpr bool is_u16 = std::is_same_v<S, uint16_t>;
-			static inline constexpr bool is_u8 = std::is_same_v<S, uint8_t>;
-
-			//indicates wheteher this type is a signed 8 or 16 bit integer
-			static inline constexpr bool is_small_sint = is_i16 || is_i8;
-			//indicates wheteher this type is a unsigned 8 or 16 bit integer
-			static inline constexpr bool is_small_uint = is_u16 || is_u8;
-			//indicates wheteher this type is any 8 or 16 bit integer, signed or unsigned
-			static inline constexpr bool any_small_int = is_small_sint || is_small_uint;
-
-			//indicates wheteher this type is a floating point type (double, single, half precision or BF16)
-			//Note that std::is_floating_point_v is not exactly equal to this, since FP16 and BF16 have limited support and are using custom types
-			static inline constexpr bool any_float = is_any_of_v<S, float, double, fp16_t, bf16_t>;
-			//indicates whether this type is 8 bit integer, signed or unsigned
-			static inline constexpr bool any_i8 = (is_u8 || is_i8);
-			//indicates whether this type is 16 bit integer, signed or unsigned
-			static inline constexpr bool any_i16 = (is_u16 || is_i16);
-			//indicates whether this type is 32 bit integer, signed or unsigned
-			static inline constexpr bool any_i32 = (is_u32 || is_i32);
-			//indicates whether this type is 64 bit integer, signed or unsigned
-			static inline constexpr bool any_i64 = (is_u64 || is_i64);
-			//indicates whether this type is integral
-			static inline constexpr bool any_int = std::is_integral_v<S>;
-			//indicates whether this type is not integral
-			static inline constexpr bool not_int = !std::is_integral_v<S>;
+			
 		};
 
 		template<typename T> requires IsScalarType<T> inline constexpr T UppermostBitMask = std::bit_cast<T>(ScalarTraits<T>::SignMask);
@@ -200,7 +166,7 @@ namespace AVXXY_NAMESPACE
 
 		//Returns the number of elements of type S that the largest architectual registers of current feature set can hold.
 		//Note that this in no way related to whether or not the operations on these vectors will be native or not.
-		//It is purely a numerical size quantity, equal to largest native vector width divided by the sizeof(S).
+		//It is purely a numerical size quantity, equal to largest native vector width divided by sizeof(S).
 		//Largest native vector widths are:
 		//128 bits for SSE and above
 		//256 bits for AVX and above
