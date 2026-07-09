@@ -1237,7 +1237,8 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && is_f32<S>) return _mm_mask_loadu_ps(src, mask, p);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i64<S>) return _mm_mask_loadu_epi64(src, mask, p);
 		else if constexpr (FS.has(AVX512_F) && FS.has(AVX512_VL) && xmm_sized<T> && any_i32<S>) return _mm_mask_loadu_epi32(src, mask, p);
-		else return mask_mov(src, mask, load<S, N>(p, mask)); //TODO: this is pessimization for large vectors (AVX512 may have caught it)
+		else if constexpr (sizeof(T) > 64) return T{ load<S,N / 2>(p,mask.lo(),src.lo()), load<S,N / 2>(sp + N / 2, mask.hi(), src.hi()) };
+		else return mask_mov(src, mask, load<S, N>(p, mask));
 	}
 	template<typename S, size_t N>
 	__forceinline void store(const SIMD_Vector<S, N>& v, void* p, const mask_t<S, N>& mask)
