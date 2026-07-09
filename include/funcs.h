@@ -185,12 +185,20 @@ namespace AVXXY_NAMESPACE
 		return load<typename T::ScalarT, T::LaneCount>(p, mask, src);
 	}
 
+	//Stores vector `v` to memory location `p`. Memory does not have to be aligned.
+	template<typename S, size_t N> void store(const SIMD_Vector<S, N>& v, void* p);
+	//Stores vector `v` to memory location `p`. Memory must be aligned to a boundary depending on vector size:
+	//16 bytes for vectors less than or equal to 16 bytes
+	//32 bytes for vectors sized between 17 and 32 bytes inclusive
+	//64 bytes for vectors larger than 32 bytes
+	template<typename S, size_t N> void store_a(const SIMD_Vector<S, N>& v, void* p);
+
 	//Conditionally stores vector `v` to memory location pointed by `p` using mask `mask`.
 	//If the corresponding mask bit is set, the corresponding element of `v` is stored into the memory
 	//Else, no action is performed
 	//Masked out elements are guaranteed to not cause memory-related faults
 	//if (mask[i]) reinterpret_cast<S*>(p)[i] = v[i]
-	template<typename S, size_t N> void store(const SIMD_Vector<S, N>& v, void* p, const mask_t<S, N>& mask = mask_t<S, N>::AllOnesUint);
+	template<typename S, size_t N> void store(const SIMD_Vector<S, N>& v, void* p, const mask_t<S, N>& mask);
 
 	//Conditionally gathers elements from memory, stores them into a vector and returns the result.
 	//If the corresponding mask bit is set, the corresponding element in memory is read and stored into the returned vector
