@@ -331,6 +331,20 @@ namespace AVXXY_NAMESPACE
 	SIMD_Vector<S, N> byte_shuffle(const SIMD_Vector<S, N>& a, const SIMD_Vector<uint8_t, N * sizeof(S)>& b);
 
 
+	//Concatenates all input vectors in left-to-right order into a temporary value, then performs a block permutation of temporary by compile-time-known indices and returns the result.
+	//The concatenated temporary value does not have to be a valid SIMD_Vector, thus, any combination of SIMD_Vectors can be passed as inputs.
+	//@tparam BlockT This type's size is used as permutation granularity. Only scalar and vector types are accepted, but they are not required to be related to input vectors
+	//@tparam Inds zero-indexed block indices. Output block at index i is copied from temporary's block at index Inds[i]
+	//@tparam S deduced automatically. Scalar types of input vectors. All input types must have the same scalar type
+	//@tparam Ns deduced automatically. Lane count of input vectors. These are not required to match
+	//@return SIMD_Vector<S, C>, where C = number of indices in Inds * sizeof(BlockT) / sizeof(S) 
+	template<typename BlockT, size_t... Inds, typename S, size_t... Ns>
+	auto block_permute(const SIMD_Vector<S, Ns>&... vectors);
+
+	/*
+	template<typename RetS, typename BlockT, size_t... Inds, typename Ss..., size_t Ns...>
+	auto block_permute_typeless*/
+
 	//Performs a block permutation of input vector by compile-time-known indices.
 	//Requires size of input to be divisible by size of block.
 	//Requires number of indices and number of blocks in input to match.

@@ -46,7 +46,7 @@ namespace AVXXY_NAMESPACE
 		//Second value not greater than sizeof(a) - HeadBytes bytes large
 		//If input size is smaller or equal to HeadBytes, returns pair of a and std::nullopt
 		template<size_t HeadBytes, typename S, size_t N>
-		requires (HeadBytes % sizeof(S) == 0)
+			requires (HeadBytes % sizeof(S) == 0)
 		auto vsplit(const SIMD_Vector<S, N>& a)
 		{
 			using T = SIMD_Vector<S, N>;
@@ -500,7 +500,7 @@ namespace AVXXY_NAMESPACE
 			auto interm = shift_right<A>(vcast<uint32_t>(a)); //everything has 32-bit shifts!
 			constexpr uint32_t fin = ((1 << (8 - A)) - 1) & 0xFF;
 			constexpr uint32_t andc2 = (fin << 0) | (fin << 8) | (fin << 16) | (fin << 24); //zero-out A most significant bits in each byte, removing bits shifted in from neighbors
-			
+
 			auto shiftedInZeros = interm & andc2;
 			if constexpr (is_u8<S>) return vcast<T>(shiftedInZeros);
 			else
@@ -2297,6 +2297,8 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
+
+
 	template<typename S, size_t N, size_t Scale, meta::any_int I>
 	__forceinline SIMD_Vector<S, N> __gather_impl(const void* p, const SIMD_Vector<I, N>& ind, const mask_t<S,N>& mask, const SIMD_Vector<S, N>& src)
 	{
@@ -2464,6 +2466,51 @@ namespace AVXXY_NAMESPACE
 		{
 			size_t ind = indices[i];
 			memcpy(dst + i * atomSize, src + ind * atomSize, atomSize);
+		}
+		return ret;
+	}
+
+	template<typename BlockT, size_t ...Inds, typename S, size_t ...Ns>
+	auto block_permute(const SIMD_Vector<S, Ns>& ...vectors)
+	{
+		using namespace meta;
+		using namespace internals;
+
+		static_assert(IsScalarType<BlockT> || IsSimdVector<BlockT>, "block_permute: block type must be scalar or SIMD_Vector");
+
+		constexpr size_t TmpN = (Ns + ...);
+		std::array<S, TmpN> tmp;
+		constexpr size_t blockSize = sizeof(BlockT);
+		constexpr size_t indexCount = sizeof...(Inds);
+		constexpr size_t inputBlockCount = sizeof(tmp) / sizeof(BlockT);
+
+		static_assert(sizeof(tmp) % blockSize == 0, "block_permute: sum of inputs' sizes must be divisible by size of block type");
+		constexpr size_t indices[] = { Inds... };
+		constexpr bool allIndsInRange = []() {
+			for (size_t i = 0; i < indexCount; ++i) if (indices[i] >= inputBlockCount) return false;
+			return true;
+			}();
+		static_assert(allIndsInRange, "block_permute: all block indices must be less than sum of block counts in input vectors");
+
+		std::byte* p = reinterpret_cast<std::byte*>(tmp.data());
+		auto append = [&](const auto& v)
+			{
+				memcpy(p, &v, sizeof(v));
+				p += sizeof(v);
+			};
+		(append(vectors), ...);
+
+		constexpr size_t retByteSize = indexCount * blockSize;
+		constexpr size_t RetN = retByteSize / sizeof(S);
+		static_assert(retByteSize % sizeof(S) == 0, "block_permute: return value's byte size must be divisible by size of scalar type");
+
+		SIMD_Vector<S, RetN> ret;
+		std::byte* src = reinterpret_cast<std::byte*>(tmp.data());
+		std::byte* dst = reinterpret_cast<std::byte*>(&ret);
+		for (size_t i = 0; i < indexCount; ++i)
+		{
+			size_t ind = indices[i];
+			memcpy(dst + i * blockSize, src + ind * blockSize, blockSize);
 		}
 		return ret;
 	}
