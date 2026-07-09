@@ -332,14 +332,14 @@ namespace AVXXY_NAMESPACE
 
 
 	//Concatenates all input vectors in left-to-right order into a temporary value, then performs a block permutation of temporary by compile-time-known indices and returns the result.
-	//The concatenated temporary value does not have to be a valid SIMD_Vector, thus, any combination of SIMD_Vectors can be passed as inputs.
-	//@tparam BlockT This type's size is used as permutation granularity. Only scalar and vector types are accepted, but they are not required to be related to input vectors
+	//The concatenated temporary value does not have to be a valid SIMD_Vector, thus, any combination of SIMD_Vectors can be passed as inputs. Only the output type has to be a valid SIMD_Vector.
+	//@tparam BlockT This type is used for deducting output type, and it's size is used as permutation granularity. Only scalar and vector types are allowed, but they are not required to be related to input vectors (i.e. you can permute integer vectors as floating point blocks, or permute mixture of any vectors as 4x32-bit integer blocks, etc.)
 	//@tparam Inds zero-indexed block indices. Output block at index i is copied from temporary's block at index Inds[i]
-	//@tparam S deduced automatically. Scalar types of input vectors. All input types must have the same scalar type
+	//@tparam Ss deduced automatically. Scalar types of input vectors. These are not required to match
 	//@tparam Ns deduced automatically. Lane count of input vectors. These are not required to match
-	//@return SIMD_Vector<S, C>, where C = number of indices in Inds * sizeof(BlockT) / sizeof(S) 
-	template<typename BlockT, size_t... Inds, typename S, size_t... Ns>
-	auto block_permute(const SIMD_Vector<S, Ns>&... vectors);
+	//@return SIMD_Vector<RetS, RetN>, where RetS is BlockT if BlockT is a scalar type, or BlockT's scalar type if BlockT is SIMD_Vector; RetN = number of indices in Inds * sizeof(BlockT) / sizeof(RetS).
+	template<typename BlockT, size_t... Inds, typename... Ss, size_t... Ns>
+	auto block_permute(const SIMD_Vector<Ss, Ns>&... vectors);
 
 	/*
 	template<typename RetS, typename BlockT, size_t... Inds, typename Ss..., size_t Ns...>

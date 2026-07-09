@@ -2433,16 +2433,15 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
-	template<typename BlockT, size_t ...Inds, typename S, size_t ...Ns>
-	auto block_permute(const SIMD_Vector<S, Ns>& ...vectors)
+	template<typename BlockT, size_t... Inds, typename... Ss, size_t... Ns>
+	auto block_permute(const SIMD_Vector<Ss, Ns>& ...vectors)
 	{
 		using namespace meta;
 		using namespace internals;
-
 		static_assert(IsScalarType<BlockT> || IsSimdVector<BlockT>, "block_permute: block type must be scalar or SIMD_Vector");
 
-		constexpr size_t TmpN = (Ns + ...);
-		std::array<S, TmpN> tmp;
+		constexpr size_t TmpByteSize = ((sizeof(Ss) * Ns) + ...);
+		std::array<std::byte, TmpByteSize> tmp;
 		constexpr size_t blockSize = sizeof(BlockT);
 		constexpr size_t indexCount = sizeof...(Inds);
 		constexpr size_t inputBlockCount = sizeof(tmp) / sizeof(BlockT);
@@ -2455,7 +2454,7 @@ namespace AVXXY_NAMESPACE
 			}();
 		static_assert(allIndsInRange, "block_permute: all block indices must be less than sum of block counts in input vectors");
 
-		std::byte* p = reinterpret_cast<std::byte*>(tmp.data());
+		std::byte* p = tmp.data();
 		auto append = [&](const auto& v)
 			{
 				memcpy(p, &v, sizeof(v));
@@ -2463,12 +2462,13 @@ namespace AVXXY_NAMESPACE
 			};
 		(append(vectors), ...);
 
-		constexpr size_t retByteSize = indexCount * blockSize;
-		constexpr size_t RetN = retByteSize / sizeof(S);
-		static_assert(retByteSize % sizeof(S) == 0, "block_permute: return value's byte size must be divisible by size of scalar type");
+		using RetS = std::conditional_t<IsScalarType<BlockT>, BlockT, BlockT::ScalarT>;
+		constexpr size_t RetByteSize = indexCount * blockSize;
+		constexpr size_t RetN = RetByteSize / sizeof(RetS);
+		static_assert(RetByteSize % sizeof(RetS) == 0, "block_permute: return value's byte size must be divisible by size of block's scalar type");
 
-		SIMD_Vector<S, RetN> ret;
-		std::byte* src = reinterpret_cast<std::byte*>(tmp.data());
+		SIMD_Vector<RetS, RetN> ret;
+		std::byte* src = tmp.data();
 		std::byte* dst = reinterpret_cast<std::byte*>(&ret);
 		for (size_t i = 0; i < indexCount; ++i)
 		{
