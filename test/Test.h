@@ -141,6 +141,8 @@ private:
 	}\
 	else outputTestSkipMessage(loc, #op, __VA_ARGS__);} while(0);
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshift-count-overflow"
 	template<size_t N = 0, typename T>
 	void test_immediate_shifts(const T& a)
 	{
@@ -148,6 +150,7 @@ private:
 		TEST(shift_right<N>, a);
 		if constexpr (N <= 65) test_immediate_shifts<N + 1>(a);
 	}
+#pragma clang diagnostic pop
 	template<size_t TypeIndex, size_t SizeIndex>
 	void test_inner()
 	{

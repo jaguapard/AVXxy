@@ -294,6 +294,7 @@
     <ClInclude Include="include\small_fp.h" />
     <ClInclude Include="include\tables.h" />
     <ClInclude Include="include\typedefs.h" />
+    <ClInclude Include="internals\TypelessPtr.h" />
     <ClInclude Include="test\oracles.h" />
     <ClInclude Include="test\Reporter.h" />
     <ClInclude Include="test\Table.h" />
