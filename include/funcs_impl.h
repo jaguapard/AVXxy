@@ -492,22 +492,26 @@ namespace AVXXY_NAMESPACE
 		using namespace internals;
 		using namespace meta;
 		using T = SIMD_Vector<S, N>;
-
+		//TODO: fix scalar fallback, and also for variable and left shifts too
 		if constexpr (A == 0) return a;
-		else if constexpr (A >= sizeof(S) * 8) return T(0);
+		else if constexpr (A >= sizeof(S) * 8 && std::is_unsigned_v<S>) return T(0);
 		else if constexpr (any_i8<S>)
 		{
-			auto interm = shift_right<A>(vcast<uint32_t>(a)); //everything has 32-bit shifts!
-			constexpr uint32_t fin = ((1 << (8 - A)) - 1) & 0xFF;
-			constexpr uint32_t andc2 = (fin << 0) | (fin << 8) | (fin << 16) | (fin << 24); //zero-out A most significant bits in each byte, removing bits shifted in from neighbors
-
-			auto shiftedInZeros = interm & andc2;
-			if constexpr (is_u8<S>) return vcast<T>(shiftedInZeros);
+			if constexpr (A >= 8) return blend(a < 0, T(0), T(-1)); //for not-8-bits, falling through to srai is better
 			else
 			{
-				mask_t<S, N> zcmp = vcast<int8_t>(a) < 0;
-				auto shiftedInOnes = vcast<T>(shiftedInZeros | ~andc2); //force shifted in bits to ones for initially negative inputs
-				return mask_mov(vcast<T>(shiftedInZeros), zcmp, vcast<T>(shiftedInOnes));
+				auto interm = shift_right<A>(vcast<uint32_t>(a)); //everything has 32-bit shifts!
+				constexpr uint32_t fin = ((1 << (8 - A)) - 1) & 0xFF;
+				constexpr uint32_t andc2 = (fin << 0) | (fin << 8) | (fin << 16) | (fin << 24); //zero-out A most significant bits in each byte, removing bits shifted in from neighbors
+
+				auto shiftedInZeros = interm & andc2;
+				if constexpr (is_u8<S>) return vcast<T>(shiftedInZeros);
+				else
+				{
+					mask_t<S, N> zcmp = vcast<int8_t>(a) < 0;
+					auto shiftedInOnes = vcast<T>(shiftedInZeros | ~andc2); //force shifted in bits to ones for initially negative inputs
+					return mask_mov(vcast<T>(shiftedInZeros), zcmp, vcast<T>(shiftedInOnes));
+				}
 			}
 		}
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && is_u16<S>) return _mm512_srli_epi16(a, A);
@@ -534,7 +538,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			T ret;
-			for (size_t i = 0; i < N; ++i) ret[i] = a[i] << A;
+			for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> A;
 			return ret;
 		}
 	}
