@@ -556,7 +556,8 @@ namespace AVXXY_NAMESPACE
 		if constexpr (sizeof(T) < 16) ind &= N - 1;
 
 		if constexpr (!is_f64<S> && !is_f32<S> && !any_int<S>) return vcast<S>(permx(vcast<U>(a), ind));
-		//TODO: some workaround for 127+ 8-bit perms?
+
+		//if removing this canonization step, be sure to check all implementations below, since some of them assume the ind to be canonized
 		else if constexpr (sizeof(I) != sizeof(S)) return permx(a, vcvt<canon_t>(ind));
 		else if constexpr (FS.has(AVX512_VBMI) && zmm_sized<T> && any_i8<S>) return _mm512_permutexvar_epi8(ind, a);
 		else if constexpr (FS.has(AVX512_VBMI) && FS.has(AVX512_VL) & ymm_sized<T> && any_i8<S>) return _mm256_permutexvar_epi8(ind, a);
@@ -619,37 +620,42 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 4) return T::fromBits(_mm_permutevar_ps(vcast<__m128>(a), ind));
 		else if constexpr (FS.has(AVX) && xmm_sized<T> && sizeof(S) == 8) return T::fromBits(_mm_permutevar_pd(vcast<__m128d>(a), shift_left<1>(ind))); //TY intel for laying this trap for me. for some reason, it takes bit 1 and 65, NOT 0 or 64!!! While ps version is actually sane. lol.
 
-		//TODO: these may break with >127 bytes. Also check if they work at all
-		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 1) return _mm_shuffle_epi8(a, ind & 0x7F); //discard sign bit to avoid unwanted zero-masking
-		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 2)
+		//shuffle_epi8 can't properly handle more than 128 bytes due to index being 7 usable bits (sign bit activates zeroing that we don't want)
+		//Thus, limit it to 128 bytes and fall back to scalar otherwise
+		//TODO: make proper fallbacks for large vectors
+		else if constexpr (sizeof(T) <= 128)
 		{
-			__m128i ind2 = _mm_slli_epi16(ind, 1);
-			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 2, 2, 4, 4, 6, 6, 8, 8, 10, 10, 12, 12, 14, 14)); //duplicate low byte of each word
-			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1));
-			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
-			return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
-		}
-		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 4)
-		{
-			__m128i ind2 = _mm_slli_epi32(ind, 2);
-			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 4, 4, 4, 4, 8, 8, 8, 8, 12, 12, 12, 12)); //duplicate low byte of each dword
-			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3));
-			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
-			return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
-		}
-		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 8)
-		{
-			__m128i ind2 = _mm_slli_epi64(ind, 3);
-			__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8)); //duplicate low byte of each qword
-			__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7));
-			__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
-			return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
-		}
-		else if constexpr (sizeof(T) > 16)
-		{
-			auto alo = a.lo();
-			auto ahi = a.hi();
-			return T{ permx2(alo, ahi, ind.lo()), permx2(alo, ahi, ind.hi()) };
+			if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 1) return _mm_shuffle_epi8(a, ind & 0x7F); //discard sign bit to avoid unwanted zero-masking
+			else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 2)
+			{
+				__m128i ind2 = _mm_slli_epi16(ind, 1); //it's OK, since we only use low bytes and AND with 127 anyway
+				__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 2, 2, 4, 4, 6, 6, 8, 8, 10, 10, 12, 12, 14, 14)); //duplicate low byte of each word
+				__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1));
+				__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
+				return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
+			}
+			else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 4)
+			{
+				__m128i ind2 = _mm_slli_epi32(ind, 2);
+				__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 4, 4, 4, 4, 8, 8, 8, 8, 12, 12, 12, 12)); //duplicate low byte of each dword
+				__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3));
+				__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
+				return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
+			}
+			else if constexpr (FS.has(SSSE3) && xmm_sized<T> && sizeof(S) == 8)
+			{
+				__m128i ind2 = _mm_slli_epi64(ind, 3);
+				__m128i db = _mm_shuffle_epi8(ind2, _mm_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8)); //duplicate low byte of each qword
+				__m128i ind3 = _mm_or_si128(db, _mm_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7));
+				__m128i ind4 = _mm_and_si128(ind3, _mm_set1_epi8(0x7F));
+				return T::fromBits(_mm_shuffle_epi8(vcast<__m128i>(a), ind4));
+			}
+			else if constexpr (sizeof(T) > 16)
+			{
+				auto alo = a.lo();
+				auto ahi = a.hi();
+				return T{ permx2(alo, ahi, ind.lo()), permx2(alo, ahi, ind.hi()) };
+			}
 		}
 		else
 		{
@@ -658,7 +664,6 @@ namespace AVXXY_NAMESPACE
 			for (size_t i = 0; i < N; ++i) ret[i] = a[ind[i] & (N - 1)];
 			return ret;
 		}
-
 	}
 
 	template<typename S, size_t N, meta::any_int I>
