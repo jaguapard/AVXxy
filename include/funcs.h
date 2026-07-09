@@ -80,6 +80,11 @@ namespace AVXXY_NAMESPACE
 	//For integer to smaller integer conversions, the input vector is wrapped around small integer's max value (TODO: is it true?)
 	template<meta::IsScalarType To, size_t N, meta::IsScalarType From> SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& value);
 
+	//Converts integral input to other integral vector by using saturation and returns the result.
+	//The input is clamped to output's scalar type range
+	template<meta::any_int To, meta::any_int From, size_t N>
+	static SIMD_Vector<To, N> vsat(const SIMD_Vector<From, N>& a);
+
 	//Concatenates vectors in order they are passed to function call (left to right) and returns the result.
 	//Leftmost vector is copied to lowest bits of the output, then second leftmost is appended to it, etc
 	//Until the final rightmost vector that is copied to the highest bits of the output

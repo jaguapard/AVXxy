@@ -967,6 +967,21 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
+	template<meta::any_int To, meta::any_int From, size_t N>
+	SIMD_Vector<To, N> vsat(const SIMD_Vector<From, N>& a)
+	{
+		//TODO: saturation intrinsics
+		internals::scream();
+		SIMD_Vector<To, N> ret;
+		for (size_t i = 0; i < N; ++i)
+		{
+			if (a[i] > std::numeric_limits<To>::max()) ret[i] = std::numeric_limits<To>::max();
+			else if (a[i] < std::numeric_limits<To>::min()) ret[i] = std::numeric_limits<To>::min();
+			else ret[i] = a[i];
+		}
+		return ret;
+	}
+
 	template<typename S, size_t... Ns>
 	auto concat(const SIMD_Vector<S, Ns>&... vectors)
 	{
