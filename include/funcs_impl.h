@@ -1095,6 +1095,7 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> load(const void* p)
 	{
+		//UNALIGNED UNMASKED LOAD
 		using namespace meta;
 		using namespace internals;
 		using T = SIMD_Vector<S, N>;
@@ -1107,18 +1108,19 @@ namespace AVXXY_NAMESPACE
 #endif
 
 		auto ld = [&]() {
-			if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_loadu_pd(p);
-			else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_loadu_ps(p);
-			else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_loadu_si512(p);
-			else if constexpr (FS.has(AVX) && ymm_sized<T> && any_int<S>) return _mm256_loadu_si256(reinterpret_cast<const unaligned256i*>(p));
-			else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_loadu_pd(reinterpret_cast<const double*>(p));
-			else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_loadu_ps(reinterpret_cast<const float*>(p));
-			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_int<S>) return _mm_loadu_si128(reinterpret_cast<const unaligned128i*>(p));
-			else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_loadu_pd(reinterpret_cast<const double*>(p));
-			else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<S>) return _mm_loadu_ps(reinterpret_cast<const float*>(p));
-			else if constexpr (sizeof(T) > 16) return T{ load<S,N / 2>(p), load<S,N / 2>(reinterpret_cast<const S*>(p) + N / 2) };
+			if constexpr (FS.has(AVX512_F) && sizeof(T) == 64 && is_f64<S>) return _mm512_loadu_pd(p);
+			else if constexpr (FS.has(AVX512_F) && sizeof(T) == 64 && is_f32<S>) return _mm512_loadu_ps(p);
+			else if constexpr (FS.has(AVX512_F) && sizeof(T) == 64) return _mm512_loadu_si512(p);
+			else if constexpr (FS.has(AVX) && sizeof(T) == 32 && any_int<S>) return _mm256_loadu_si256(reinterpret_cast<const unaligned256i*>(p));
+			else if constexpr (FS.has(AVX) && sizeof(T) == 32 && is_f64<S>) return _mm256_loadu_pd(reinterpret_cast<const double*>(p));
+			else if constexpr (FS.has(AVX) && sizeof(T) == 32) return _mm256_loadu_ps(reinterpret_cast<const float*>(p));
+			else if constexpr (FS.has(SSE2) && sizeof(T) == 16 && any_int<S>) return _mm_loadu_si128(reinterpret_cast<const unaligned128i*>(p));
+			else if constexpr (FS.has(SSE2) && sizeof(T) == 16 && is_f64<S>) return _mm_loadu_pd(reinterpret_cast<const double*>(p));
+			else if constexpr (FS.has(SSE) && sizeof(T) == 16 && is_f32<S>) return _mm_loadu_ps(reinterpret_cast<const float*>(p));
+			else if constexpr (sizeof(T) > 16 && sizeof(T) % 16 == 0) return T{ load<S,N / 2>(p), load<S,N / 2>(reinterpret_cast<const S*>(p) + N / 2) };
 			else
 			{
+				//TODO: use masked load instead?
 				T ret;
 				memcpy(&ret, p, sizeof(ret));
 				return ret;
@@ -1136,18 +1138,19 @@ namespace AVXXY_NAMESPACE
 		using T = SIMD_Vector<S, N>;
 
 		auto ld = [&]() {
-			if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<S>) return _mm512_load_pd(p);
-			else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<S>) return _mm512_load_ps(p);
-			else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_load_si512(p);
-			else if constexpr (FS.has(AVX) && ymm_sized<T> && any_int<S>) return _mm256_load_si256(reinterpret_cast<const __m256i*>(p));
-			else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<S>) return _mm256_load_pd(reinterpret_cast<const double*>(p));
-			else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_load_ps(reinterpret_cast<const float*>(p));
-			else if constexpr (FS.has(SSE2) && xmm_sized<T> && any_int<S>) return _mm_load_si128(reinterpret_cast<const __m128i*>(p));
-			else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<S>) return _mm_load_pd(reinterpret_cast<const double*>(p));
-			else if constexpr (FS.has(SSE) && xmm_sized<T>) return _mm_load_ps(reinterpret_cast<const float*>(p));
-			else if constexpr (sizeof(T) > 16) return T{ load_a<S,N / 2>(p), load_a<S,N / 2>(reinterpret_cast<const S*>(p) + N / 2) };
+			if constexpr (FS.has(AVX512_F) && sizeof(T) == 64 && is_f64<S>) return _mm512_load_pd(p);
+			else if constexpr (FS.has(AVX512_F) && sizeof(T) == 64 && is_f32<S>) return _mm512_load_ps(p);
+			else if constexpr (FS.has(AVX512_F) && sizeof(T) == 64) return _mm512_load_si512(p);
+			else if constexpr (FS.has(AVX) && sizeof(T) == 32 && any_int<S>) return _mm256_load_si256(reinterpret_cast<const __m256i*>(p));
+			else if constexpr (FS.has(AVX) && sizeof(T) == 32 && is_f64<S>) return _mm256_load_pd(reinterpret_cast<const double*>(p));
+			else if constexpr (FS.has(AVX) && sizeof(T) == 32) return _mm256_load_ps(reinterpret_cast<const float*>(p));
+			else if constexpr (FS.has(SSE2) && sizeof(T) == 16 && any_int<S>) return _mm_load_si128(reinterpret_cast<const __m128i*>(p));
+			else if constexpr (FS.has(SSE2) && sizeof(T) == 16 && is_f64<S>) return _mm_load_pd(reinterpret_cast<const double*>(p));
+			else if constexpr (FS.has(SSE) && sizeof(T) == 16) return _mm_load_ps(reinterpret_cast<const float*>(p));
+			else if constexpr (sizeof(T) > 16 && sizeof(T) % 16 == 0) return T{ load_a<S,N / 2>(p), load_a<S,N / 2>(reinterpret_cast<const S*>(p) + N / 2) };
 			else
 			{
+				//TODO: use masked load instead?
 				T ret;
 				memcpy(&ret, p, sizeof(ret));
 				return ret;
@@ -1159,6 +1162,7 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask)
 	{
+		//LOAD WITH ZERO MASKING
 		using namespace meta;
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
@@ -1211,6 +1215,7 @@ namespace AVXXY_NAMESPACE
 	template<typename S, size_t N>
 	__forceinline SIMD_Vector<S, N> load(const void* p, const mask_t<S, N>& mask, const SIMD_Vector<S, N>& src)
 	{
+		//LOAD WITH MERGE MASKING
 		using namespace meta;
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
@@ -2247,7 +2252,7 @@ namespace AVXXY_NAMESPACE
 			auto cs = vcast<uint8_t>(a);
 			auto table = load_a<uint8_t, cs.LaneCount>(tables::popcnt_table_for_nibbles_as_epi8.data());
 			auto lo_nib = cs & 15;
-			auto hi_nib = vcast<decltype(cs)>(shift_right<4>(vcast<uint32_t>(cs))) & 15;
+			auto hi_nib = vcast<uint8_t>(shift_right<4>(vcast<uint32_t>(cs))) & 15;
 			return byte_shuffle(table, lo_nib) + byte_shuffle(table, hi_nib);
 			};
 		if constexpr (!any_int<S>) return vpopcnt(vcast<U>(a));
@@ -2534,7 +2539,7 @@ namespace AVXXY_NAMESPACE
 			};
 		(append(vectors), ...);
 
-		using RetS = std::conditional_t<IsScalarType<BlockT>, BlockT, BlockT::ScalarT>;
+		using RetS = std::conditional_t<IsScalarType<BlockT>, BlockT, typename BlockT::ScalarT>;
 		constexpr size_t RetByteSize = indexCount * blockSize;
 		constexpr size_t RetN = RetByteSize / sizeof(RetS);
 		static_assert(RetByteSize % sizeof(RetS) == 0, "block_permute: return value's byte size must be divisible by size of block's scalar type");
