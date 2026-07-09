@@ -353,7 +353,7 @@ namespace AVXXY_NAMESPACE
 	__forceinline SIMD_Vector<S, N> logic_not(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
-		return logic_xor(a, meta::BitsAllOneF(a));
+		return logic_xor(a, meta::AllOnes<SIMD_Vector<S, N>>);
 		/*
 		using U = typename ScalarTraits<S>::UintT;
 
