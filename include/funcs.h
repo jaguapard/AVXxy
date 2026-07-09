@@ -51,15 +51,21 @@ namespace AVXXY_NAMESPACE
 
 	//Performs permutation on the elements from vector `a`. Elements of the returned vector are gathered from vector `a` by indices passed in `ind`.
 	//Indices outside the range [0, N-1] wrap around N (-1 maps to N-1, N maps to 0).
+	//Requires N-1 to fit into unsigned integer type's bounds, where unsigned integer type has the same size as I
 	//ret[i] = a[ind[i] & (N-1)]
-	template<typename S, size_t N, meta::any_int I> SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind);
+	template<typename S, size_t N, meta::any_int I>
+		requires (N-1 <= std::numeric_limits<typename meta::ScalarTraits<I>::UintT>::max())
+	SIMD_Vector<S, N> permx(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& ind);
 
 	//Appends vector `b` to vector `a`, then performs permutation on the elements from this temporary value. 
 	//Elements of the returned vector are gathered from temporary vector by indices passed in `ind` 
 	//Indices outside the range [0, 2*N-1] wrap around 2*N (-1 maps to 2*N-1, 2*N maps to 0).
+	//Requires 2*N-1 to fit into unsigned integer type's bounds, where unsigned integer type has the same size as I
 	//t = ind[i] & (2*N - 1)
 	//ret[i] = t < N ? a[t] : b[t-N]
-	template<typename S, size_t N, meta::any_int I> SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind);
+	template<typename S, size_t N, meta::any_int I> 
+	requires (N*2-1 <= std::numeric_limits<typename meta::ScalarTraits<I>::UintT>::max())
+	SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind);
 
 
 
