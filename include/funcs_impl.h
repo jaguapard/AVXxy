@@ -2248,13 +2248,6 @@ namespace AVXXY_NAMESPACE
 		using U = typename ScalarTraits<S>::UintT;
 		using T = SIMD_Vector<S, N>;
 
-		auto popcnt8 = [&]() {
-			auto cs = vcast<uint8_t>(a);
-			auto table = load_a<uint8_t, cs.LaneCount>(tables::popcnt_table_for_nibbles_as_epi8.data());
-			auto lo_nib = cs & 15;
-			auto hi_nib = vcast<uint8_t>(shift_right<4>(vcast<uint32_t>(cs))) & 15;
-			return byte_shuffle(table, lo_nib) + byte_shuffle(table, hi_nib);
-			};
 		if constexpr (!any_int<S>) return vpopcnt(vcast<U>(a));
 		else if constexpr (FS.has(AVX512_VPOPCNTDQ) && zmm_sized<T> && any_i64<S>) return _mm512_popcnt_epi64(a);
 		else if constexpr (FS.has(AVX512_VPOPCNTDQ) && zmm_sized<T> && any_i32<S>) return _mm512_popcnt_epi32(a);
@@ -2272,17 +2265,39 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i64<S>) return _mm512_sad_epu8(vpopcnt(vcast<uint8_t>(a)), _mm512_setzero_si512());
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i32<S>) return _mm512_madd_epi16(vpopcnt(vcast<uint16_t>(a)), _mm512_set1_epi16(1));
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i16<S>) return _mm512_maddubs_epi16(vpopcnt(vcast<uint8_t>(a)), _mm512_set1_epi8(1));
-		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>) return popcnt8();
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i32<S>) return _mm512_madd_epi16(vpopcnt(vcast<uint16_t>(a)), _mm512_set1_epi16(1));
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T> && any_i8<S>)
+		{
+			__m512i popcnt_table = _mm512_load_si512(tables::popcnt_table_for_nibbles_as_epi8.data());
+			__m512i nibble_mask = _mm512_set1_epi8(15);
+			__m512i lower_nibbles = _mm512_and_si512(a, nibble_mask);
+			__m512i upper_nibbles = _mm512_and_si512(_mm512_srli_epi32(a, 4), nibble_mask);
+			return _mm512_add_epi8(_mm512_shuffle_epi8(popcnt_table, lower_nibbles), _mm512_shuffle_epi8(popcnt_table, upper_nibbles));
+		}
 
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i64<S>) return _mm256_sad_epu8(vpopcnt(vcast<uint8_t>(a)), _mm256_setzero_si256());
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i32<S>) return _mm256_madd_epi16(vpopcnt(vcast<uint16_t>(a)), _mm256_set1_epi16(1));
 		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i16<S>) return _mm256_maddubs_epi16(vpopcnt(vcast<uint8_t>(a)), _mm256_set1_epi8(1));
-		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>) return popcnt8();
+		else if constexpr (FS.has(AVX2) && ymm_sized<T> && any_i8<S>)
+		{
+			__m256i popcnt_table = _mm256_load_si256(reinterpret_cast<const __m256i*>(tables::popcnt_table_for_nibbles_as_epi8.data()));
+			__m256i nibble_mask = _mm256_set1_epi8(15);
+			__m256i lower_nibbles = _mm256_and_si256(a, nibble_mask);
+			__m256i upper_nibbles = _mm256_and_si256(_mm256_srli_epi32(a, 4), nibble_mask);
+			return _mm256_add_epi8(_mm256_shuffle_epi8(popcnt_table, lower_nibbles), _mm256_shuffle_epi8(popcnt_table, upper_nibbles));
+		}
 
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i64<S>) return _mm_sad_epu8(vpopcnt(vcast<uint8_t>(a)), _mm_setzero_si128());
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i32<S>) return _mm_madd_epi16(vpopcnt(vcast<uint16_t>(a)), _mm_set1_epi16(1));
 		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i16<S>) return _mm_maddubs_epi16(vpopcnt(vcast<uint8_t>(a)), _mm_set1_epi8(1));
-		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i8<S>) return popcnt8();
+		else if constexpr (FS.has(SSSE3) && xmm_sized<T> && any_i8<S>)
+		{
+			__m128i popcnt_table = _mm_load_si128(reinterpret_cast<const __m128i*>(tables::popcnt_table_for_nibbles_as_epi8.data()));
+			__m128i nibble_mask = _mm_set1_epi8(15);
+			__m128i lower_nibbles = _mm_and_si128(a, nibble_mask);
+			__m128i upper_nibbles = _mm_and_si128(_mm_srli_epi32(a, 4), nibble_mask);
+			return _mm_add_epi8(_mm_shuffle_epi8(popcnt_table, lower_nibbles), _mm_shuffle_epi8(popcnt_table, upper_nibbles));
+		}
 
 		else if constexpr (sizeof(S) > 16) return { vpopcnt(a.lo()), vpopcnt(a.hi()) };
 		else
@@ -2291,6 +2306,7 @@ namespace AVXXY_NAMESPACE
 			for (size_t i = 0; i < N; ++i) ret[i] = std::popcount(std::bit_cast<U>(a[i]));
 			return ret;
 		}
+
 	}
 
 	template<typename S, size_t N>
