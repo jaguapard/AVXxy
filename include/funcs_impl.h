@@ -2433,43 +2433,6 @@ namespace AVXXY_NAMESPACE
 		}
 	}
 
-	template<typename Block, size_t... Idx, typename S, size_t N>
-	//requires (meta::IsScalarType<Block> || meta::IsSimdVector<Block>)
-	SIMD_Vector<S, N> permute(const SIMD_Vector<S, N>& a)
-	{
-		static_assert(meta::IsScalarType<Block> || meta::IsSimdVector<Block>, "permute block type must be scalar or vector");
-
-		using namespace meta;
-		using namespace internals;
-		using T = SIMD_Vector<S, N>;
-
-		constexpr size_t atomSize = sizeof(Block);
-		constexpr size_t idxCount = sizeof...(Idx);
-		constexpr size_t atomCount = sizeof(T) / atomSize;
-
-		static_assert(sizeof(T) % atomSize == 0, "permute vector size must be divisible by block size");
-		static_assert(atomCount == idxCount, "permute index count must match count of blocks in the input vector");
-
-		T ret;
-		constexpr size_t indices[] = { Idx... };
-
-		constexpr bool indices_valid = []() {
-			for (size_t i = 0; i < atomCount; ++i) if (indices[i] >= atomCount) return false;
-			return true;
-			}();
-		static_assert(indices_valid, "permute block indices must be less than twice the block count in the input type");
-
-		const auto* src = reinterpret_cast<const std::byte*>(&a);
-		auto* dst = reinterpret_cast<std::byte*>(&ret);
-
-		for (size_t i = 0; i < atomCount; ++i)
-		{
-			size_t ind = indices[i];
-			memcpy(dst + i * atomSize, src + ind * atomSize, atomSize);
-		}
-		return ret;
-	}
-
 	template<typename BlockT, size_t ...Inds, typename S, size_t ...Ns>
 	auto block_permute(const SIMD_Vector<S, Ns>& ...vectors)
 	{
@@ -2511,43 +2474,6 @@ namespace AVXXY_NAMESPACE
 		{
 			size_t ind = indices[i];
 			memcpy(dst + i * blockSize, src + ind * blockSize, blockSize);
-		}
-		return ret;
-	}
-	template<typename Block, size_t ...Idx, typename S, size_t N>
-	SIMD_Vector<S, N> permute2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b)
-	{
-		static_assert(meta::IsScalarType<Block> || meta::IsSimdVector<Block>, "permute2 block type must be scalar or vector");
-
-		using namespace meta;
-		using namespace internals;
-		using T = SIMD_Vector<S, N>;
-
-		constexpr size_t atomSize = sizeof(Block);
-		constexpr size_t idxCount = sizeof...(Idx);
-		constexpr size_t atomCount = sizeof(T) / atomSize;
-
-		static_assert(sizeof(T) % atomSize == 0, "permute2 vector size must be divisible by block size");
-		static_assert(atomCount == idxCount, "permute2 index count must match count of blocks in the input vector");
-
-		T ret;
-		constexpr size_t indices[] = { Idx... };
-
-		constexpr bool indices_valid = []() {
-			for (size_t i = 0; i < atomCount; ++i) if (indices[i] >= atomCount * 2) return false;
-			return true;
-			}();
-		static_assert(indices_valid, "permute2 block indices must be less than twice the block count in the input type");
-
-		const auto* src1 = reinterpret_cast<const std::byte*>(&a);
-		const auto* src2 = reinterpret_cast<const std::byte*>(&b);
-		auto* dst = reinterpret_cast<std::byte*>(&ret);
-
-		for (size_t i = 0; i < atomCount; ++i)
-		{
-			size_t ind = indices[i];
-			const auto* src = ind < atomCount ? (src1 + ind * atomSize) : (src2 + (ind - atomCount) * atomSize);
-			memcpy(dst + i * atomSize, src, atomSize);
 		}
 		return ret;
 	}
