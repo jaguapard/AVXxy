@@ -2393,8 +2393,9 @@ namespace AVXXY_NAMESPACE
 	{
 		using namespace meta;
 		using namespace internals;
-		using T = SIMD_Vector<uint8_t, N>;
+		using T = SIMD_Vector<S, N>;
 
+		//TODO: breaks for small vectors!
 		if constexpr (!is_u8<S>) return vcast<S>(byte_shuffle(vcast<uint8_t>(a), b));
 		else if constexpr (FS.has(AVX512_BW) && zmm_sized<T>) return _mm512_shuffle_epi8(a, b);
 		else if constexpr (FS.has(AVX2) && ymm_sized<T>) return _mm256_shuffle_epi8(a, b);
@@ -2405,7 +2406,10 @@ namespace AVXXY_NAMESPACE
 			T ret;
 			for (size_t start = 0; start < N; start += 16)
 				for (size_t i = 0; i < std::min<size_t>(N - start, 16); ++i)
-					ret[start + i] = b[start + i] > 127 ? 0 : a[start + (b[i] & 15)];
+				{
+					auto y = b[start + i];
+					ret[start + i] = y > 127 ? 0 : a[start + (y & 15)];
+				}
 			return ret;
 		}
 	}

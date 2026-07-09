@@ -697,14 +697,15 @@ public:
 		if constexpr (!is_u8<S>) return Oracles::vcast<S>(Oracles::byte_shuffle(Oracles::vcast<uint8_t>(a), b));
 		else
 		{
-			SIMD_Vector<uint8_t, N> ret;
+			//TODO: breaks for small vectors!
+			SIMD_Vector<S, N> ret;
 			constexpr size_t X = sizeof(a);
 			for (size_t start = 0; start < X; start += 16)
 			{
 				for (size_t i = 0; i < std::min<size_t>(X - start, 16); ++i)
 				{
 					auto y = b[start + i];
-					ret[start + i] = y > 127 ? 0 : a[start + y & 15];
+					ret[start + i] = y > 127 ? 0 : a[start + (y & 15)];
 				}
 			}
 			return ret;
