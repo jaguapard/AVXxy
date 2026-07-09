@@ -122,8 +122,9 @@ public:
 	template<meta::any_int S, size_t N, meta::any_int I>
 	static SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
 	{
-		using canon_t = meta::ScalarTraits<I>::UintT;
-		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_left(a, Oracles::vsat<canon_t>(amount));
+		using canon_t = meta::ScalarTraits<S>::UintT;
+		using UI = meta::ScalarTraits<I>::UintT;
+		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_left(a, Oracles::vsat<canon_t>(vcvt<UI>(amount)));
 		else
 		{
 			SIMD_Vector<S, N> ret;
@@ -153,8 +154,9 @@ public:
 	template<meta::any_int S, size_t N, meta::any_int I>
 	static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
 	{
-		using canon_t = meta::ScalarTraits<I>::UintT;
-		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_right(a, Oracles::vsat<canon_t>(amount));
+		using canon_t = meta::ScalarTraits<S>::UintT;
+		using UI = meta::ScalarTraits<I>::UintT;
+		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_right(a, Oracles::vsat<canon_t>(vcvt<UI>(amount)));
 		else
 		{
 			SIMD_Vector<S, N> ret;
