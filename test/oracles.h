@@ -692,6 +692,7 @@ public:
 	//    for (size_t i = 0; i < std::min(X-start, 16); ++i)
 	//        ret[start + i] = b[start + i] > 127 ? 0 : a[start + (b[start+i] & 15)]
 	template<typename S, size_t N>
+		requires (sizeof(SIMD_Vector<S, N>) % 16 == 0)
 	static SIMD_Vector<S, N> byte_shuffle(const SIMD_Vector<S, N>& a, const SIMD_Vector<uint8_t, N * sizeof(S)>& b)
 	{
 		if constexpr (!is_u8<S>) return Oracles::vcast<S>(Oracles::byte_shuffle(Oracles::vcast<uint8_t>(a), b));

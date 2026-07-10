@@ -2454,7 +2454,7 @@ namespace AVXXY_NAMESPACE
 
 	}
 
-	template<typename S, size_t N>
+	template<typename S, size_t N> requires (sizeof(SIMD_Vector<S, N>) % 16 == 0)
 	SIMD_Vector<S, N> byte_shuffle(const SIMD_Vector<S, N>& a, const SIMD_Vector<uint8_t, N * sizeof(S)>& b)
 	{
 		using namespace meta;
