@@ -1615,7 +1615,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			internals::scream();
-			typename SIMD_Vector<S, N>::MaskT ret = 0;
+			mask_t<S, N> ret = 0;
 			for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] == b[i]);
 			return ret;
 		}
@@ -1732,7 +1732,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			internals::scream();
-			typename SIMD_Vector<S, N>::MaskT ret = 0;
+			mask_t<S, N> ret = 0;
 			for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] < b[i]);
 			return ret;
 		}
@@ -1790,7 +1790,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			internals::scream();
-			typename SIMD_Vector<S, N>::MaskT ret = 0;
+			mask_t<S, N> ret = 0;
 			for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] <= b[i]);
 			return ret;
 		}
@@ -1861,7 +1861,7 @@ namespace AVXXY_NAMESPACE
 		else
 		{
 			internals::scream();
-			typename SIMD_Vector<S, N>::MaskT ret = 0;
+			mask_t<S, N> ret = 0;
 			for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] > b[i]);
 			return ret;
 		}
@@ -1917,7 +1917,7 @@ namespace AVXXY_NAMESPACE
 		else if constexpr (sizeof(T) > 16) return { cmp_greater_or_equal(a.lo(),b.lo()), cmp_greater_or_equal(a.hi(),b.hi()) };
 		else
 		{
-			typename SIMD_Vector<S, N>::MaskT ret = 0;
+			mask_t<S, N> ret = 0;
 			for (size_t i = 0; i < N; ++i) ret.setBit(i, a[i] >= b[i]);
 			return ret;
 		}
