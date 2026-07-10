@@ -68,11 +68,13 @@ namespace AVXXY_NAMESPACE
 	SIMD_Vector<S, N> permx2(const SIMD_Vector<S, N>& a, const SIMD_Vector<S, N>& b, const SIMD_Vector<I, N>& ind);
 
 
+	//Converts the input to RetT, then returns the square root of this value
+	template<meta::any_float RetT, typename S, size_t N> SIMD_Vector<RetT, N> vsqrt(const SIMD_Vector<S, N>& a);
 
 	//Converts the input to single-precision floating point numbers, then returns the square root of this value
-	template<typename S, size_t N> SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a);
+	template<typename S, size_t N> SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a) { return vsqrt<float>(a); }
 	//Converts the input to double-precision floating point numbers, then returns the square root of this value
-	template<typename S, size_t N> SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a);
+	template<typename S, size_t N> SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a) { return vsqrt<double>(a); }
 
 	//Converts the vector of one scalar type to vector of another scalar type and returns the result
 	//For floating point to integer conversions, the input vector is truncated

@@ -738,49 +738,45 @@ namespace AVXXY_NAMESPACE
 			return ret;
 		}
 	}
-	template<typename S, size_t N>
-	__forceinline SIMD_Vector<float, N> sqrtf(const SIMD_Vector<S, N>& a)
+	template<meta::any_float RetT, typename S, size_t N>
+	SIMD_Vector<RetT, N> vsqrt(const SIMD_Vector<S, N>& a)
 	{
 		using namespace meta;
 		using namespace internals;
 		using U = typename ScalarTraits<S>::UintT;
-		using T = SIMD_Vector<S, N>;
+		using T = SIMD_Vector<RetT, N>;
 
-		if constexpr (!is_f32<S>) return sqrtf(vcvt<float>(a));
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_sqrt_ps(a);
-		else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_sqrt_ps(a);
-		else if constexpr (FS.has(SSE) && xmm_sized<T>) return _mm_sqrt_ps(a);
-		else if constexpr (sizeof(T) > 16) return T{ sqrtf(a.lo()), sqrtf(a.hi()) };
-		else
+		constexpr bool nativeFp16SqrtAvailable = FS.has(AVX512_FP16) && ((!xmm_sized<T> && !ymm_sized<T>) || FS.has(AVX512_VL));
+		//constexpr bool nativeAvailable = (is_f64<RetT> && FS.has(SSE2)) || (is_f32<RetT> && FS.has(SSE)) || (is_fp16<RetT> && nativeFp16SqrtAvailable);
+		constexpr bool directSqrtAvailable = is_f64<RetT> || is_f32<RetT> || (is_fp16<RetT> && nativeFp16SqrtAvailable);
+
+		if constexpr (directSqrtAvailable)
 		{
-			internals::scream();
-			SIMD_Vector<float, N> ret;
-			for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(float(a[i]));
-			return ret;
-		}
-	}
-	template<typename S, size_t N>
-	__forceinline SIMD_Vector<double, N> sqrtd(const SIMD_Vector<S, N>& a)
-	{
-		using namespace meta;
-		using namespace internals;
-		using U = typename ScalarTraits<S>::UintT;
-		using T = SIMD_Vector<S, N>;
+			if constexpr (!std::same_as<RetT, S>) return vsqrt<RetT>(vcvt<RetT>(a));
+			else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f32<RetT>) return _mm512_sqrt_ps(a);
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f32<RetT>) return _mm256_sqrt_ps(a);
+			else if constexpr (FS.has(SSE) && xmm_sized<T> && is_f32<RetT>) return _mm_sqrt_ps(a);
 
-		if constexpr (!is_f64<S>) return sqrtd(vcvt<double>(a));
-		else if constexpr (FS.has(AVX512_F) && zmm_sized<T>) return _mm512_sqrt_pd(a);
-		else if constexpr (FS.has(AVX) && ymm_sized<T>) return _mm256_sqrt_pd(a);
-		else if constexpr (FS.has(SSE2) && xmm_sized<T>) return _mm_sqrt_pd(a);
-		else if constexpr (sizeof(T) > 16) return T{ sqrtd(a.lo()), sqrtd(a.hi()) };
-		else
-		{
-			internals::scream();
-			SIMD_Vector<double, N> ret;
-			for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(double(a[i]));
-			return ret;
-		}
-	}
+			else if constexpr (FS.has(AVX512_F) && zmm_sized<T> && is_f64<RetT>) return _mm512_sqrt_pd(a);
+			else if constexpr (FS.has(AVX) && ymm_sized<T> && is_f64<RetT>) return _mm256_sqrt_pd(a);
+			else if constexpr (FS.has(SSE2) && xmm_sized<T> && is_f64<RetT>) return _mm_sqrt_pd(a);
 
+			else if constexpr (FS.has(AVX512_FP16) && zmm_sized<T> && is_fp16<RetT>) return _mm512_sqrt_ph(a);
+			else if constexpr (FS.has(AVX512_FP16) && FS.has(AVX512_VL) && ymm_sized<T> && is_fp16<RetT>) return _mm256_sqrt_ph(a);
+			else if constexpr (FS.has(AVX512_FP16) && FS.has(AVX512_VL) && xmm_sized<T> && is_fp16<RetT>) return _mm_sqrt_ph(a);
+
+			else if constexpr (sizeof(T) > 16) return { vsqrt<RetT>(a.lo()), vsqrt<RetT>(a.hi()) };
+			else
+			{
+				internals::scream();
+				SIMD_Vector<RetT, N> ret;
+				for (size_t i = 0; i < N; ++i) ret[i] = std::sqrt(RetT(a[i]));
+				return ret;
+			}
+		}
+		//TODO: sqrt_pbh?
+		else return vcvt<RetT>(vsqrt<float>(a));		
+	}
 
 	template<meta::IsScalarType To, size_t N, meta::IsScalarType From>
 	__forceinline SIMD_Vector<To, N> vcvt(const SIMD_Vector<From, N>& a)
