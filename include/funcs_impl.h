@@ -972,16 +972,82 @@ namespace AVXXY_NAMESPACE
 	template<meta::any_int To, meta::any_int From, size_t N>
 	SIMD_Vector<To, N> vsat(const SIMD_Vector<From, N>& a)
 	{
-		//TODO: saturation intrinsics
-		internals::scream();
-		SIMD_Vector<To, N> ret;
-		for (size_t i = 0; i < N; ++i)
+		using namespace meta;
+		using namespace internals;
+		using FV = SIMD_Vector<From, N>;
+		using TV = SIMD_Vector<To, N>;
+
+		constexpr bool same_signedness = std::is_signed_v<To> == std::is_signed_v<From>;
+		//TODO: some paths are not present, like signed -> unsigned and vice versa (they fall down to scalar currently)
+		if constexpr (std::same_as<From, To>) return a;
+		else if constexpr (sizeof(To) > sizeof(From) && same_signedness) return vcvt<To>(a); //expanding conversion with same signedness is same as vcvt
+
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<FV> && is_i16<From> && is_i8<To>) return _mm512_cvtsepi16_epi8(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_i32<From> && is_i8<To>) return _mm512_cvtsepi32_epi8(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_i32<From> && is_i16<To>) return _mm512_cvtsepi32_epi16(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_i64<From> && is_i8<To>) return _mm512_cvtsepi64_epi8(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_i64<From> && is_i16<To>) return _mm512_cvtsepi64_epi16(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_i64<From> && is_i32<To>) return _mm512_cvtsepi64_epi32(a);
+
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<FV> && is_i16<From> && is_i8<To>) return _mm256_cvtsepi16_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_i32<From> && is_i8<To>) return _mm256_cvtsepi32_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_i32<From> && is_i16<To>) return _mm256_cvtsepi32_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_i64<From> && is_i8<To>) return _mm256_cvtsepi64_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_i64<From> && is_i16<To>) return _mm256_cvtsepi64_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_i64<From> && is_i32<To>) return _mm256_cvtsepi64_epi32(a);
+
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<FV> && is_i16<From> && is_i8<To>) return _mm_cvtsepi16_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_i32<From> && is_i8<To>) return _mm_cvtsepi32_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_i32<From> && is_i16<To>) return _mm_cvtsepi32_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_i64<From> && is_i8<To>) return _mm_cvtsepi64_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_i64<From> && is_i16<To>) return _mm_cvtsepi64_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_i64<From> && is_i32<To>) return _mm_cvtsepi64_epi32(a);
+
+		else if constexpr (FS.has(AVX512_BW) && zmm_sized<FV> && is_u16<From> && is_u8<To>) return _mm512_cvtusepi16_epi8(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_u32<From> && is_u8<To>) return _mm512_cvtusepi32_epi8(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_u32<From> && is_u16<To>) return _mm512_cvtusepi32_epi16(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_u64<From> && is_u8<To>) return _mm512_cvtusepi64_epi8(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_u64<From> && is_u16<To>) return _mm512_cvtusepi64_epi16(a);
+		else if constexpr (FS.has(AVX512_F) && zmm_sized<FV> && is_u64<From> && is_u32<To>) return _mm512_cvtusepi64_epi32(a);
+
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && ymm_sized<FV> && is_u16<From> && is_u8<To>) return _mm256_cvtusepi16_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_u32<From> && is_u8<To>) return _mm256_cvtusepi32_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_u32<From> && is_u16<To>) return _mm256_cvtusepi32_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_u64<From> && is_u8<To>) return _mm256_cvtusepi64_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_u64<From> && is_u16<To>) return _mm256_cvtusepi64_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && ymm_sized<FV> && is_u64<From> && is_u32<To>) return _mm256_cvtusepi64_epi32(a);
+
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_BW) && xmm_sized<FV> && is_u16<From> && is_u8<To>) return _mm_cvtusepi16_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_u32<From> && is_u8<To>) return _mm_cvtusepi32_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_u32<From> && is_u16<To>) return _mm_cvtusepi32_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_u64<From> && is_u8<To>) return _mm_cvtusepi64_epi8(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_u64<From> && is_u16<To>) return _mm_cvtusepi64_epi16(a);
+		else if constexpr (FS.has(AVX512_VL) && FS.has(AVX512_F) && xmm_sized<FV> && is_u64<From> && is_u32<To>) return _mm_cvtusepi64_epi32(a);
+
+		else if constexpr (FS.has(AVX2) && ymm_sized<FV> && is_i32<From> && is_i16<To>) return _mm256_permute4x64_epi64(_mm256_packs_epi32(a, a), 0 | (2 << 2));
+		else if constexpr (FS.has(AVX2) && ymm_sized<FV> && is_i16<From> && is_i8<To>) return _mm256_permute4x64_epi64(_mm256_packs_epi16(a, a), 0 | (2 << 2));
+		else if constexpr (FS.has(AVX2) && ymm_sized<FV> && is_u32<From> && is_u16<To>) return _mm256_permute4x64_epi64(_mm256_packus_epi32(a, a), 0 | (2 << 2));
+		else if constexpr (FS.has(AVX2) && ymm_sized<FV> && is_u16<From> && is_u8<To>) return _mm256_permute4x64_epi64(_mm256_packus_epi16(a, a), 0 | (2 << 2));
+
+		//for these, upper half can just be discarded
+		else if constexpr (FS.has(SSE41) && xmm_sized<FV> && is_u32<From> && is_u16<To>) return _mm_packus_epi32(a, a);
+		else if constexpr (FS.has(SSE2) && xmm_sized<FV> && is_u16<From> && is_u8<To>) return _mm_packus_epi16(a, a);
+		else if constexpr (FS.has(SSE2) && xmm_sized<FV> && is_i32<From> && is_i16<To>) return _mm_packs_epi32(a, a);
+		else if constexpr (FS.has(SSE2) && xmm_sized<FV> && is_i16<From> && is_i8<To>) return _mm_packs_epi16(a, a);
+
+		else if constexpr (sizeof(FV) > 16) return { vsat<To>(a.lo()), vsat<To>(a.hi()) };
+		else
 		{
-			if (a[i] > std::numeric_limits<To>::max()) ret[i] = std::numeric_limits<To>::max();
-			else if (a[i] < std::numeric_limits<To>::min()) ret[i] = std::numeric_limits<To>::min();
-			else ret[i] = a[i];
+			internals::scream();
+			SIMD_Vector<To, N> ret;
+			for (size_t i = 0; i < N; ++i)
+			{
+				if (a[i] > std::numeric_limits<To>::max()) ret[i] = std::numeric_limits<To>::max();
+				else if (a[i] < std::numeric_limits<To>::min()) ret[i] = std::numeric_limits<To>::min();
+				else ret[i] = a[i];
+			}
+			return ret;
 		}
-		return ret;
 	}
 
 	template<typename S, size_t... Ns>
