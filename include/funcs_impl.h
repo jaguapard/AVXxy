@@ -1104,13 +1104,13 @@ namespace AVXXY_NAMESPACE
 		{
 			constexpr size_t RetN = sizeof(T) / sizeof(To) + bool(sizeof(T) % sizeof(To));
 			SIMD_Vector<To, RetN> ret;
-			memcpy(&ret, &a, std::min(sizeof(ret), sizeof(a)));
+			ret = internals::avxxy_bit_cast<decltype(ret)>(a);
 			return ret;
 		}
 		else
 		{
 			To ret;
-			memcpy(&ret, &a, std::min(sizeof(ret), sizeof(a)));
+			ret = internals::avxxy_bit_cast<decltype(ret)>(a);
 			return ret;
 		}
 	}
