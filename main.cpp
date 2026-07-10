@@ -1,5 +1,7 @@
 #include <iostream>
 #include "include/avxxy.h"
+#include "include/SIMD_VectorPack.h"
+
 #ifdef AVXXY_TEST
 #include "test/Test.h"
 #endif
@@ -51,6 +53,17 @@ int main()
 	char buf[64] = { 0 };
 	std::cout << "Input anything:\n";
 	fgets(buf, sizeof(buf), stdin);
+
+	SIMD_VectorPack<f32x8, 4> packy;
+	packy.x = 4;
+	packy.y = 434;
+
+	const SIMD_VectorPack<f32x8, 9> cpack;
+	std::cout << cpack.x;
+	std::cout << cpack.y;
+
+	SIMD_VectorPack<f32x4, 2> sddd;
+	sddd.x;
 
 	f32x64 ff;
 	f32x16 read;
