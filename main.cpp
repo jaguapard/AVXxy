@@ -1,7 +1,8 @@
 #include <iostream>
 #include "include/avxxy.h"
+#ifdef AVXXY_TEST
 #include "test/Test.h"
-
+#endif
 using namespace avxxy;
 using namespace internals;
 //TODO: verify that it works
@@ -42,10 +43,11 @@ int main()
 {
 	std::cout << "Compile target feature set: \n" << FS_compile_target << "\n\n";
 	std::cout << "Current feature set: " << FS_current << "\n\n";
-
+#ifdef AVXXY_TEST
 	{
 		Test test;
 	}
+#endif
 	char buf[64] = { 0 };
 	std::cout << "Input anything:\n";
 	fgets(buf, sizeof(buf), stdin);
@@ -84,6 +86,10 @@ int main()
 	f32x16 rr = abs(read);
 	int xx = 0;
 	std::cout << rr;
+
+	u8x16 aaaaa = 0;
+	auto kjkj = vsat<uint8_t>(aaaaa);
+	DoNotOptimize(kjkj);
 
 	mask32d x = 0x434234;
 	auto z123187 = vpopcnt(read);

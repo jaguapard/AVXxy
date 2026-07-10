@@ -124,10 +124,14 @@ public:
 			if (it.second == 0)
 			{
 				neverRanTestCount++;
-				onetime << "Test " << it.first << " has never been ran!\n";
+				onetime << "Test " << it.first << " has never been ran!\n" << onetime.sendoff;
 			}
 		}
-		if (neverRanTestCount != 0) throw std::runtime_error("Never ran some tests. Check test_logs/general.log");
+		if (neverRanTestCount != 0)
+		{
+			this->~Test(); //yes, like this. Need to close files and flush them, and I'm too lazy now to do it properly.
+			throw std::runtime_error("Never ran some tests. Check test_logs/general.log");
+		}
 	}
 private:
 #define TEST(op, ...) do {\
@@ -229,11 +233,12 @@ private:
 				TEST(vcvt<S2>, a);
 				TEST(permx, a, x);
 				TEST(permx2, a, b, x);
-				TEST(shift_left, a, x);
-				TEST(shift_right, a, x);
+				TEST(shift_left, a, x & 127);
+				TEST(shift_right, a, x & 127);
 				TEST(vrzext<S2>, a);
 				TEST(vrtrunc<S2>, a);
 				TEST(byte_shuffle, a, b);
+				TEST(vsat<S2>, a);
 				//TEST(movm<S1>, mask);
 			}
 			return test_combo<TypeIndex1, TypeIndex2, SizeIndex + 1>();

@@ -117,19 +117,28 @@ public:
 
 
 	//Shift packed integers in `a` left by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result.
+	//If the shift amount is greater or equal to number of bits in S, the value is set to zero
+	//Amount is treated as unsigned integer
 	template<meta::any_int S, size_t N, meta::any_int I>
 	static SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
 	{
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i)
+		using canon_t = meta::ScalarTraits<S>::UintT;
+		using UI = meta::ScalarTraits<I>::UintT;
+		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_left(a, Oracles::vsat<canon_t>(vcvt<UI>(amount)));
+		else
 		{
-			if (amount[i] < 0 || amount[i] >= sizeof(S) * 8) ret[i] = 0;
-			else ret[i] = a[i] << amount[i];
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i)
+			{
+				if (amount[i] < sizeof(S) * 8) ret[i] = a[i] << amount[i];
+				else ret[i] = 0;
+			}
+			return ret;
 		}
-		return ret;
 	}
 
 	//Shift packed integers in `a` left by the amount specified by the template parameter A while shifting in zeros, and returns the result.
+	//If the shift amount is greater or equal to number of bits in S, the value is set to zero
 	template<size_t A, meta::any_int S, size_t N>
 	static SIMD_Vector<S, N> shift_left(const SIMD_Vector<S, N>& a)
 	{
@@ -139,26 +148,52 @@ public:
 		return ret;
 	}
 
-	//Shift packed integers in `a` right by the amount specified by the corresponding element of `amount` while shifting in zeros, and returns the result.
+	//Shift packed integers in `a` right by the amount specified by the corresponding element of `amount` while shifting in sign bits, and returns the result.
+	//If the shift amount is greater or equal to number of bits in S, the corresponding lane is set to zero (if `a` is unsigned) or broadcasted sign bit (if `a` is signed) 
+	//Amount is treated as unsigned integer
 	template<meta::any_int S, size_t N, meta::any_int I>
 	static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a, const SIMD_Vector<I, N>& amount)
+	{
+		using canon_t = meta::ScalarTraits<S>::UintT;
+		using UI = meta::ScalarTraits<I>::UintT;
+		if constexpr (!std::same_as<I, canon_t>) return Oracles::shift_right(a, Oracles::vsat<canon_t>(vcvt<UI>(amount)));
+		else
+		{
+			SIMD_Vector<S, N> ret;
+			for (size_t i = 0; i < N; ++i)
+			{
+				if (amount[i] < sizeof(S) * 8) ret[i] = a[i] >> amount[i];
+				else ret[i] = a[i] < 0 ? meta::AllOnes<S> : meta::AllZeros<S>;
+			}
+			return ret;
+		}
+	}
+
+	//Shift packed integers in `a` right by the amount specified by the template parameter A while shifting in sign bits, and returns the result.
+	template<size_t A, meta::any_int S, size_t N>
+	static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a)
 	{
 		SIMD_Vector<S, N> ret;
 		for (size_t i = 0; i < N; ++i)
 		{
-			if (amount[i] < 0 || amount[i] >= sizeof(S) * 8) ret[i] = 0;
-			else ret[i] = a[i] >> amount[i];
+			if (A < sizeof(S) * 8) ret[i] = a[i] >> A;
+			else ret[i] = a[i] < 0 ? meta::AllOnes<S> : meta::AllZeros<S>;
 		}
 		return ret;
 	}
 
-	//Shift packed integers in `a` right by the amount specified by the template parameter A while shifting in zeros, and returns the result.
-	template<size_t A, meta::any_int S, size_t N>
-	static SIMD_Vector<S, N> shift_right(const SIMD_Vector<S, N>& a)
+	//Converts integral input to other integral vector by using saturation and returns the result.
+	//The input is clamped to output's scalar type range
+	template<meta::any_int To, meta::any_int From, size_t N>
+	static SIMD_Vector<To, N> vsat(const SIMD_Vector<From, N>& a)
 	{
-		if constexpr (A >= sizeof(S) * 8) return 0;
-		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = a[i] >> A;
+		SIMD_Vector<To, N> ret;
+		for (size_t i = 0; i < N; ++i)
+		{
+			if (a[i] > std::numeric_limits<To>::max()) ret[i] = std::numeric_limits<To>::max();
+			else if (a[i] < std::numeric_limits<To>::min()) ret[i] = std::numeric_limits<To>::min();
+			else ret[i] = a[i];
+		}
 		return ret;
 	}
 
@@ -304,7 +339,7 @@ public:
 	template <typename S, size_t N> static SIMD_Vector<S, N> maskz_mov(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet)
 	{
 		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? ifBitSet[i] : 0;
+		for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? ifBitSet[i] : meta::AllZeros<S>;
 		return ret;
 	}
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
@@ -657,19 +692,21 @@ public:
 	//    for (size_t i = 0; i < std::min(X-start, 16); ++i)
 	//        ret[start + i] = b[start + i] > 127 ? 0 : a[start + (b[start+i] & 15)]
 	template<typename S, size_t N>
+		requires (sizeof(SIMD_Vector<S, N>) % 16 == 0)
 	static SIMD_Vector<S, N> byte_shuffle(const SIMD_Vector<S, N>& a, const SIMD_Vector<uint8_t, N * sizeof(S)>& b)
 	{
 		if constexpr (!is_u8<S>) return Oracles::vcast<S>(Oracles::byte_shuffle(Oracles::vcast<uint8_t>(a), b));
 		else
 		{
-			SIMD_Vector<uint8_t, N> ret;
+			//TODO: breaks for small vectors!
+			SIMD_Vector<S, N> ret;
 			constexpr size_t X = sizeof(a);
 			for (size_t start = 0; start < X; start += 16)
 			{
 				for (size_t i = 0; i < std::min<size_t>(X - start, 16); ++i)
 				{
 					auto y = b[start + i];
-					ret[start + i] = y > 127 ? 0 : a[start + y & 15];
+					ret[start + i] = y > 127 ? 0 : a[start + (y & 15)];
 				}
 			}
 			return ret;

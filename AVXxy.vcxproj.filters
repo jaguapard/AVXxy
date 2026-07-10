@@ -22,6 +22,12 @@
     <Filter Include="Header Files\include\meta">
       <UniqueIdentifier>{4138a3e0-fc63-4e6f-8027-19b4f9860d73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\include\internals">
+      <UniqueIdentifier>{71fdf712-d039-4041-836e-9779e48832c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\test">
+      <UniqueIdentifier>{ed2905f2-7007-4665-9156-66317f5f3f11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -59,9 +65,6 @@
     <ClInclude Include="include\meta\meta.h">
       <Filter>Header Files\include\meta</Filter>
     </ClInclude>
-    <ClInclude Include="include\SIMD_Mask.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="include\funcs.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
@@ -71,29 +74,38 @@
     <ClInclude Include="include\operators.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\SIMD_Mask_impl.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\FeatureSet.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="include\settings.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="include\typedefs.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="test\oracles.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="test\Reporter.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\internals\TypelessPtr.h">
+      <Filter>Header Files\include\internals</Filter>
     </ClInclude>
     <ClInclude Include="test\Table.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\Reporter.h">
+      <Filter>Header Files\test</Filter>
     </ClInclude>
     <ClInclude Include="test\Test.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\oracles.h">
+      <Filter>Header Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internals\FeatureSet.h">
+      <Filter>Header Files\include\internals</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internals\SIMD_Mask.h">
+      <Filter>Header Files\include\internals</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internals\SIMD_Mask_impl.h">
+      <Filter>Header Files\include\internals</Filter>
+    </ClInclude>
+    <ClInclude Include="include\internals\internal_ops.h">
+      <Filter>Header Files\include\internals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
