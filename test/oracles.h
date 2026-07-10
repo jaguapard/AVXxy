@@ -339,7 +339,7 @@ public:
 	template <typename S, size_t N> static SIMD_Vector<S, N> maskz_mov(const mask_t<S, N>& mask, const SIMD_Vector<S, N>& ifBitSet)
 	{
 		SIMD_Vector<S, N> ret;
-		for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? ifBitSet[i] : 0;
+		for (size_t i = 0; i < N; ++i) ret[i] = mask[i] ? ifBitSet[i] : meta::AllZeros<S>;
 		return ret;
 	}
 	//Selects elements from two input vectors by corresponding mask bits and returns the result.
