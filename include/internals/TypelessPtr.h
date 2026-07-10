@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/namespace.h"
+#include "../namespace.h"
 #include <stdexcept>
 #include <span>
 namespace AVXXY_NAMESPACE

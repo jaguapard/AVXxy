@@ -348,6 +348,7 @@
     <ClInclude Include="include\FeatureSet.h" />
     <ClInclude Include="include\funcs.h" />
     <ClInclude Include="include\funcs_impl.h" />
+    <ClInclude Include="include\internals\TypelessPtr.h" />
     <ClInclude Include="include\meta\enums.h" />
     <ClInclude Include="include\meta\meta.h" />
     <ClInclude Include="include\meta\type_factories.h" />
@@ -360,7 +361,6 @@
     <ClInclude Include="include\small_fp.h" />
     <ClInclude Include="include\tables.h" />
     <ClInclude Include="include\typedefs.h" />
-    <ClInclude Include="internals\TypelessPtr.h" />
     <ClInclude Include="test\oracles.h" />
     <ClInclude Include="test\Reporter.h" />
     <ClInclude Include="test\Table.h" />
