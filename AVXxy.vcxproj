@@ -427,6 +427,7 @@
     <ClInclude Include="include\operators.h" />
     <ClInclude Include="include\settings.h" />
     <ClInclude Include="include\SIMD_Vector.h" />
+    <ClInclude Include="include\SIMD_VectorPack.h" />
     <ClInclude Include="include\small_fp.h" />
     <ClInclude Include="include\tables.h" />
     <ClInclude Include="include\typedefs.h" />

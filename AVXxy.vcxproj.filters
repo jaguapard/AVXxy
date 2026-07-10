@@ -107,6 +107,9 @@
     <ClInclude Include="include\internals\internal_ops.h">
       <Filter>Header Files\include\internals</Filter>
     </ClInclude>
+    <ClInclude Include="include\SIMD_VectorPack.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
