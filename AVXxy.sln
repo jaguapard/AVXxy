@@ -9,6 +9,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DebClang|x64 = DebClang|x64
 		DebClang|x86 = DebClang|x86
+		DebTest_Zen4_Clang|x64 = DebTest_Zen4_Clang|x64
+		DebTest_Zen4_Clang|x86 = DebTest_Zen4_Clang|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		RelClang|x64 = RelClang|x64
@@ -23,6 +25,10 @@ Global
 		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.DebClang|x64.Build.0 = DebClang|x64
 		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.DebClang|x86.ActiveCfg = DebClang|Win32
 		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.DebClang|x86.Build.0 = DebClang|Win32
+		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.DebTest_Zen4_Clang|x64.ActiveCfg = DebTest_Zen4_Clang|x64
+		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.DebTest_Zen4_Clang|x64.Build.0 = DebTest_Zen4_Clang|x64
+		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.DebTest_Zen4_Clang|x86.ActiveCfg = DebTest_Zen4_Clang|Win32
+		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.DebTest_Zen4_Clang|x86.Build.0 = DebTest_Zen4_Clang|Win32
 		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.Debug|x64.ActiveCfg = Debug|x64
 		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.Debug|x64.Build.0 = Debug|x64
 		{B68BCC6D-8A7F-4388-A4F3-37B76A2FF9A1}.Debug|x86.ActiveCfg = Debug|Win32

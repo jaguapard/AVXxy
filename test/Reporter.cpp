@@ -240,6 +240,7 @@ void Reporter::reportFailure(const ReporterInput& input)
 	table.cellAt(0, 2 * argCount + 4).value = "Cand dec";
 	table.cellAt(0, 2 * argCount + 5).value = "Ref dec";
 
+	//TODO: add mask printouts
 	type_registry.at(input.candRet.type->hash_code()).printFunc(input.candRet.bytes.data(), input.candRet.bytes.size(), table, argCount + 1, 2 * argCount + 4);
 	type_registry.at(input.refRet.type->hash_code()).printFunc(input.refRet.bytes.data(), input.refRet.bytes.size(), table, argCount + 2, 2 * argCount + 5);
 	ss << table.toString() << "\n";
