@@ -348,6 +348,7 @@
     <ClInclude Include="include\funcs.h" />
     <ClInclude Include="include\funcs_impl.h" />
     <ClInclude Include="include\internals\FeatureSet.h" />
+    <ClInclude Include="include\internals\internal_ops.h" />
     <ClInclude Include="include\internals\SIMD_Mask.h" />
     <ClInclude Include="include\internals\SIMD_Mask_impl.h" />
     <ClInclude Include="include\internals\TypelessPtr.h" />

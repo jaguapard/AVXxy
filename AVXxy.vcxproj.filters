@@ -104,6 +104,9 @@
     <ClInclude Include="include\internals\SIMD_Mask_impl.h">
       <Filter>Header Files\include\internals</Filter>
     </ClInclude>
+    <ClInclude Include="include\internals\internal_ops.h">
+      <Filter>Header Files\include\internals</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
