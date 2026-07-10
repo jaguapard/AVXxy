@@ -5,6 +5,7 @@
 #include <source_location>
 #include "tables.h"
 #include "typedefs.h"
+#include "settings.h"
 
 namespace AVXXY_NAMESPACE
 {
@@ -32,9 +33,10 @@ namespace AVXXY_NAMESPACE
 		//scream your lungs out if scalar fallback is reached and this function is enabled via AVXXY_NOISY_SCALAR define
 		static void scream(std::source_location loc = std::source_location::current())
 		{
-#ifdef AVXXY_NOISY_SCALAR
-			std::cout << "\nScalar fallback reached:" << loc.function_name() << "\n";
-#endif
+			if constexpr (settings::NOISY_SCALAR)
+			{
+				std::cout << "\nScalar fallback reached:" << loc.function_name() << "\n";
+			}
 		}
 	}
 

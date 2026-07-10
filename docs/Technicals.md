@@ -57,4 +57,4 @@ AVX512 priority:
 1. AVX512 F
 
 # Noisy scalars mode
-Defining the `AVXXY_NOISY_SCALAR` macro will dump all calls to scalar implementations to the console. This mode is usually not useful to the users of the library, and is mostly used during library's debugging. You can, however, enable it to inspect possible performance downfalls in case you're sure that no scalar implementations should be used by your code.
+Enabling the `NOISY_SCALAR` setting will dump all calls to scalar implementations to the console. This mode is usually not useful to the users of the library, and is mostly used during library's debugging. You can, however, enable it to inspect possible performance downfalls in case you're sure that no scalar implementations should be used by your code.
