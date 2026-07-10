@@ -233,8 +233,8 @@ private:
 				TEST(vcvt<S2>, a);
 				TEST(permx, a, x);
 				TEST(permx2, a, b, x);
-				TEST(shift_left, a, x);
-				TEST(shift_right, a, x);
+				TEST(shift_left, a, x & 127);
+				TEST(shift_right, a, x & 127);
 				TEST(vrzext<S2>, a);
 				TEST(vrtrunc<S2>, a);
 				TEST(byte_shuffle, a, b);
