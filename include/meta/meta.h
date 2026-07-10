@@ -6,7 +6,7 @@
 #include <bit>
 #include "enums.h"
 #include <array>
-#include "../FeatureSet.h"
+#include "../internals/FeatureSet.h"
 #include "../settings.h"
 
 namespace AVXXY_NAMESPACE

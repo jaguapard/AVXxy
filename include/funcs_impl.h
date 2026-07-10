@@ -1,7 +1,7 @@
 #pragma once
 #include "funcs.h"
 #include "SIMD_Vector.h"
-#include "FeatureSet.h"
+#include "internals/FeatureSet.h"
 #include <source_location>
 #include "tables.h"
 #include "typedefs.h"

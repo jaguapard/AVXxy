@@ -6,7 +6,7 @@
 #include <cstring>
 #include "meta/meta.h"
 #include "meta/type_factories.h"
-#include "SIMD_Mask.h"
+#include "internals/SIMD_Mask.h"
 
 namespace AVXXY_NAMESPACE
 {

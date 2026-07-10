@@ -345,9 +345,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\avxxy.h" />
-    <ClInclude Include="include\FeatureSet.h" />
     <ClInclude Include="include\funcs.h" />
     <ClInclude Include="include\funcs_impl.h" />
+    <ClInclude Include="include\internals\FeatureSet.h" />
+    <ClInclude Include="include\internals\SIMD_Mask.h" />
+    <ClInclude Include="include\internals\SIMD_Mask_impl.h" />
     <ClInclude Include="include\internals\TypelessPtr.h" />
     <ClInclude Include="include\meta\enums.h" />
     <ClInclude Include="include\meta\meta.h" />
@@ -355,8 +357,6 @@
     <ClInclude Include="include\namespace.h" />
     <ClInclude Include="include\operators.h" />
     <ClInclude Include="include\settings.h" />
-    <ClInclude Include="include\SIMD_Mask.h" />
-    <ClInclude Include="include\SIMD_Mask_impl.h" />
     <ClInclude Include="include\SIMD_Vector.h" />
     <ClInclude Include="include\small_fp.h" />
     <ClInclude Include="include\tables.h" />

@@ -1,6 +1,6 @@
 #pragma once
 #include "SIMD_Vector.h"
-#include "SIMD_Mask.h"
+#include "internals/SIMD_Mask.h"
 
 namespace AVXXY_NAMESPACE
 {
