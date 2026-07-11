@@ -71,9 +71,15 @@ namespace AVXXY_NAMESPACE
 
 		SIMD_VectorPack() {};
 
+		//Sets all values of all vectors to a single scalar value
+		template<typename T>
+		SIMD_VectorPack(const T& s)
+		{
+			for (size_t i = 0; i < Dim; ++i) (*this)[i] = s;
+		}
 		//Generic constructor. Assigns elements from left to right to vectors [0..Dim-1] respectively. Input count must equal Dim.
 		//Assignees may perform conversions of inputs, i.e. this function will also accept scalars for instance
-		template<typename... Ts> requires (sizeof...(Ts) == Dim)
+		template<typename... Ts> requires (sizeof...(Ts) == Dim && Dim != 1)
 			SIMD_VectorPack(const Ts&... s)
 		{
 			size_t i = 0;
@@ -146,11 +152,11 @@ namespace AVXXY_NAMESPACE
 		}
 
 		//Computes squared length of each mathematical vector in the pack. SIMD_Vector at index D and above are ignored and do not affect the output
-		template<size_t D = Dim, meta::any_float RetScalarT = IntermediateFloatT>
+		template<size_t D = Dim>
 			requires (D >= 1 && D <= Dim)
-		SIMD_Vector<RetScalarT, V::LaneCount> lenSq() const
+		SIMD_Vector<V::ScalarT, V::LaneCount> lenSq() const
 		{
-			return this->dot<D, RetScalarT>(*this);
+			return this->dot<D>(*this);
 		}
 
 		//Computes length of each mathematical vector in the pack. SIMD_Vector at index D and above are ignored and do not affect the output
@@ -158,7 +164,7 @@ namespace AVXXY_NAMESPACE
 			requires (D >= 1 && D <= Dim)
 		SIMD_Vector<RetScalarT, V::LaneCount> len() const
 		{
-			return vsqrt<RetScalarT>(this->lenSq<D, RetScalarT>());
+			return vsqrt<RetScalarT>(this->lenSq<D>());
 		}
 
 		//Returns a 2D cross product of two vector packs. SIMD_Vector at index 2 and above are ignored and do not affect the output
