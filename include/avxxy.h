@@ -9,6 +9,7 @@
 #include "internals/SIMD_Mask_impl.h"
 #include "operators.h"
 #include "typedefs.h"
+#include "SIMD_VectorPack.h"
 
 namespace AVXXY_NAMESPACE
 {
