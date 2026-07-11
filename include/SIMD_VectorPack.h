@@ -17,6 +17,9 @@ namespace AVXXY_NAMESPACE
 #ifdef AVXXY_VECTOR_PACK_XYZW_FIELDS
 				struct { V x, y, z, w; };
 #endif
+#ifdef AVXXY_VECTOR_PACK_RGBA_FIELDS
+				struct { V r, g, b, a; };
+#endif
 				V packs[Dim];
 			};
 		};
@@ -29,6 +32,9 @@ namespace AVXXY_NAMESPACE
 #ifdef AVXXY_VECTOR_PACK_XYZW_FIELDS
 				V x;
 #endif
+#ifdef AVXXY_VECTOR_PACK_RGBA_FIELDS
+				V r;
+#endif
 				V packs[1];
 			};
 		};
@@ -40,6 +46,9 @@ namespace AVXXY_NAMESPACE
 #ifdef AVXXY_VECTOR_PACK_XYZW_FIELDS
 				struct { V x, y; };
 #endif
+#ifdef AVXXY_VECTOR_PACK_RGBA_FIELDS
+				struct { V r, g; };
+#endif
 				V packs[2];
 			};
 		};
@@ -50,6 +59,9 @@ namespace AVXXY_NAMESPACE
 			union {
 #ifdef AVXXY_VECTOR_PACK_XYZW_FIELDS
 				struct { V x, y, z; };
+#endif
+#ifdef AVXXY_VECTOR_PACK_RGBA_FIELDS
+				struct { V r, g, b; };
 #endif
 				V packs[3];
 			};
