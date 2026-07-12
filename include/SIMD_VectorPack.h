@@ -166,7 +166,7 @@ namespace AVXXY_NAMESPACE
 		//Computes squared length of each mathematical vector in the pack. SIMD_Vector at index D and above are ignored and do not affect the output
 		template<size_t D = Dim>
 			requires (D >= 1 && D <= Dim)
-		SIMD_Vector<V::ScalarT, V::LaneCount> lenSq() const
+		SIMD_Vector<ScalarT, V::LaneCount> lenSq() const
 		{
 			return this->dot<D>(*this);
 		}
