@@ -87,7 +87,7 @@ namespace AVXXY_NAMESPACE
 
 
 		//Broadcasts a scalar value to all lanes of a vector. The input value is converted to vector's scalar type before broadcasting
-		template<typename T> requires meta::IsScalarType<T>
+		template<meta::IsScalarType T>
 		SIMD_Vector(T s) { for (size_t i = 0; i < N; ++i) (*this)[i] = s; }
 
 		//Returns vector filled with sequential values (value == lane index, like 0, 1, 2, ..., N-1)
@@ -97,15 +97,15 @@ namespace AVXXY_NAMESPACE
 			for (size_t i = 0; i < N; ++i) ret[i] = i;
 			return ret;
 		}
-		//Copies and returns lower half of this vector
-		auto lo() const requires (N >= 2)
+		//Copies and returns lower half of this vector. Available only for vectors with even lane count
+		auto lo() const requires (N % 2 == 0)
 		{
 			SIMD_Vector<S, N / 2> ret;
 			memcpy(ret.arr.data(), arr.data(), sizeof(ret.arr));
 			return ret;
 		}
-		//Copies and returns upper half of this vector
-		auto hi() const requires (N >= 2)
+		//Copies and returns upper half of this vector. Available only for vectors with even lane count
+		auto hi() const requires (N % 2 == 0)
 		{
 			SIMD_Vector<S, N / 2> ret;
 			memcpy(ret.arr.data(), arr.data() + N / 2, sizeof(ret.arr));
