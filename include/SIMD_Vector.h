@@ -199,8 +199,8 @@ namespace AVXXY_NAMESPACE
 			requires (N == 64 && meta::AllAreScalarTypes<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28, T29, T30, T31, T32, T33, T34, T35, T36, T37, T38, T39, T40, T41, T42, T43, T44, T45, T46, T47, T48, T49, T50, T51, T52, T53, T54, T55, T56, T57, T58, T59, T60, T61, T62, T63>)
 		__forceinline SIMD_Vector(T0 s0, T1 s1, T2 s2, T3 s3, T4 s4, T5 s5, T6 s6, T7 s7, T8 s8, T9 s9, T10 s10, T11 s11, T12 s12, T13 s13, T14 s14, T15 s15, T16 s16, T17 s17, T18 s18, T19 s19, T20 s20, T21 s21, T22 s22, T23 s23, T24 s24, T25 s25, T26 s26, T27 s27, T28 s28, T29 s29, T30 s30, T31 s31, T32 s32, T33 s33, T34 s34, T35 s35, T36 s36, T37 s37, T38 s38, T39 s39, T40 s40, T41 s41, T42 s42, T43 s43, T44 s44, T45 s45, T46 s46, T47 s47, T48 s48, T49 s49, T50 s50, T51 s51, T52 s52, T53 s53, T54 s54, T55 s55, T56 s56, T57 s57, T58 s58, T59 s59, T60 s60, T61 s61, T62 s62, T63 s63)
 		{
-			(*this)[0] = s0; (*this)[1] = s1; (*this)[2] = s2; (*this)[3] = s3; (*this)[4] = s4; (*this)[5] = s5; (*this)[6] = s6; (*this)[7] = s7; (*this)[8] = s8;
-			(*this)[9] = s9; (*this)[10] = s10; (*this)[11] = s11; (*this)[12] = s12; (*this)[13] = s13; (*this)[14] = s14; (*this)[15] = s15;
+			(*this)[0] = s0; (*this)[1] = s1; (*this)[2] = s2; (*this)[3] = s3; (*this)[4] = s4; (*this)[5] = s5; (*this)[6] = s6; (*this)[7] = s7; 
+			(*this)[8] = s8; (*this)[9] = s9; (*this)[10] = s10; (*this)[11] = s11; (*this)[12] = s12; (*this)[13] = s13; (*this)[14] = s14; (*this)[15] = s15;
 			(*this)[16] = s16; (*this)[17] = s17; (*this)[18] = s18; (*this)[19] = s19; (*this)[20] = s20; (*this)[21] = s21; (*this)[22] = s22; (*this)[23] = s23;
 			(*this)[24] = s24; (*this)[25] = s25; (*this)[26] = s26; (*this)[27] = s27; (*this)[28] = s28; (*this)[29] = s29; (*this)[30] = s30; (*this)[31] = s31;
 			(*this)[32] = s32; (*this)[33] = s33; (*this)[34] = s34; (*this)[35] = s35; (*this)[36] = s36; (*this)[37] = s37; (*this)[38] = s38; (*this)[39] = s39;
@@ -214,9 +214,7 @@ namespace AVXXY_NAMESPACE
 			SIMD_Vector(Ts... s)
 		{
 			size_t i = 0;
-			auto append = [&](auto x) {
-				(*this)[i++] = x;
-				};
+			auto append = [&](auto x) { (*this)[i++] = x; };
 			(append(s), ...);
 		}
 	};
