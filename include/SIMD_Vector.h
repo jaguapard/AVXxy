@@ -75,14 +75,13 @@ namespace AVXXY_NAMESPACE
 			return internals::avxxy_bit_cast<IntrinsicT>(arr);
 		}
 
-		//Constructs vector from halves
-		template<size_t N2>
-			requires (N2 * 2 == N)
-		SIMD_Vector(const SIMD_Vector<S, N2>& lo, const SIMD_Vector<S, N2>& hi)
+		//Constructs vector by appending `tail` to `head`. Input vector lane counts must add up to this vector's lane count.
+		template<size_t N1, size_t N2>
+			requires (N1+N2 == N)
+		SIMD_Vector(const SIMD_Vector<S, N1>& head, const SIMD_Vector<S, N2>& tail)
 		{
-			static_assert(N % 2 == 0);
-			memcpy(arr.data(), lo.arr.data(), sizeof(lo.arr));
-			memcpy(arr.data() + N / 2, hi.arr.data(), sizeof(hi.arr));
+			memcpy(arr.data(), head.arr.data(), sizeof(head.arr));
+			memcpy(arr.data() + N1, tail.arr.data(), sizeof(tail.arr));
 		}
 
 
