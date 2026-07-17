@@ -188,6 +188,15 @@ namespace AVXXY_NAMESPACE
 			return ret;
 		}
 
+		//Converts all elements of all vectors to scalar type `To` and returns the result
+		template<meta::IsScalarType To>
+		SIMD_VectorPack<SIMD_Vector<To, LaneCount>, Dim> cvt() const
+		{
+			SIMD_VectorPack<SIMD_Vector<To, LaneCount>, Dim> ret;
+			for (size_t i = 0; i < Dim; ++i) ret[i] = vcvt<To>((*this)[i]);
+			return ret;
+		}
+
 		//Computes squared length of each mathematical vector in the pack. SIMD_Vector at index D and above are ignored and do not affect the output
 		template<size_t D = Dim>
 			requires (D >= 1 && D <= Dim)
