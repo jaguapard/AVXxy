@@ -67,20 +67,37 @@ namespace AVXXY_NAMESPACE
 			};
 		};
 	}
-	//Represents N independent Dim-dimensional vectors, where N is the lane count of V.
-	//i.e. pack[0] can be X coordinate, pack[1] - Y, etc,
-	//while pack[2][6] is Z coordinate of mathematical vector at index 6
-	//Distinction should be made between SIMD_Vector (a packed type of N scalar values), and mathematical vector (Dim-dimensional collection of scalars)
+
+
+	// Represents a structure-of-arrays (SoA) collection of mathematical vectors.
+	//
+	// V is a SIMD vector type containing LaneCount scalar values.
+	// The pack stores Dim independent SIMD vectors, each representing one coordinate across all mathematical vectors.
+	//
+	// For example, SIMD_VectorPack<f32x8, 3> stores:
+	// x = {x0 x1 x2 x3 x4 x5 x6 x7}
+	// y = {y0 y1 y2 y3 y4 y5 y6 y7}
+	// z = {z0 z1 z2 z3 z4 z5 z6 z7}
+	//
+	// Therefore mathematical vector i is:
+	//     (x[i], y[i], z[i])
+	//
+	// while pack[0] is the SIMD vector containing every X coordinate.
 	template<meta::IsSimdVector V, size_t Dim>
 		requires (Dim >= 1)
 	class SIMD_VectorPack : public internals::SIMD_VectorPackStorage<V, Dim>
 	{
 	public:
 		static constexpr size_t LaneCount = V::LaneCount;
+
+		//Scalar type of the vector pack. Same as scalar type of underlying SIMD_Vector
 		using ScalarT = typename V::ScalarT;
+		//Comparison result 
 		using mask_array_t = std::array<mask_t<ScalarT, LaneCount>, Dim>;
+		//Default floating point type for operations that require them (like len).
 		using IntermediateFloatT = std::conditional_t<meta::is_f64<ScalarT> || meta::any_i32<ScalarT> || meta::any_i64<ScalarT>, double, float>;
 
+		//Leaves VectorPack uninitialized and containing garbage data
 		SIMD_VectorPack() {};
 
 		//Sets all values of all vectors to a single scalar value
@@ -89,7 +106,7 @@ namespace AVXXY_NAMESPACE
 		{
 			for (size_t i = 0; i < Dim; ++i) (*this)[i] = s;
 		}
-		//Generic constructor. Assigns elements from left to right to vectors [0..Dim-1] respectively. Input count must equal Dim.
+		//Generic constructor. Assigns elements from left to right to packs [0..Dim-1] respectively. Input count must equal Dim.
 		//Assignees may perform conversions of inputs, i.e. this function will also accept scalars for instance
 		template<typename... Ts> requires (sizeof...(Ts) == Dim && Dim != 1)
 			SIMD_VectorPack(const Ts&... s)
@@ -108,11 +125,14 @@ namespace AVXXY_NAMESPACE
 		using ComputeT = std::conditional_t<meta::any_float<ScalarT>, ScalarT,
 			std::conditional_t<(sizeof(ScalarT) < 4), float, double>>;
 #endif
-		//Returns a const reference to i'th SIMD_Vector. Does not perform range checks.
+		//Returns a const reference to i'th SIMD_Vector. Does not perform bounds checks.
 		const V& operator[](size_t i) const { return this->packs[i]; }
-		//Returns a non-const reference to i'th SIMD_Vector. Does not perform range checks. Can be used to modify packs.
+		//Returns a non-const reference to i'th SIMD_Vector. Does not perform bounds checks. Can be used to modify packs.
 		V& operator[](size_t i) { return this->packs[i]; }
 
+		//TODO: reword all comments in this file
+		//All these operators are available for vector pack RHS and arbitrary RHS. Vector pack operators calculate return value by applying operation to same indexed packs.
+		//Arbitrary type operators use the input value as RHS for all packs.
 		template<typename V2> SIMD_VectorPack<V, Dim> operator+(const SIMD_VectorPack<V2, Dim>& other) const { SIMD_VectorPack<V, Dim> ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] + other[i]; return ret; }
 		template<typename V2> SIMD_VectorPack<V, Dim> operator-(const SIMD_VectorPack<V2, Dim>& other) const { SIMD_VectorPack<V, Dim> ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] - other[i]; return ret; }
 		template<typename V2> SIMD_VectorPack<V, Dim> operator*(const SIMD_VectorPack<V2, Dim>& other) const { SIMD_VectorPack<V, Dim> ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] * other[i]; return ret; }
@@ -134,6 +154,8 @@ namespace AVXXY_NAMESPACE
 		template<typename T> SIMD_VectorPack<V, Dim> operator&(const T& other) const { SIMD_VectorPack<V, Dim> ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] & other; return ret; }
 		template<typename T> SIMD_VectorPack<V, Dim> operator|(const T& other) const { SIMD_VectorPack<V, Dim> ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] | other; return ret; }
 		template<typename T> SIMD_VectorPack<V, Dim> operator^(const T& other) const { SIMD_VectorPack<V, Dim> ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] ^ other; return ret; }
+
+		//Returns an std::array<mask type, Dim> with comparison results 
 		template<typename T> mask_array_t operator==(const T& other) const { mask_array_t ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] == other; return ret; }
 		template<typename T> mask_array_t operator!=(const T& other) const { mask_array_t ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] != other; return ret; }
 		template<typename T> mask_array_t operator< (const T& other) const { mask_array_t ret; for (size_t i = 0; i < Dim; ++i) ret[i] = (*this)[i] <  other; return ret; }
@@ -149,11 +171,14 @@ namespace AVXXY_NAMESPACE
 		template<typename T> SIMD_VectorPack<V, Dim>& operator*=(const T& other) { *this = *this * other; return *this; }
 		template<typename T> SIMD_VectorPack<V, Dim>& operator/=(const T& other) { *this = *this / other; return *this; }
 
+		//Retuns bitwise NOT of all values of all vectors
 		SIMD_VectorPack<V, Dim> operator~() const { SIMD_VectorPack<V, Dim> ret; for (size_t i = 0; i < Dim; ++i) ret[i] = ~((*this)[i]); return ret; }
+		//Returns all values of all vectors negated
 		SIMD_VectorPack<V, Dim> operator-() const { SIMD_VectorPack<V, Dim> ret; for (size_t i = 0; i < Dim; ++i) ret[i] = -((*this)[i]); return ret; }
 
 
 		//Computes dot product for each mathematical vector in 2 vector packs. SIMD_Vector at index D and above are ignored and do not affect the output
+		//TODO: add option to extend the vectors to 2x size (u8->u16, etc), as they can overflow very easily
 		template<size_t D = Dim>
 			requires (D >= 1 && D <= Dim)
 		SIMD_Vector<ScalarT, V::LaneCount> dot(const SIMD_VectorPack<V, Dim>& other) const
