@@ -1,0 +1,20 @@
+# Contributor's guide
+
+Contributors are advised to adhere to these guidelines when writing changes to the code:
+- Everything should reside in AVXXY_NAMESPACE namespace
+- Curly bracket on new line
+- When introducing new operations, implement them as free functions, put declarations into funcs.h, definitions into funcs_impl.h and document it's behavior in funcs.h as user-facing comment. Free functions are friendly to stable user-facing APIs, easy to understand by users and easy to tweak internals if a change is required.
+- Do not make any cpp files. Only headers, to preserve one-include import to the user projects
+- User facing primitives that should strive to preserve backwards compatibility are: SIMD_Vector, SIMD_VectorPack, SIMD_MaskPack, mask_t, SIMD_Mask, bf16_t, fp16_t, free functions, settings, operators, AVXXY_NAMESPACE macro, internals::FeatureSet (print only) and typedefs in `typedefs.h`. The rest are internal to the library, should not be used by users and are can change at any moment. These mostly reside inside a nested namespace, usually `internals` or `meta`. SIMD_Mask is a major exception, since it resides in internals, is discouraged, but not forbidden to be used directly by the users (they are advised to use mask_t instead), but should have a compatible interface. This happens due to mask internal representation changing based on current feature set, it can be a bit mask or mask vector, users should not care (too much) about it
+- Do not hardcode avxxy namespace and instead use `AVXXY_NAMESPACE` macro. It is a user facing definition that is allowed to be changed by the users, having avxxy as default value.
+- Clean up your macros (undef when done using them) and prefix them with AVXXY_ to minimize probability of collisions with already defined user macros.
+- Prefer to use concepts directly where applicable, i.e. `template<meta::any_int S, size_t N>` instead of `template<typename S, size_t N> requires (meta::any_int<S>)`.
+- Never use integral types that are not certain size. I.e. only use `cstdint` typedefs: `int64_t x`, not `long long x`
+- Grammar: prefer full forms (should not instead of shouldn't, cannot instead of can't, etc.) in user-facing comments and documentation 
+- If adding a new setting, have a default value for it compatible with library's current behavior if possible, and describe what it should do in the comment. Add a static_assert checking the setting's value until it is properly implemented and supported, preventing compilation for potentially broken half-implemented settings.
+- AI usage is fine as long as you fix up it's formatting, since (ChatGPT at least) has poor formatting for both comments and code
+- Do not use `std::is_floating_point_v` and alike, since they don't consider our custom fp16 and bf16 types as floating point. Use `meta::any_float`
+- For names clashing with std or other common names, prefer adding v to the name to make disambiguation easier (overload resolution and namespace is usually enough, but this ensures that and makes it obvious at the call site). I.e. prefer vsqrtf to sqrtf or vpopcnt to popcnt, but permx is fine
+- Test code is free from all user-facing restrictions, since it is never meant to be used by the users. However, code style guidelines and general restrictions still apply
+- Comments should explain why, not what. Avoid comments that simply restate the code. However, it is fine to create diagrams for data permutations, complicated bit operation chains and other operations that will help the future readers to reason about it.
+- Where possible, prefer compile-time resolution and computation. Avoid branching and allocations where practically possible. This is usually not a concern, since the scale of operations is small enough to not require them. The library is not supposed to have complicated algorithms in it's core and contains primitives for building user-applications (similar to extending C++ language itself to have vector types), not providing std::algorithm-like functions

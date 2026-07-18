@@ -437,6 +437,7 @@
     <ClInclude Include="test\Test.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="docs\ContributorsGuide.md" />
     <None Include="docs\Technicals.md" />
     <None Include="README.md" />
   </ItemGroup>

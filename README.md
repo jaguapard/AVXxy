@@ -101,3 +101,5 @@ scatter<6>(m, scatterTarget, small_ind, mask2); //overrides Scale with 6
 ```
 # Further reading
 [Technical details](docs/Technicals.md)
+
+[Contributor's guide](docs/ContributorsGuide.md)
