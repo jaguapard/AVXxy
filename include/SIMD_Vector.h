@@ -111,6 +111,19 @@ namespace AVXXY_NAMESPACE
 			return ret;
 		}
 
+		//Returns this vector resized to other lane count.
+		//If new lane count is greater than current, the new lanes are filled with zeros
+		//If new lane count is less than current, the lanes at indices N2 and above are discarded
+		template<size_t N2>
+		SIMD_Vector<S, N2> resized() const
+		{
+			SIMD_Vector<S, N2> ret;
+			constexpr size_t copyCount = std::min(N, N2);
+			for (size_t i = 0; i < copyCount; ++i) ret[i] = (*this)[i];
+			for (size_t i = copyCount; i < N2; ++i) ret[i] = 0;
+			return ret;
+		}
+
 		//Constructs vector by reinterperting the value of inp as vector of wanted type
 		//If input value is larger than returned vector, the input's upper bits are discarded
 		//If input value is smaller than returned vector, upper bits of returned vector values are underfined
